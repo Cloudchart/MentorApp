@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "startApp": "node_modules/react-native/packager/packager.sh --port 6000",
-    "start": "NODE_ENV=development TYPE_ENV=development npm run startApp",
     "postinstall": "find node_modules -type f -name .babelrc | grep -v /react-native/ | xargs rm",
-    "buildIOS": "react-native bundle --entry-file index.ios.js --bundle-output  ios/main.jsbundle --minify=true --platform=ios --assets-dest ./ --dev=false"
+    "startApp": "node_modules/react-native/packager/packager.sh --port 8081",
+    "start": "NODE_ENV=development TYPE_ENV=development npm run startApp",
+    "buildIOS": "react-native bundle --entry-file index.ios.js --bundle-output ios/main.jsbundle --minify=true --platform=ios --assets-dest ./ --dev=false"
   },
   "dependencies": {
     "clamp": "^1.0.1",

@@ -1,12 +1,27 @@
-Mentor project
-=========================
+Mentor2 App
+===========
 
-## Installation:
+## Content
 
-in the project directory `npm i`
-after installing all node_modules go to the directory `ios` and run `pod install`
+1. [Installation](#installation)
+2. [Build](#build)
 
-now you can open the project in `xcode` and run it on the emulator - `cmd+r` 
+## Installation
+
+Run in the project directory:
+
+```bash
+npm i
+cd ios
+sudo gem install cocoapods
+pod install
+```
+  
+## Build
+
+1. Open XCode.
+2. Run in the simulator: `cmd + R` 
+ 
 
 
 

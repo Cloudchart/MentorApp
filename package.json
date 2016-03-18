@@ -20,6 +20,7 @@
     "react-native-device-info": "^0.8.3",
     "react-native-fbsdkcore": "0.0.8",
     "react-native-fbsdklogin": "0.0.8",
+    "react-native-in-app-utils": "^2.3.0",
     "react-native-linear-gradient": "^1.5.2",
     "react-native-progress": "2.2.0",
     "react-native-swipeout": "git+https://bitbucket.org/DenisIzmaylov/react-native-swipeout2.git",

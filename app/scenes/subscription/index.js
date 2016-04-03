@@ -9,6 +9,8 @@ import React, {
   ScrollView,
   AlertIOS,
 } from 'react-native'
+import Relay from 'react-relay';
+
 import styles from './styles'
 
 const PRODUCT_3_PREMIUM_TOPICS = 'org.reactjs.native.example.Mentor2.3_premium_topics';
@@ -20,34 +22,34 @@ const ActiveOpacity = {
 };
 
 class Subscription extends Component {
-  constructor(props, context) {
+  constructor (props, context) {
     super(props, context);
     this.state = {
       loadedProducts: {}
     };
   }
 
-  componentDidMount() {
+  componentDidMount () {
     const products = [
       PRODUCT_3_PREMIUM_TOPICS,
       PRODUCT_FULL_ACCESS_MONTHLY,
       PRODUCT_FULL_ACCESS_YEARLY,
     ];
     InAppUtils.loadProducts(products, (error, products) => {
-      if (error) {
+      if ( error ) {
         alert(
           'Failed to load products. It\'s OK if you run the app in Simulator. ' +
           'Mock data will be used to display products list.'
         );
         const productsMock = {};
-        const prices = [0.99, 7.99, 5.60];
+        const prices = [ 0.99, 7.99, 5.60 ];
         products.forEach((value, index) => {
-          productsMock[value] = {
+          productsMock[ value ] = {
             identifier: value,
-            price: prices[index],
+            price: prices[ index ],
             currencySymbol: '$',
             currencyCode: 'USD',
-            priceString: '$' + prices[index],
+            priceString: '$' + prices[ index ],
             downloadable: false,
             description: 'Description for ' + value,
             title: 'Title for ' + value
@@ -61,13 +63,28 @@ class Subscription extends Component {
 
       const loadedProducts = {};
       products.forEach(value => {
-        loadedProducts[value.identifier] = value;
+        loadedProducts[ value.identifier ] = value;
       });
       this.setState({ loadedProducts });
     });
   }
 
-  render() {
+  _onHandlePurchase (productID) {
+    InAppUtils.purchaseProduct(productID, (error, response) => {
+      if ( error ) {
+        AlertIOS.alert('Error', 'Failed to purchase. Please contact Application Developer.');
+        return;
+      }
+      if ( response && response.productIdentifier ) {
+        alert('addCredit', JSON.stringify(response));
+      }
+    });
+  }
+
+  render () {
+
+    const { navigator } = this.props;
+
     return (
       <ScrollView>
         <View style={ styles.container }>
@@ -80,8 +97,8 @@ class Subscription extends Component {
             <TouchableOpacity
               {...ActiveOpacity}
               style={ styles.subscription }
-              onPress={() => this.handlePurchaseClick(PRODUCT_3_PREMIUM_TOPICS)}
-              >
+              onPress={() => this._onHandlePurchase(PRODUCT_3_PREMIUM_TOPICS)}
+            >
               <View style={ styles.subscriptionTitle }>
                 <Text style={ styles.subscriptionTitleText }>
                   3 premium topics
@@ -102,8 +119,8 @@ class Subscription extends Component {
             </TouchableOpacity>
             <TouchableOpacity {...ActiveOpacity}
               style={ styles.subscription }
-              onPress={() => this.handlePurchaseClick(PRODUCT_FULL_ACCESS_MONTHLY)}
-              >
+              onPress={() => this._onHandlePurchase(PRODUCT_FULL_ACCESS_MONTHLY)}
+            >
               <View style={ styles.subscriptionTitle }>
                 <Text style={ styles.subscriptionTitleText }>
                   Full access
@@ -123,8 +140,8 @@ class Subscription extends Component {
             <TouchableOpacity
               {...ActiveOpacity}
               style={styles.subscription}
-              onPress={() => this.handlePurchaseClick(PRODUCT_FULL_ACCESS_YEARLY)}
-              >
+              onPress={() => this._onHandlePurchase(PRODUCT_FULL_ACCESS_YEARLY)}
+            >
               <View style={ styles.subscriptionTitle }>
                 <Text style={ styles.subscriptionTitleText }>
                   Full access
@@ -159,25 +176,30 @@ class Subscription extends Component {
             </View>
           </View>
 
-          <TouchableOpacity { ...ActiveOpacity } style={ styles.denyControl }>
+          <TouchableOpacity
+            { ...ActiveOpacity }
+            style={ styles.denyControl }
+            onPress={() => navigator.pop()}>
             <Text style={ styles.denyControlText}>Sorry, not now</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
     )
   }
-
-  handlePurchaseClick(productID) {
-    InAppUtils.purchaseProduct(productID, (error, response) => {
-      if (error) {
-        AlertIOS.alert('Error', 'Failed to purchase. Please contact Application Developer.');
-        return;
-      }
-      if (response && response.productIdentifier) {
-        alert('addCredit', JSON.stringify(response));
-      }
-    });
-  }
 }
 
-export default Subscription
+export default Relay.createContainer(Subscription, {
+  fragments: {
+    viewer: () => Relay.QL`
+        fragment on User {
+            topics(first: 100, filter: DEFAULT) {
+                edges {
+                    node {
+                        name
+                    }
+                }
+            }
+        }
+    `
+  }
+});

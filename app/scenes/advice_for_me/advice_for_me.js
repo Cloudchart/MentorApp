@@ -1,25 +1,35 @@
 import React, {
-    Component,
-    StyleSheet,
-    Text,
-    ScrollView,
-    TouchableOpacity,
-    LayoutAnimation,
-    View,
-    ListView,
-    AlertIOS,
-    ActionSheetIOS,
-    Animated,
-    Easing,
-    Dimensions
+  Component,
+  StyleSheet,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  LayoutAnimation,
+  View,
+  ListView,
+  AlertIOS,
+  ActionSheetIOS,
+  Animated,
+  Easing,
+  Dimensions
 } from "react-native";
+import Relay from 'react-relay';
+import { connect } from "react-redux";
+import { _ } from "lodash";
 
-import { Button, Loader, ScrollListView, Card } from "../../components";
+import { Button, Loader, ScrollListView, Insight, TopicSubscribed } from "../../components";
 import { ADD_CARD_REF, CONTROLS_WIDTH, SHARE_CARD_REF, CONTROL_PIECE } from "./const";
-import { USER_MARK_ADVICE_NEGATIVE } from "../../module_dal/actions/actions";
+import {
+  SET_ADVICES,
+  COUNT_INSIGHTS_COLLECTIONS
+} from "../../actions/actions";
+
+import {
+  likeInsightInTopic,
+  dislikeInsightInTopic
+} from "../../actions/insight";
 
 import * as device from "../../utils/device";
-import { connect } from "react-redux";
 import Icon from "react-native-vector-icons/FontAwesome";
 import baseStyle from "../../styles/base";
 import clamp from "clamp";
@@ -35,24 +45,23 @@ const dimensions = Dimensions.get('window');
 
 class AdviceForMe extends Component {
 
+  state = {
+    controlShareIsShow: false,
+    comment_bad: false,
+    comment_good: false,
+    loader: true,
+    shareControl: new Animated.ValueXY({ x: 0, y: 0 }),
+    addControl: new Animated.ValueXY({ x: 0, y: 0 }),
+    top: dimensions.height / 4.5,
+    pan: new Animated.ValueXY(),
+    enter: new Animated.Value(0.9),
+    currentInsights: null
+  }
+
   constructor (props) {
     super(props)
 
-    this.state = {
-      controlShareIsShow: false,
-      comment_bad: false,
-      comment_good: false,
-      loader: true,
-      shareControl: new Animated.ValueXY({ x: 0, y: 0 }),
-      addControl: new Animated.ValueXY({ x: 0, y: 0 }),
-      top: dimensions.height / 4.5,
-      pan: new Animated.ValueXY(),
-      enter: new Animated.Value(0.9),
-      currentAdvice: {}
-    };
     this.controlsCardMeasureWidth = 0;
-
-
     this._onPressCard = this._onPressCard.bind(this);
     this._onDelete = this._onDelete.bind(this, {});
     this._onAddAdviceToTheCollection = this._onAddAdviceToTheCollection.bind(this)
@@ -77,14 +86,82 @@ class AdviceForMe extends Component {
   }
 
 
+  /**
+   * write in redux state amount
+   * added to the collection of insight
+   */
   componentWillMount () {
-    this._setCurrentAdvice()
+    const { dispatch, viewer } = this.props;
     const responder = _panResponder.bind(this)
     this._panResponder = responder();
+    const insights = this._getInsideInsights();
+
+    if ( insights && insights.length ) {
+      this._setCurrentAdvice(insights);
+      dispatch({ type: SET_ADVICES, insights })
+      dispatch({
+        type: COUNT_INSIGHTS_COLLECTIONS,
+        collections: viewer.collections
+      })
+    }
   }
 
   componentWillUnmount () {
 
+  }
+
+  /**
+   * Get insights from an array of topics
+   * @returns {*|Array}
+   * @private
+   */
+  _getInsideInsights () {
+    const { viewer } = this.props
+    const { subscribedTopics } = viewer;
+    const insightCollection = [];
+    const topics = _.map(subscribedTopics.edges, 'node'); // get topics
+
+    topics.forEach((topic) => {
+      topic.insights.edges.map((inst)=> {
+        const insight = inst.node;
+        insight.relationTopic = {
+          __dataID__: topic.__dataID__,
+          id: topic.id,
+          name: topic.name,
+          isPaid: topic.isPaid
+        }
+        insightCollection.push({ ...insight })
+      })
+    })
+    return insightCollection;
+  }
+
+  /**
+   *
+   * @param insight
+   * @param collections
+   * @param viewer
+   * @private
+   */
+  _createNewUserCollection () {
+    const { collections } = this.props.viewer;
+    const { currentInsights } = this.state;
+
+    let collectionData = {
+      id: (Math.random(100) * 1000).toString(16),
+      name: currentInsights.name
+    }
+
+    function findCollection (collections, name) {
+      return collections.find((collection)=> collection.name == name)
+    }
+
+    const isFindCollectionName = findCollection(collections, currentInsights.name);
+    if ( isFindCollectionName ) {
+
+    } else {
+      //createCollectionAndAddToCollection(insight, collectionData, viewer)
+    }
   }
 
   _navigatorPush (scene, title = "", data, conf) {
@@ -93,32 +170,29 @@ class AdviceForMe extends Component {
   }
 
   _goToNextAdvice () {
-    const { advices } = this.props;
-    let current = advices.list.indexOf(this.state.currentAdvice);
+    const { insights } = this.props;
+    let current = insights.list.indexOf(this.state.currentInsights);
     let newIdx = current + 1;
-    if ( newIdx > advices.list.length - 1 ) {
+    if ( newIdx > insights.list.length - 1 ) {
       this._navigatorPush('all_for_now', '')
       return;
     }
 
-    this.setState({
-      currentAdvice: advices.list[ newIdx ]
-    });
+    this.setState({ currentInsights: insights.list[ newIdx ] });
   }
 
   _animateEntrance () {
     Animated.spring(this.state.enter, {
-          toValue: 1,
-          duration: 500,
-          friction: 8
-        }
+        toValue: 1,
+        duration: 500,
+        friction: 8
+      }
     ).start();
   }
 
 
-  _setCurrentAdvice () {
-    const { advices } = this.props;
-    this.state.currentAdvice = advices.list[ 0 ];
+  _setCurrentAdvice (advices) {
+    this.state.currentInsights = advices[ 0 ];
   }
 
 
@@ -127,24 +201,24 @@ class AdviceForMe extends Component {
    * @param id
    * @private
    */
-  _openWebView (advice) {
-    if ( advice && advice.url ) {
-      this._navigatorPush('web_view', '', advice, { hideBar: true });
+  _openWebView (insights) {
+    if ( insights && insights.origin.url ) {
+      this._navigatorPush('web_view', '', insights, { hideBar: true });
     }
   }
 
 
   /**
    *
-   * Delete card
-   * show comment_bad screen if {currentAdvice.confirmation == true}
+   * dislikeInsightInTopic action
+   * show comment_bad screen if {currentInsights.confirmation == true}
    * @param params
    * @param evt
    * @private
    */
   _onDelete (params, evt) {
-    const { currentAdvice } = this.state;
-    if ( currentAdvice.confirmation ) {
+    const { currentInsights } = this.state;
+    if ( currentInsights.confirmation ) {
       this.setState({
         comment_bad: true
       })
@@ -154,22 +228,23 @@ class AdviceForMe extends Component {
   }
 
   _animationCardRightAndReset (params = {}) {
-    const { dispatch } = this.props;
+    const { currentInsights } = this.state;
     let setting = {
       velocity: { x: clamp(100 * -1, 3, 5) * -2, y: 0 },
       deceleration: 0.98,
       ...params
     }
 
+
     Animated.decay(this.state.pan, setting)
             .start(this._resetState.bind(this))
-
-    setTimeout(()=> {
-      dispatch({
-        type: USER_MARK_ADVICE_NEGATIVE,
-        id: this.state.currentAdvice.id
+    dislikeInsightInTopic(currentInsights)
+      .then((tran)=> {
+        console.log('success', tran);
       })
-    }, 0)
+      .catch((error)=> {
+        console.log(error);
+      })
   }
 
   /**
@@ -201,20 +276,20 @@ class AdviceForMe extends Component {
    */
   _onShowFullAdd () {
     Animated.spring(this.state.addControl, {
-          toValue: CONTROLS_WIDTH,
-          duration: 100,
-          friction: 8
-        }
+        toValue: CONTROLS_WIDTH,
+        duration: 100,
+        friction: 8
+      }
     ).start();
     this._isShowControlShare()
   }
 
   _onShowFullShare () {
     Animated.spring(this.state.shareControl, {
-          toValue: CONTROLS_WIDTH,
-          duration: 100,
-          friction: 8
-        }
+        toValue: CONTROLS_WIDTH,
+        duration: 100,
+        friction: 8
+      }
     ).start();
     this._isShowControlShare()
   }
@@ -244,25 +319,40 @@ class AdviceForMe extends Component {
   }
 
 
+  /**
+   * 
+   * @private
+   */
   _onAddAdviceToTheCollection () {
+    const { currentInsights } = this.state;
     let setting = {
       velocity: { x: clamp(7, 3, 5), y: 0 },
       deceleration: 0.98
     }
+
     Animated.decay(this.state.pan, setting)
             .start(this._resetState.bind(this))
+    likeInsightInTopic(currentInsights)
+      .then((tran)=> {
+        console.log('success', tran);
+      })
+      .catch((error)=> {
+        console.log(error);
+      })
+
+
   }
 
   /**
    * show comment_good screen or go to user_collections and reset card
    *
-   * @param param - ignore or not {currentAdvice.confirmation}
+   * @param param - ignore or not {currentInsights.confirmation}
    * @param evt
    * @private
    */
   _onAddToCollection (param, evt) {
-    const { currentAdvice } = this.state;
-    if ( currentAdvice.confirmation && param != 'ignore' ) {
+    const { currentInsights } = this.state;
+    if ( currentInsights.confirmation && param != 'ignore' ) {
       this.setState({
         comment_good: true
       })
@@ -271,31 +361,31 @@ class AdviceForMe extends Component {
         this._returnCardToStartingPosition()
         this._hideControlShare();
         this._goToNextAdvice();
-        this._navigatorPush('user_collections', '', this.state.currentAdvice)
+        this._navigatorPush('user_collections', '', this.state.currentInsights)
       }, 0)
     }
   }
 
   _onShare () {
-    const { currentAdvice } = this.state;
+    const { currentInsights } = this.state;
 
     ActionSheetIOS.showShareActionSheetWithOptions({
-          url: currentAdvice.url || '',
-          message: currentAdvice.text,
-          subject: 'a subject to go in the email heading'
-        },
-        (error) => {
-          //console.error(error);
-        },
-        (success, method) => {
-          var text;
-          if ( success ) {
-            text = `Shared via ${method}`;
-          } else {
-            text = 'You didn\'t share';
-          }
-          //this.setState({text});
-        });
+        url: currentInsights.origin.url || '',
+        message: currentInsights.content,
+        subject: 'a subject to go in the email heading'
+      },
+      (error) => {
+        //console.error(error);
+      },
+      (success, method) => {
+        var text;
+        if ( success ) {
+          text = `Shared via ${method}`;
+        } else {
+          text = 'You didn\'t share';
+        }
+        //this.setState({text});
+      });
   }
 
 
@@ -371,15 +461,15 @@ class AdviceForMe extends Component {
    */
   render () {
     const {
-        loader,
-        top, pan,
-        enter,
-        currentAdvice, showCardTopicName,
-        controlShareIsShow,
-        comment_good,
-        comment_bad,
-        shareControl,
-        addControl
+      loader,
+      top, pan,
+      enter,
+      currentInsights,
+      showCardTopicName,
+      comment_good,
+      comment_bad,
+      shareControl,
+      addControl
     } = this.state;
 
     const [translateX, translateY] = [ pan.x, pan.y ];
@@ -404,7 +494,6 @@ class AdviceForMe extends Component {
     const add = addControl.x.interpolate(interpolateControls);
     const addStyle = { transform: [ { translateX: add } ] }
 
-
     if ( loader ) {
       return <Loader />
     }
@@ -418,63 +507,63 @@ class AdviceForMe extends Component {
     }
 
     return (
-        <View style={ styles.container }>
-          {!showCardTopicName ? null :
-              <TitleAdvice topicName={currentAdvice.topic_name}/>}
+      <View style={ styles.container }>
+        {!showCardTopicName ? null :
+          <TitleAdvice topicName={currentInsights.relationTopic.name ||  '' }/>}
 
-          <Animated.View style={[styles.card, animatedCardStyles]}
-              {...this._panResponder.panHandlers}>
-            <Card
-                openWebView={this._openWebView.bind(this)}
-                {...currentAdvice}
-                styleText={styles.cardText}
-                onPressCard={this._onPressCard}/>
+        <Animated.View style={[styles.card, animatedCardStyles]}
+          {...this._panResponder.panHandlers}>
+          <Insight
+            openWebView={this._openWebView.bind(this)}
+            insight={currentInsights}
+            styleText={styles.cardText}
+            onPressCard={this._onPressCard}/>
+        </Animated.View>
+
+
+        {/* controls share */}
+
+        <View style={[styles.wrapperAddCardControl, {top}]}>
+          <Animated.View style={[{width : CONTROLS_WIDTH}, shareStyle]}>
+            <View ref={SHARE_CARD_REF} style={{flex: 1}}>
+              <ShareCard
+                currentInsights={currentInsights}
+                onShare={this._onShare.bind(this)}/>
+            </View>
           </Animated.View>
 
-
-          {/* controls share */}
-
-          <View style={[styles.wrapperAddCardControl, {top}]}>
-            <Animated.View style={[{width : CONTROLS_WIDTH}, shareStyle]}>
-              <View ref={SHARE_CARD_REF} style={{flex: 1}}>
-                <ShareCard
-                    currentAdvice={currentAdvice}
-                    onShare={this._onShare.bind(this)}/>
-              </View>
-            </Animated.View>
-
-            <Animated.View style={[{width : CONTROLS_WIDTH}, addStyle]}>
-              <View ref={ADD_CARD_REF} style={{flex: 1}}>
-                <AddCard
-                    currentAdvice={currentAdvice}
-                    onAddToCollection={this.addToCollectionNotIgnore}/>
-              </View>
-            </Animated.View>
-          </View>
-
-
-          {/* controls */}
-          {showCardTopicName ? null :
-              <View style={styles.controlWrapper }>
-                <Animated.View style={[styles.controlLeft, animatedNopeStyles]}>
-                  <TouchableOpacity
-                      activeOpacity={ 0.95 }
-                      style={[styles.controlInner, {paddingTop: 0, left : -1}]}
-                      onPress={this._onDelete}>
-                    <Icon name="times" style={[baseStyle.crumbIcon, styles.icons]}/>
-                  </TouchableOpacity>
-                </Animated.View>
-
-                <Animated.View style={[styles.controlRight, animatedYupStyles]}>
-                  <TouchableOpacity
-                      activeOpacity={ 0.95 }
-                      style={styles.controlInner}
-                      onPress={this._onAddAdviceToTheCollection}>
-                    <Icon name="plus" style={[baseStyle.crumbIcon, styles.icons]}/>
-                  </TouchableOpacity>
-                </Animated.View>
-              </View>}
+          <Animated.View style={[{width : CONTROLS_WIDTH}, addStyle]}>
+            <View ref={ADD_CARD_REF} style={{flex: 1}}>
+              <AddCard
+                currentInsights={currentInsights}
+                onAddToCollection={this.addToCollectionNotIgnore}/>
+            </View>
+          </Animated.View>
         </View>
+
+
+        {/* controls */}
+        {showCardTopicName ? null :
+          <View style={styles.controlWrapper }>
+            <Animated.View style={[styles.controlLeft, animatedNopeStyles]}>
+              <TouchableOpacity
+                activeOpacity={ 0.95 }
+                style={[styles.controlInner, {paddingTop: 0, left : -1}]}
+                onPress={this._onDelete}>
+                <Icon name="times" style={[baseStyle.crumbIcon, styles.icons]}/>
+              </TouchableOpacity>
+            </Animated.View>
+
+            <Animated.View style={[styles.controlRight, animatedYupStyles]}>
+              <TouchableOpacity
+                activeOpacity={ 0.95 }
+                style={styles.controlInner}
+                onPress={this._onAddAdviceToTheCollection}>
+                <Icon name="plus" style={[baseStyle.crumbIcon, styles.icons]}/>
+              </TouchableOpacity>
+            </Animated.View>
+          </View>}
+      </View>
     )
   }
 }
@@ -482,13 +571,92 @@ class AdviceForMe extends Component {
 
 const TitleAdvice = (props) => {
   return (
-      <View style={styles.titleAdvice}>
-        <Text style={styles.titleAdviceText}>{props.topicName}</Text>
-      </View>
+    <View style={styles.titleAdvice}>
+      <Text style={styles.titleAdviceText}>{props.topicName}</Text>
+    </View>
   )
 }
 
-export default connect(state => ({
+const ReduxComponent = connect(state => ({
   user: state.user,
-  advices: state.advices
+  insights: state.insights
 }))(AdviceForMe)
+
+
+var insightFragment = Relay.QL`
+    fragment on Insight {
+        id
+        content
+        origin {
+            author
+            url
+            title
+            duration
+        }
+    }
+`;
+
+var insightQuery = Relay.QL`
+    fragment on TopicInsightsConnection {
+        ratedCount
+        unratedCount
+        edges {
+            node {
+                ${insightFragment}
+            }
+        }
+    }
+`;
+
+export default Relay.createContainer(ReduxComponent, {
+  initialVariables: {
+    countInsights: 100,
+    filterInsights: 'UNRATED'
+  },
+  fragments: {
+    node : () => Relay.QL`
+        fragment on Topic {
+            id
+            name
+            isSubscribedByViewer
+            isPaid
+            insights (first: $countInsights, filter : $filterInsights) {
+                edges {
+                    node {
+                        ${insightFragment}
+                    }
+                }
+            }
+        }
+    `,
+    viewer: () => Relay.QL`
+        fragment on User {
+            subscribedTopics : topics(first: 3, filter: SUBSCRIBED) {
+                edges {
+                    node {
+                        id
+                        name
+                        isPaid
+                        insights(first: $countInsights, filter: $filterInsights ) {
+                            ${insightQuery}
+                        }
+                    }
+                }
+            }
+            collections(first: $countInsights) {
+                edges {
+                    node {
+                        insights(first : $countInsights) {
+                            edges {
+                                node {
+                                    id
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    `
+  }
+});

@@ -45,8 +45,28 @@ function onPanResponderGrant (e, gestureState) {
  * @param gestureState
  */
 function onPanResponderMove (raw, gestureState) {
+  const _overControlAdd = overControlAdd.bind(this)
+  const _overControlShare = overControlShare.bind(this)
+
+  this.refs[ ADD_CARD_REF ].measure((x, y, width, height, px, py) => {
+    _overControlAdd({ x, y, width, height, px, py }, gestureState)
+  });
+  this.refs[ SHARE_CARD_REF ].measure((x, y, width, height, px, py) => {
+    _overControlShare({ x, y, width, height, px, py }, gestureState)
+  });
+
   if ( this.state.showCardTopicName || this.state.controlShareIsShow ) return;
-  this.state.pan.setValue({ x: gestureState.dx, y: 0 });
+  this._showControlPiece()
+
+  /**
+   * if advices is negative then swipe right
+   * otherwise swipe left
+   */
+  if(!this.props.isBadAdviceList && negative(gestureState.dx)) {
+    this.state.pan.setValue({ x: gestureState.dx, y: 0 });
+  } else if(this.props.isBadAdviceList && !negative(gestureState.dx)){
+    this.state.pan.setValue({ x: gestureState.dx, y: 0 });
+  }
 }
 
 
@@ -120,17 +140,25 @@ function onPanResponderRelease (e, { vx, vy }) {
     return;
   }
 
-  /**
-   * return the card to the starting position
-   */
-  //if (Math.abs(this.state.pan.x._value) > SWIPE_THRESHOLD) {
-
-
-  if (Math.abs(this.state.pan.x._value) > SWIPE_THRESHOLD ) {
-    //this._onAddAdviceToTheCollection()
-
+  switch ( DO_AN_ACT ) {
+    case 'share':
+      this._onShare();
+      break;
+    case 'add':
+      this._onMarkGood();
+      break;
+    default:
+      DO_AN_ACT = '';
   }
-  this._returnCardToStartingPosition()
+
+  setTimeout(()=> {
+    DO_AN_ACT = '';
+    this._hideControlShare()
+    this._returnCardToStartingPosition()
+  }, 0)
+
+  this.props && this.props.onSwipeStart(true)
+  //this._returnCardToStartingPosition()
 }
 
 

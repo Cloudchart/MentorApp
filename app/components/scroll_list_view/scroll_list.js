@@ -1,12 +1,12 @@
 import React, {
-    Platform,
-    PanResponder,
-    Text,
-    View,
-    ListView,
-    ScrollView,
-    ActivityIndicatorIOS,
-    Component
+  Platform,
+  PanResponder,
+  Text,
+  View,
+  ListView,
+  ScrollView,
+  ActivityIndicatorIOS,
+  Component
 } from "react-native";
 import styles from "./style";
 
@@ -60,8 +60,7 @@ class ScrollListView extends Component {
    * @private
    */
   _onEndReached () {
-    let { onEndReached } = this.props;
-    onEndReached()
+    this.props.onEndReached && this.props.onEndReached()
   }
 
   /**
@@ -105,19 +104,21 @@ class ScrollListView extends Component {
    * @returns {XML}
    */
   renderScrollComponent () {
-    /*{...this._panResponder.panHandlers}*/
-    const { horizontal, showsHorizontalScrollIndicator } = this.props;
+    const { horizontal, showsHorizontalScrollIndicator, panHandlers, scrollEnabled } = this.props;
+    const panResponder = panHandlers ? this._panResponder.panHandlers : {};
     return (
-        <ScrollView
-            horizontal={ horizontal }
-            contentInset={{ top: 0, left: 0, bottom: 0, right: 0 }}
-            showsVerticalScrollIndicator={false}
-            refreshControl={null}
-            onScroll={this._onScrollHandler.bind(this)}
-            scrollEventThrottle={1}
-            automaticallyAdjustContentInsets={true}
-            showsHorizontalScrollIndicator={showsHorizontalScrollIndicator}
-            directionalLockEnabled={true}/>
+      <ScrollView
+        {...panResponder}
+        keyboardShouldPersistTaps={false}
+        scrollEnabled={scrollEnabled}
+        horizontal={ horizontal }
+        contentInset={{ top: 0, left: 0, bottom: 0, right: 0 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={null}
+        onScroll={this._onScrollHandler.bind(this)}
+        scrollEventThrottle={1}
+        automaticallyAdjustContentInsets={true}
+        showsHorizontalScrollIndicator={showsHorizontalScrollIndicator}/>
     )
   }
 
@@ -128,23 +129,26 @@ class ScrollListView extends Component {
    */
   render () {
     const {
-        renderRow,
-        dataSource,
-        pageSize,
-        onEndReachedThreshold,
-        showsVerticalScrollIndicator
+      renderRow,
+      dataSource,
+      pageSize,
+      onEndReachedThreshold,
+      showsVerticalScrollIndicator,
+      scrollEnabled
     } = this.props;
 
     return (
-        <ListView
-            dataSource={dataSource}
-            renderRow={renderRow}
-            renderScrollComponent={this.renderScrollComponent.bind(this)}
-            renderFooter={this.renderFooter.bind(this)}
-            pageSize={pageSize}
-            onEndReachedThreshold={onEndReachedThreshold}
-            showsVerticalScrollIndicator={showsVerticalScrollIndicator}
-        />
+      <ListView
+        keyboardShouldPersistTaps={false}
+        scrollEnabled={scrollEnabled}
+        dataSource={dataSource}
+        renderRow={renderRow}
+        renderScrollComponent={this.renderScrollComponent.bind(this)}
+        renderFooter={this.renderFooter.bind(this)}
+        pageSize={pageSize}
+        onEndReachedThreshold={onEndReachedThreshold}
+        showsVerticalScrollIndicator={showsVerticalScrollIndicator}
+      />
     );
   }
 

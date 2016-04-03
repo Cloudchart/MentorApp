@@ -8,7 +8,7 @@ import React, {
 import { connect } from "react-redux";
 import { Boris, Button } from "../../components";
 import styles from "./style";
-import { USER_SUBSCRIBE } from "../../module_dal/actions/actions";
+import { USER_SUBSCRIBE } from "../../actions/actions";
 
 const BorisNote = "That's all for now! Want more advice more often? Human up and subscribe!";
 
@@ -29,8 +29,11 @@ class AllForNow extends Component {
    *
    */
   subscribeNow () {
-    const { dispatch } = this.props;
-    dispatch({ type: USER_SUBSCRIBE })
+    const { navigator } = this.props;
+    navigator.replace({
+      scene: 'subscription',
+      title: 'Subscription'
+    })
   }
 
 
@@ -39,7 +42,6 @@ class AllForNow extends Component {
    * @returns {XML}
    */
   render () {
-    const { businessSubscription } = this.props.user;
     return (
         <View style={ styles.container }>
           <View style={ styles.borisContainer }>

@@ -5,12 +5,13 @@ import React, {
     TouchableOpacity,
     View
 } from "react-native";
+import Relay from 'react-relay';
 import { Boris, Button, TransparentButton, Loader } from "../../components";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { connect } from "react-redux";
 import { FBSDKGraphRequest, FBSDKAccessToken } from "react-native-fbsdkcore";
 import { FBSDKLoginManager } from "react-native-fbsdklogin";
-import { USER_SUBSCRIBE_NEWSLETTER, USER_FACEBOOK_LOGIN } from "../../module_dal/actions/actions";
+import { USER_SUBSCRIBE_NEWSLETTER, USER_FACEBOOK_LOGIN } from "../../actions/actions";
 import styles from "./style";
 import baseStyles from "../../styles/base";
 
@@ -139,7 +140,23 @@ const AllReadySubscribe = (props) => (
     </View>
 )
 
-export default connect(state => ({
+const ReduxComponent = connect(state => ({
   user: state.user
 }))(Profile)
+
+export default Relay.createContainer(ReduxComponent, {
+  fragments: {
+    viewer: () => Relay.QL`     
+      fragment on User {       
+        topics(first: 100, filter: DEFAULT) {
+          edges {
+            node {
+              name
+            }
+          }
+        }
+      }
+    `
+  }
+});
 

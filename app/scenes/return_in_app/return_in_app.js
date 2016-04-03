@@ -4,6 +4,7 @@ import React, {
     StyleSheet,
     View
 } from "react-native";
+import Relay from 'react-relay';
 import { Boris, Button } from "../../components";
 import styles from "./style";
 
@@ -68,4 +69,19 @@ class ReturnInApp extends Component {
   }
 }
 
-export default ReturnInApp
+export default Relay.createContainer(ReturnInApp, {
+  fragments: {
+    viewer: () => Relay.QL`     
+      fragment on User {       
+        topics(first: 100, filter: DEFAULT) {
+          edges {
+            node {
+              name
+            }
+          }
+        }
+      }
+    `
+  }
+});
+

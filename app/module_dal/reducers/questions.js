@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { USER_MARK_ADVICE, USER_MARK_ADVICE_NEGATIVE } from "../actions/actions";
+import { USER_MARK_ADVICE, USER_MARK_ADVICE_NEGATIVE } from "../../actions/actions";
 
 
 let list = _.shuffle([

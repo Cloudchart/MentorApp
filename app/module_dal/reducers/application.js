@@ -2,7 +2,7 @@ import {
     SAVE_UNIQUE_ID_AND_DATE,
     UPDATE_APP_START_TIME,
     APP_BACKGROUND_TIME
-} from "../actions/actions";
+} from "../../actions/actions";
 
 /**
  *

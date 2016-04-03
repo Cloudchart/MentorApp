@@ -16,12 +16,15 @@ import Trash from "./trash";
 import AngleLeft from "./back";
 import Search from "./search";
 import CounterAdvice from "./counter_advice";
-import { ACTION_ADD_USER_COLLECTION } from "../../module_dal/actions/actions";
+import { ACTION_ADD_USER_COLLECTION } from "../../actions/actions";
 
 const backRouterIcon = [
   'topic_detail',
   'user_collections',
   'subscription',
+  'select_topics',
+  'questionnaire',
+  'notifications',
   'profile',
   'user_topics',
   'explore_topic',
@@ -67,8 +70,6 @@ export const navBarRouteMapper = {
         return <CounterAdvice navigator={navigator}/>
       case 'all_for_now':
         return <CounterAdvice navigator={navigator}/>
-      case 'user_topics':
-        return <Search navigator={navigator}/>
       default:
         return <View />
     }
@@ -129,10 +130,12 @@ const NavLogo = (props) => {
 }
 
 const LaunchTitle = (props) => {
+  const title = props.title && props.title.length > 20 ?
+    `${props.title.substr(0, 20)}...`: props.title;
   return (
       <View style={styles.title}>
         <Text style={styles.title_blank}>&nbsp;</Text>
-        <Text style={styles.title_item}>{props.title || ''}</Text>
+        <Text style={styles.title_item} numberOfLines={ 1 }>{title || ''}</Text>
       </View>
   );
 }

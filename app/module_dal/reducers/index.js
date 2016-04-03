@@ -2,7 +2,7 @@ import { combineReducers } from "redux";
 import application from "./application";
 import user from "./user";
 import collections from "./collections";
-import advices from "./advices";
+import insights from "./insights";
 import topics from "./topics";
 import settings from "./settings";
 import questions from "./questions";
@@ -12,7 +12,7 @@ let reducers = combineReducers({
   application,
   settings,
   collections,
-  advices,
+  insights,
   topics,
   user
 });

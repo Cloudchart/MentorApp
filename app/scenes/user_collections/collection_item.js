@@ -1,20 +1,27 @@
 import React, {
-    Component,
-    LayoutAnimation,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    TouchableHighlight,
-    View,
-    ListView,
-    PanResponder,
-    ScrollView
+  Component,
+  LayoutAnimation,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableHighlight,
+  View,
+  ListView,
+  PanResponder,
+  ScrollView
 } from "react-native";
+import Relay from 'react-relay';
+
 import Swipeout from "react-native-swipeout";
 import Icon from "react-native-vector-icons/FontAwesome";
 import styles from "./style";
 import baseStyles from "../../styles/base";
 import * as device from "../../utils/device";
+
+import {
+  AddCollectionToUserMutation,
+  RemoveCollectionFromUserMutation
+} from "../../mutations";
 
 class UserCollectionItem extends Component {
 
@@ -43,18 +50,14 @@ class UserCollectionItem extends Component {
       component: <View style={styles.iconBasketView}>
         <Icon name="trash" style={[baseStyles.crumbIconAngle, styles.iconBasket]}/>
       </View>,
-      onPress: this.deleteNote
+      onPress: this.deleteNote,
     } ];
-
-
-    const { id, pressRow} = this.props;
-    this.pressRow = pressRow.bind(this, id)
   }
 
 
   deleteNote () {
     setTimeout(()=> {
-      this.props.deleteRow(this.props.id)
+      this.props.deleteRow(this.props.collection)
     }, 0)
   }
 
@@ -64,68 +67,80 @@ class UserCollectionItem extends Component {
   }
 
   _closeSwipeoutCallback () {
-    this.openedRight = false;
-    setTimeout(()=> {
-      this.pressRow(this.props.id)
-    }, 0)
+    if ( this.openedRight ) {
+      this.openedRight = false;
+    }
   }
 
   _adviceItem (props, i) {
+    const node = props.node;
     return (
-        <View style={styles.collectionItemMoreInner} key={i}>
-          <Text style={ styles.collectionItemMoreText } numberOfLines={ 1 }>
-            {props.text}
-          </Text>
-        </View>
+      <View style={styles.collectionItemMoreInner} key={i}>
+        <Text style={ styles.collectionItemMoreText } numberOfLines={ 1 }>
+          {node.content}
+        </Text>
+      </View>
     )
   }
 
   render () {
-    const { name, advices } = this.props;
-    const advicesList = advices.slice(0, 3)
-    let rowHeight = advices.length > 3 ? (3 * 30 + 30) : advices.length * 30 + 13;
-
+    const { collection, pressRow } = this.props;
+    const { insights } = collection;
+    const insightsList = insights.edges.slice(0, 3)
+    let rowHeight = insights.edges.length > 3 ? (3 * 30 + 30) : insights.edges.length * 30 + 13;
     rowHeight = device.size(rowHeight);
 
     return (
-        <TouchableOpacity
-            style={ styles.collectionItem }
-            activeOpacity={ 0.75 }
-            onPress={this.pressRow}>
+      <TouchableOpacity
+        style={ styles.collectionItem }
+        activeOpacity={ 0.75 }
+        onPress={pressRow}>
 
-          <Swipeout
-              right={this._swipeBtns}
-              autoClose='true'
-              autoCloseAfterPressButton='false'
-              openedRightCallback={this._openedRightCallback.bind(this)}
-              closeSwipeoutCallback={this._closeSwipeoutCallback.bind(this)}
-              backgroundColor='transparent'>
+        <Swipeout
+          right={this._swipeBtns}
+          autoClose='true'
+          autoCloseAfterPressButton='false'
+          openedRightCallback={this._openedRightCallback.bind(this)}
+          closeSwipeoutCallback={this._closeSwipeoutCallback.bind(this)}
+          backgroundColor='transparent'>
 
-            <View style={ styles.collectionItemInner }>
-              <Icon name="folder-open-o" style={[baseStyles.crumbIcon, {color : '#00af58'}]}/>
-              <Text style={ styles.collectionText } numberOfLines={ 1 }>
-                { name }
-              </Text>
-              <Text style={ styles.collectionCounterText }>
-                { !advices.length ? '∞' : advices.length }
-              </Text>
-            </View>
-          </Swipeout>
+          <View style={ styles.collectionItemInner }>
+            <Icon name="folder-open-o" style={[baseStyles.crumbIcon, {color : '#00af58'}]}/>
+            <Text style={ styles.collectionText } numberOfLines={ 1 }>
+              { collection.name }
+            </Text>
+            <Text style={ styles.collectionCounterText }>
+              { !insights.edges.length ? '∞' : insights.edges.length }
+            </Text>
+          </View>
+        </Swipeout>
 
+        {!insights.edges || !insights.edges.length ? null :
           <View style={[styles.collectionItemMore, {height : rowHeight}]}>
             <View style={{flex : 1}}>
-              {advicesList.map(this._adviceItem)}
+              {insightsList.map(this._adviceItem)}
             </View>
             <View style={{flex : 1}}>
-              {advices.length <= 3 ? null :
-                  <Text style={ styles.textMore }>and {advices.length - 3} more</Text>
+              {insights.edges.length <= 3 ? null :
+                <Text style={ styles.textMore }>and {insights.edges.length - 3} more</Text>
               }
             </View>
-          </View>
-        </TouchableOpacity>
+          </View>}
+      </TouchableOpacity>
 
     )
   }
 }
 
-export default UserCollectionItem;
+export default Relay.createContainer(UserCollectionItem, {
+  initialVariables: {
+    count: 100
+  },
+  fragments: {
+    user: () => Relay.QL`
+        fragment on User {
+            id
+        }
+    `
+  }
+});

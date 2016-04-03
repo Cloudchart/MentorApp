@@ -2,20 +2,25 @@
   "name": "Mentor",
   "version": "0.1.0",
   "private": true,
+  "graphql-endpoint": "https://www.virtualmentor.io/graphql",
   "scripts": {
-    "postinstall": "find node_modules -type f -name .babelrc | grep -v /react-native/ | xargs rm",
-    "startApp": "node_modules/react-native/packager/packager.sh --port 8081",
+    "reset": "watchman watch-del-all && rm -rf node_modules/ && npm cache clear && rm -rf $TMPDIR/react-* && npm i",
+    "clean:babel": "find node_modules -type f -name .babelrc | grep -v /react-native/ | xargs rm",
+    "build:schema": "node tools/build-graphql-schema.js",
+    "postinstall": "npm run clean:babel && npm run build:schema",
+    "startApp": "node_modules/react-native/packager/packager.sh --port 6000 --reset-cache",
     "start": "NODE_ENV=development TYPE_ENV=development npm run startApp",
-    "buildIOS": "react-native bundle --entry-file index.ios.js --bundle-output ios/main.jsbundle --minify=true --platform=ios --assets-dest ./ --dev=false"
+    "buildIOS": "react-native bundle --entry-file index.ios.js --bundle-output ios/main.jsbundle --minify=true --platform=ios --assets-dest=./ --dev=false"
   },
   "dependencies": {
-    "clamp": "^1.0.1",
+    "babel-relay-plugin": "^0.7.3",
     "events": "^1.1.0",
-    "graphql": "^0.4.14",
-    "lodash": "^4.2.0",
+    "graphql": "^0.4.18",
+    "graphql-relay": "^0.3.6",
+    "lodash": "4.6.1",
     "moment": "^2.11.1",
     "path": "^0.12.7",
-    "react-native": "0.20.0",
+    "react-native": "0.22.2",
     "react-native-clipboard": "0.0.5",
     "react-native-device-info": "^0.8.3",
     "react-native-fbsdkcore": "0.0.8",
@@ -26,16 +31,17 @@
     "react-native-swipeout": "git+https://bitbucket.org/DenisIzmaylov/react-native-swipeout2.git",
     "react-native-vector-icons": "1.2.0",
     "react-redux": "4.4.0",
+    "react-relay": "^0.7.3",
     "redux": "3.2.1",
     "redux-promise": "^0.5.1",
     "redux-thunk": "^1.0.3",
     "url": "^0.11.0"
   },
   "devDependencies": {
-    "redux-devtools": "^3.0.1",
-    "redux-devtools-dock-monitor": "^1.0.1",
-    "redux-devtools-log-monitor": "^1.0.2",
-    "redux-logger": "^2.4.0",
-    "source-map-support": "^0.4.0"
+    "babel-cli": "^6.6.5",
+    "babel-preset-react-native": "^1.5.3",
+    "react": "^0.14.7",
+    "source-map-support": "^0.4.0",
+    "sync-request": "^3.0.0"
   }
 }

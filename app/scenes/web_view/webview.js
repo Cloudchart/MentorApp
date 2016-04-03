@@ -6,6 +6,8 @@ import React, {
     ScrollView,
     WebView
 } from "react-native";
+import Relay from 'react-relay';
+
 import styles from "./style";
 import { Loader } from "../../components";
 import Share from "../../components/navbar/share";
@@ -86,5 +88,18 @@ class WebViewScreen extends Component {
   }
 }
 
-
-export default WebViewScreen;
+export default Relay.createContainer(WebViewScreen, {
+  fragments: {
+    viewer: () => Relay.QL`
+      fragment on User {       
+        topics(first: 100, filter: DEFAULT) {
+          edges {
+            node {
+              name
+            }
+          }
+        }
+      }
+    `
+  }
+});

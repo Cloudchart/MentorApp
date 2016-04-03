@@ -6,14 +6,12 @@ import * as device from "../../utils/device";
 export default StyleSheet.create({
   container: {
     ...root_view,
-    flexDirection : 'row',
+    flexDirection: 'row'
   },
 
   boris: {
-    flex : 1,
-    marginTop : device.size(-30),
-    alignSelf: 'center',
-    paddingBottom: device.size(60)
+    flex: 1,
+    alignSelf: 'flex-start'
   },
 
   continue: {

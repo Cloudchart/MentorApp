@@ -7,8 +7,10 @@ import React, {
     View,
     ListView
 } from "react-native";
-import { Button, ScrollListView, FBLoginButton } from "../../components";
+import Relay from 'react-relay';
 import { connect } from "react-redux";
+
+import { Button, ScrollListView, FBLoginButton } from "../../components";
 import styles from "./style";
 import { getGradient } from "../../utils/colors";
 
@@ -88,6 +90,22 @@ class ItemSettings extends Component {
   }
 }
 
-export default connect(state=> ( {
+const ReduxComponent = connect(state=> ( {
   settings: state.settings
 }))(Settings)
+
+export default Relay.createContainer(ReduxComponent, {
+  fragments: {
+    viewer: () => Relay.QL`
+      fragment on User {       
+        topics(first: 100, filter: DEFAULT) {
+          edges {
+            node {
+              name
+            }
+          }
+        }
+      }
+    `
+  }
+});

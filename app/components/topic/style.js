@@ -36,5 +36,19 @@ export default StyleSheet.create({
     alignSelf: 'center',
     color: '#58de87',
     fontSize: device.fontSize(28)
+  },
+  iconBasketView: {
+    flex: 1,
+    flexDirection: 'row',
+    alignSelf: 'center',
+    paddingTop: device.size(4)
+  },
+
+  iconBasket: {
+    color: '#fff',
+    flex: 1,
+    alignItems: 'center',
+    alignSelf: 'center',
+    fontSize: device.fontSize(20)
   }
 })

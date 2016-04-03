@@ -14,6 +14,7 @@ import WebViewScreen from "./web_view/webview";
 import Profile from "./profile/profile";
 import ExploreTopics from "./explore_topic/explore_topic";
 import ReturnInApp from "./return_in_app/return_in_app";
+import NetError from "./network-error/network-error";
 
 export {
     Profile,
@@ -31,5 +32,6 @@ export {
     UserTopicsDetail,
     AllForNow,
     WebViewScreen,
-    ReturnInApp
+    ReturnInApp,
+    NetError
 }

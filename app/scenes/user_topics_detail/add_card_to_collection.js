@@ -25,7 +25,7 @@ class AddCard extends Component {
           <TouchableOpacity
               activeOpacity={ 0.75 }
               style={styles.controlShare}
-              onPress={this.props.onAddToCollection}>
+              onPress={this.props.onMarkGood}>
             <Icon name="folder-open-o" style={[baseStyle.crumbIcon, {color : '#fff'}]}/>
             <Text style={ styles.controlShareText }>
               Add to collection

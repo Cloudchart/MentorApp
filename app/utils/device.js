@@ -2,9 +2,9 @@ import { Dimensions } from "react-native";
 
 function isTablet () {
   var dimensions = Dimensions.get('window'),
-      w = dimensions.width,
-      h = dimensions.height,
-      checkBy = w;
+    w = dimensions.width,
+    h = dimensions.height,
+    checkBy = w;
 
   if ( w > h ) {
     checkBy = h;
@@ -14,9 +14,9 @@ function isTablet () {
 
 function isIphone5 () {
   var dimensions = Dimensions.get('window'),
-      w = dimensions.width,
-      h = dimensions.height,
-      checkBy = w;
+    w = dimensions.width,
+    h = dimensions.height,
+    checkBy = w;
 
   if ( w > h ) {
     checkBy = h;
@@ -30,6 +30,10 @@ function size (value) {
     return value * 1.1
   }
 
+  if ( isIphone5() ) {
+    return value * 0.9
+  }
+
   return value;
 }
 
@@ -39,13 +43,17 @@ function fontSize (value) {
     return value * 1.15
   }
 
+  if ( isIphone5() ) {
+    return value * 0.8
+  }
+
   return value;
 }
 
 
 export {
-    isTablet,
-    isIphone5,
-    size,
-    fontSize
+  isTablet,
+  isIphone5,
+  size,
+  fontSize
 };

@@ -1,8 +1,8 @@
 import React, {
-    Component,
-    View,
-    Text,
-    DeviceEventEmitter
+  Component,
+  View,
+  Text,
+  DeviceEventEmitter
 } from "react-native";
 import { Button } from "../../components";
 import styles from "./style";
@@ -40,27 +40,32 @@ class FBLoginButton extends Component {
 
   handleLogin () {
     FBSDKLoginManager.logInWithReadPermissions(this.props.permissions, (error, result) => {
-      if ( !error && !result.isCancelled && result.grantedPermissions ) {
-        this.props.onLogin && this.props.onLogin();
-      }
-      if ( result.isCancelled ) {
-        this.props.onCancel && this.props.onCancel()
-      }
       if ( error ) {
         this.props.onError && this.props.onError()
+        return;
       }
+
+      if ( result ) {
+        if ( !error && !result.isCancelled && result.grantedPermissions ) {
+          this.props.onLogin && this.props.onLogin();
+        }
+        if ( result.isCancelled ) {
+          this.props.onCancel && this.props.onCancel()
+        }
+      }
+
     });
   }
 
   handleLogout () {
-    FBSDKLoginManager.logOut()
+    FBSDKLoginManager.logOut();
     this.props.onLogout && this.props.onLogout()
   }
 
   onPress () {
     this.state.user
-        ? this.handleLogout()
-        : this.handleLogin();
+      ? this.handleLogout()
+      : this.handleLogin();
 
     this.props.onPress && this.props.onPress();
   }
@@ -76,27 +81,27 @@ class FBLoginButton extends Component {
 
 
 const Login = (props) => (
-    <Button
-        label=""
-        onPress={props.onPress}
-        color="blue"
-        style={[styles.connectButtonStyle, props.style]}>
-      <Text style={styles.buttonText} numberOfLines={1}>
-        Connect with <Text style={{fontWeight : '700'}}>Facebook</Text>
-      </Text>
-    </Button>
+  <Button
+    label=""
+    onPress={props.onPress}
+    color="blue"
+    style={[styles.connectButtonStyle, props.style]}>
+    <Text style={styles.buttonText} numberOfLines={1}>
+      Connect with <Text style={{fontWeight : '700'}}>Facebook</Text>
+    </Text>
+  </Button>
 )
 
 const Logout = (props) => (
-    <Button
-        label=""
-        onPress={props.onPress}
-        color="blue"
-        style={[styles.connectButtonStyle, props.style]}>
-      <Text style={styles.buttonText} numberOfLines={1}>
-        <Text style={{fontWeight : '700'}}>Sign out</Text>
-      </Text>
-    </Button>
+  <Button
+    label=""
+    onPress={props.onPress}
+    color="blue"
+    style={[styles.connectButtonStyle, props.style]}>
+    <Text style={styles.buttonText} numberOfLines={1}>
+      <Text style={{fontWeight : '700'}}>Sign out</Text>
+    </Text>
+  </Button>
 )
 
 FBLoginButton.propTypes = {

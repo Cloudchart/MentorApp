@@ -1,44 +1,51 @@
 import _ from "lodash";
 import {
-    USER_MARK_ADVICE,
-    USER_MARK_ADVICE_NEGATIVE
-} from "../actions/actions";
+  TOPICS_SAVE,
+  SET_ROOT_TOPIC,
+  TOPIC_ADD,
+  TOPIC_DELETE,
+  USER_MARK_ADVICE,
+  USER_MARK_ADVICE_NEGATIVE
+} from "../../actions/actions";
 
-let listTopics = _.shuffle([
-  {
-    "id": 1,
-    "title": "Design",
-    "text": "We could use this in the Rebound example to update the scale"
-  }, {
-    "id": 2,
-    "title": "Development",
-    "text": "We could use this in the Rebound example to update the scale"
-  }, {
-    "id": 3,
-    "title": "Growth",
-    "text": "We could use this in the Rebound example to update the scale"
-  },
-  {
-    "id": 4,
-    "title": "Launch",
-    "text": "We could use this in the Rebound example to update the scale"
-  },
-  {
-    "id": 5,
-    "title": "Investment",
-    "text": "We could use this in the Rebound example to update the scale"
-  },
-  {
-    "id": 6,
-    "title": "Product",
-    "text": "We could use this in the Rebound example to update the scale"
-  },
-  {
-    "id": 7,
-    "title": "Team",
-    "text": "We could use this in the Rebound example to update the scale"
-  }
-])
+/**
+ *
+ * @param state
+ * @param id
+ * @returns {Array}
+ */
+function selectOrUnselectTopic (state, id) {
+  const newTopics = [ ...state.list ];
+  const selectedCount = state.selectedTopics.length;
+  newTopics.forEach((topic)=> {
+    if ( topic.node.id == id ) {
+      topic.selected = topic.selected ? false :
+        selectedCount < 3 ? true : false
+    }
+  })
+
+  return newTopics
+}
+
+/**
+ *
+ * @param topics
+ * @returns {Array}
+ */
+function findSelectedTopics (topics) {
+  const newTopics = [ ...topics ];
+  return newTopics.filter((topic) => topic.selected);
+}
+
+/**
+ *
+ * @param topics
+ * @returns {Array}
+ */
+function excludeSelectedTopics (topics) {
+  const newTopics = [ ...topics ];
+  return newTopics.filter((topic) => !topic.selected);
+}
 
 /**
  *
@@ -47,11 +54,38 @@ let listTopics = _.shuffle([
  * @returns {*}
  */
 const topics = (state = {
-  list: listTopics
+  list: [],
+  rootTopic : null,
+  selectedTopics: [],
+  excludeSelectedTopics: []
 }, action) => {
   switch ( action.type ) {
-    case USER_MARK_ADVICE:
-    case USER_MARK_ADVICE_NEGATIVE:
+    case TOPICS_SAVE:
+      return {
+        ...state,
+        list: _.shuffle(action.topics)
+      }
+    case SET_ROOT_TOPIC:
+      return {
+        ...state,
+        rootTopic: action.topic
+      }
+    case TOPIC_ADD:
+      const topicsSelect = selectOrUnselectTopic(state, action.id)
+      return {
+        ...state,
+        list: topicsSelect,
+        selectedTopics: findSelectedTopics(topicsSelect),
+        excludeSelectedTopics: excludeSelectedTopics(topicsSelect)
+      }
+    case TOPIC_DELETE:
+      const topicsUnselect = selectOrUnselectTopic(state, action.id)
+      return {
+        ...state,
+        list: topicsUnselect,
+        selectedTopics: findSelectedTopics(topicsUnselect),
+        excludeSelectedTopics: excludeSelectedTopics(topicsUnselect)
+      }
     default:
       return { ...state }
   }

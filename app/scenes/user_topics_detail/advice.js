@@ -1,24 +1,23 @@
 import React, {
-    Component,
-    StyleSheet,
-    Text,
-    ScrollView,
-    TouchableOpacity,
-    LayoutAnimation,
-    TouchableWithoutFeedback,
-    View,
-    ListView,
-    AlertIOS,
-    ActionSheetIOS,
-    Animated,
-    Easing,
-    Dimensions,
-    PanResponder
+  Component,
+  StyleSheet,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  LayoutAnimation,
+  TouchableWithoutFeedback,
+  View,
+  ListView,
+  AlertIOS,
+  ActionSheetIOS,
+  Animated,
+  Easing,
+  Dimensions,
+  PanResponder
 } from "react-native";
 
-import { Button, Loader, ScrollListView, Card } from "../../components";
+import { Button, Loader, ScrollListView, Insight } from "../../components";
 import { ADD_CARD_REF, CONTROLS_WIDTH, SHARE_CARD_REF, CONTROL_PIECE } from "./const";
-import { USER_MARK_ADVICE, USER_MARK_ADVICE_NEGATIVE } from "../../module_dal/actions/actions";
 
 import * as device from "../../utils/device";
 import { connect } from "react-redux";
@@ -47,9 +46,8 @@ class Advice extends Component {
     this.controlsCardMeasureWidth = 0;
 
     this._onPressCard = this._onPressCard.bind(this);
-    this._onPressIn = this._onPressIn.bind(this);
+    this._onMarkGood = this._onMarkGood.bind(this, 'not_ignore');
     this._onShare = this._onShare.bind(this);
-    this._addToCollectionNotIgnore = this._onAddToCollection.bind(this, 'not_ignore');
     this._openWebView = this._openWebView.bind(this);
   }
 
@@ -72,21 +70,19 @@ class Advice extends Component {
   }
 
   _goToNextAdvice () {
-    const { advices } = this.props;
-    let current = advices.list.indexOf(this.props.currentAdvice);
+    const { insights } = this.props;
+    let current = insights.list.indexOf(this.props.currentInsights);
     let newIdx = current + 1;
 
-    this.setState({
-      currentAdvice: advices.list[ newIdx ]
-    });
+    this.setState({ currentInsights: insights.list[ newIdx ] });
   }
 
   _animateEntrance () {
     Animated.spring(this.state.enter, {
-          toValue: 1,
-          duration: 500,
-          friction: 8
-        }
+        toValue: 1,
+        duration: 500,
+        friction: 8
+      }
     ).start();
   }
 
@@ -96,9 +92,9 @@ class Advice extends Component {
    * @param id
    * @private
    */
-  _openWebView (advice) {
-    if ( advice && advice.url ) {
-      this._navigatorPush('web_view', '', advice, { hideBar: true });
+  _openWebView (insight) {
+    if ( insight && insight.url ) {
+      this._navigatorPush('web_view', '', insight, { hideBar: true });
     }
   }
 
@@ -106,17 +102,26 @@ class Advice extends Component {
   /**
    *
    * Mark Bad card
-   * show comment_bad screen if {currentAdvice.confirmation == true}
+   * show comment_bad screen if {currentInsights.confirmation == true}
    * @param params
    * @param evt
    * @private
    */
   _onMarkBad (params, evt) {
-    const { currentAdvice, onMarkBad } = this.props;
+    const { currentInsights, onMarkBad } = this.props;
     this._animationCardRightAndReset(params)
 
     setTimeout(()=> {
-      onMarkBad(currentAdvice)
+      onMarkBad(currentInsights)
+    }, 0)
+  }
+
+  _onMarkGood (params, evt) {
+    const { currentInsights, onMarkGood } = this.props;
+    //this._animationCardRightAndReset(params)
+
+    setTimeout(()=> {
+      onMarkGood(currentInsights)
     }, 0)
   }
 
@@ -154,35 +159,9 @@ class Advice extends Component {
             .start(this._resetState.bind(this))
   }
 
-  /**
-   * show comment_good screen or go to user_collections and reset card
-   *
-   * dispatch action USER_MARK_ADVICE
-   * @param param - ignore or not {currentAdvice.confirmation}
-   * @param evt
-   * @private
-   */
-  _onAddToCollection (param, evt) {
-
-    const { currentAdvice } = this.props;
-
-    if ( currentAdvice.confirmation && param != 'ignore' ) {
-      /*this.setState({
-       comment_good: true
-       })*/
-    } else {
-
-
-      setTimeout(()=> {
-        this._hideControlShare();
-        //this._goToNextAdvice();
-      }, 0)
-    }
-  }
-
   _onShare () {
-    const { currentAdvice } = this.props;
-    this.props.onShare(currentAdvice)
+    const { currentInsights } = this.props;
+    this.props.onShare(currentInsights)
   }
 
 
@@ -191,16 +170,27 @@ class Advice extends Component {
   }
 
   /**
-   * A long press show controls or hide
-   * @param props
+   * show control piece
+   * and scrollEnabled = false
    * @private
    */
-  _onPressIn (props) {
-    if ( this.state.controlShareIsShow ) {
-      this._hideControlShare()
-    } else {
-      this._parallelShowControl()
-      this.props.onPressIn && this.props.onPressIn()
+  _showControlPiece () {
+    const { pan } = this.state;
+    if ( pan.__getValue().x > 50 ) {
+      this.props && this.props.onSwipeStart(false);
+
+      if ( !this.state.showPiece ) {
+        this.state.showPiece = true;
+        const param = {
+          toValue: CONTROL_PIECE,
+          duration: 200,
+          friction: device.size(9 * 1.2)
+        }
+        setTimeout(()=> {
+          Animated.spring(this.state.addControl, param).start()
+          Animated.spring(this.state.shareControl, param).start()
+        }, 0)
+      }
     }
   }
 
@@ -247,14 +237,14 @@ class Advice extends Component {
    */
   render () {
     const {
-        pan,
-        enter,
-        controlShareIsShow,
-        shareControl,
-        addControl
+      pan,
+      enter,
+      controlShareIsShow,
+      shareControl,
+      addControl
     } = this.state;
 
-    const { currentAdvice, allAdviceOpacityOn } = this.props;
+    const { currentInsights, allAdviceOpacityOn } = this.props;
 
     const [translateX, translateY] = [ pan.x, pan.y ];
 
@@ -277,37 +267,40 @@ class Advice extends Component {
     const blockOpacity = !controlShareIsShow && allAdviceOpacityOn ? 0.7 : 1
 
     return (
-        <View style={ {flex: 1, flexDirection: 'row'} }>
+      <View style={ {flex: 1, flexDirection: 'row'} }>
 
-          <Animated.View style={[styles.card, animatedCardStyles]} {...this._panResponder.panHandlers}>
-            <Card
-                {...currentAdvice}
-                openWebView={this._openWebView}
-                doNotToggle={controlShareIsShow}
-                styleText={styles.cardText}
-                onPressIn={this._onPressIn}
-                onPressCard={this._onPressCard}/>
+        <Animated.View style={[styles.card, animatedCardStyles]} {...this._panResponder.panHandlers}>
+          <Insight
+            insight={currentInsights}
+            openWebView={this._openWebView}
+            doNotToggle={controlShareIsShow}
+            styleText={styles.cardText}
+            onPressCard={this._onPressCard}/>
+        </Animated.View>
+
+        <View style={[styles.wrapperAddCardControl]}>
+          <Animated.View style={[{width : CONTROLS_WIDTH}, shareStyle]}>
+            <View ref={SHARE_CARD_REF} style={{flex: 1}}>
+              <ShareCard
+                currentInsights={currentInsights}
+                onShare={this._onShare}/>
+            </View>
           </Animated.View>
 
-          <View style={[styles.wrapperAddCardControl]}>
-            <Animated.View style={[{width : CONTROLS_WIDTH}, shareStyle]}>
-              <ShareCard
-                  currentAdvice={currentAdvice}
-                  onShare={this._onShare}/>
-            </Animated.View>
-
-            <Animated.View style={[{width : CONTROLS_WIDTH}, addStyle]}>
+          <Animated.View style={[{width : CONTROLS_WIDTH}, addStyle]}>
+            <View ref={ADD_CARD_REF} style={{flex: 1}}>
               <AddCard
-                  currentAdvice={currentAdvice}
-                  onAddToCollection={this._addToCollectionNotIgnore}/>
-            </Animated.View>
-          </View>
+                currentInsights={currentInsights}
+                onMarkGood={this._onMarkGood}/>
+            </View>
+          </Animated.View>
         </View>
+      </View>
     )
   }
 }
 
 export default connect(state => ({
   user: state.user,
-  advices: state.advices
+  insights: state.insights
 }))(Advice)

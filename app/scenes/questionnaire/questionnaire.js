@@ -7,6 +7,7 @@ import React, {
     ScrollView,
     TouchableOpacity
 } from "react-native";
+import Relay from 'react-relay';
 import { connect } from "react-redux";
 import { Boris, Answers, ScrollListView, Loader } from "../../components";
 import styles from "./style";
@@ -28,9 +29,9 @@ class Questionnaire extends Component {
   }
 
   componentDidMount () {
-    setTimeout(()=> {
+    /*setTimeout(()=> {
       this.setState({ loader: false })
-    }, 1000)
+    }, 1000)*/
   }
 
   _onSelect (key) {
@@ -50,9 +51,9 @@ class Questionnaire extends Component {
     const { loader, isLoadingTail } = this.state;
     const { questions } = this.props;
 
-    if ( loader ) {
+    /*if ( loader ) {
       return <Loader />
-    }
+    }*/
 
     return (
         <View style={styles.container}>
@@ -117,6 +118,23 @@ class Answer extends Component {
 }
 
 
-export default connect(state => ({
+const ReduxComponent = connect(state => ({
   questions: state.questions
 }))(Questionnaire)
+
+export default Relay.createContainer(ReduxComponent, {
+  fragments: {
+    viewer: () => Relay.QL`     
+      fragment on User {       
+        topics(first: 100, filter: DEFAULT) {
+          edges {
+            node {
+              name
+            }
+          }
+        }
+      }
+    `
+  }
+});
+

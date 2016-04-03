@@ -1,13 +1,13 @@
 import React, {
-    Animated,
-    Component,
-    Image,
-    StyleSheet,
-    Text,
-    View
+  Animated,
+  Component,
+  Image,
+  StyleSheet,
+  Text,
+  View
 } from "react-native";
 import { AnimateSequences } from "../../components";
-import { ANGRY_TOANGRY, NEUTRAL_TALK } from './sequences-big';
+import { ANGRY_TOANGRY, NEUTRAL_TALK, EXCITED_TALK } from './sequences-big';
 import { NEUTRAL_TALK_MINI, ANGRY_TOANGRY_MINI } from './sequences-mini';
 import * as device from "../../utils/device";
 import styles from "./style";
@@ -45,23 +45,23 @@ const handleImageStyle = {
 
 const Faces = {
   negative: {
-    big: require('../../images/boris/big-negative.png'),
-    small: require('../../images/boris/small-negative.png'),
+    big: require('image!big-negative'),
+    small: require('image!small-negative')
   },
   positive: {
-    big: require('../../images/boris/big-positive.png'),
-    small: require('../../images/boris/small-positive.png'),
-  },
+    big: require('image!big-positive'),
+    small: require('image!small-positive')
+  }
 }
 
 const Handles = {
   negative: {
-    big: require('../../images/boris/handle-negative-top.png'),
-    small: require('../../images/boris/handle-negative-side.png'),
+    big: require('image!handle-negative-top'),
+    small: require('image!handle-negative-side')
   },
   positive: {
-    big: require('../../images/boris/handle-positive-top.png'),
-    small: require('../../images/boris/handle-positive-side.png'),
+    big: require('image!handle-positive-top'),
+    small: require('image!handle-positive-side')
   }
 }
 
@@ -91,7 +91,7 @@ class Boris extends Component {
   }
 
   componentWillUnmount () {
-    
+
   }
 
 
@@ -113,6 +113,9 @@ class Boris extends Component {
       case 'NEUTRAL_TALK':
         return NEUTRAL_TALK;
         break;
+      case 'EXCITED_TALK':
+        return EXCITED_TALK;
+        break;
       default:
         return NEUTRAL_TALK;
     }
@@ -124,25 +127,27 @@ class Boris extends Component {
     const styleNote = [ styles.noteContainer, noteContainerStyle[ mood ], { opacity: this.state.noteOpacity } ]
 
     return (
-        <View style={ [styles.container, containerStyle[size], style] }>
-          <View style={ [styles.faceContainer, faceContainerStyle[size]] }>
+      <View style={ [styles.container, containerStyle[size], style] }>
+        <View style={ [styles.faceContainer, faceContainerStyle[size]] }>
+          {!moodSequences ?
+            <Image source={ Faces[mood][size] }/> :
             <AnimateSequences
-                style={AnimateImagesStyle[size]}
-                resizeMode='stretch'
-                animationRepeatCount={repeatCount || this.state.repeatCount}
-                animationDuration={32}
-                moodSequences={moodSequences}
-                animationImages={this.getMoodSequences(moodSequences)}/>
-          </View>
-          {!note ? null :
-              <Animated.View style={ styleNote }>
-                <Text style={ [styles.noteText, noteTextStyle[mood]] }>{note}</Text>
-                <Image
-                    source={ Handles[mood][size] }
-                    style={ [styles.handleImage, handleImageStyle[size]] }/>
-              </Animated.View>
-          }
+              style={AnimateImagesStyle[size]}
+              resizeMode='stretch'
+              animationRepeatCount={repeatCount || this.state.repeatCount}
+              animationDuration={32}
+              moodSequences={moodSequences}
+              animationImages={this.getMoodSequences(moodSequences)}/>}
         </View>
+        {!note ? null :
+          <Animated.View style={ styleNote }>
+            <Text style={ [styles.noteText, noteTextStyle[mood]] }>{note}</Text>
+            <Image
+              source={ Handles[mood][size] }
+              style={ [styles.handleImage, handleImageStyle[size]] }/>
+          </Animated.View>
+        }
+      </View>
     )
   }
 }

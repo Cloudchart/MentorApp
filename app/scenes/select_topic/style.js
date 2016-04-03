@@ -13,7 +13,7 @@ export default StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: device.size(5),
     paddingVertical: 18,
-    marginTop: device.size(42)
+    marginTop: device.size(12)
   },
   textBoris: {
     flex: 1,
@@ -70,6 +70,6 @@ export default StyleSheet.create({
 
   button: {
     flex: 1,
-    marginTop: device.size(72)
+    marginTop: device.size(42)
   }
 })

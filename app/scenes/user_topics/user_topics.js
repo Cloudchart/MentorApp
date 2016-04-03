@@ -8,11 +8,12 @@ import React, {
     ListView,
     AlertIOS
 } from "react-native";
+import Relay from 'react-relay';
 import { connect } from "react-redux";
-import { Boris, Button, Loader, ScrollListView } from "../../components";
-import UserTopic from "./topic";
+
+import { Boris, Button, Loader, TopicSubscribed, ScrollListView } from "../../components";
 import styles from "./style";
-import { USER_SUBSCRIBE, TOPIC_DELETE } from "../../module_dal/actions/actions";
+import { USER_SUBSCRIBE, TOPIC_DELETE } from "../../actions/actions";
 
 const BorisNoteForSubscription = "Don’t restrain yourself with 3 topics, meatb… Master. Subscribe and unlock the full power of your Virtual Mentor!";
 
@@ -26,20 +27,14 @@ class UserTopics extends Component {
     super(props)
 
     this.state = {
-      loader: true,
       isLoadingTail: false,
       addControlShow: false
     };
+
+    this._onEndReached = this._onEndReached.bind(this)
   }
 
-  componentDidMount () {
-    const { user, navigator } = this.props;
-    const { selectedTopics } = user;
-
-    setTimeout(()=> {
-      this.setState({ loader: false })
-    }, 1000)
-  }
+  componentDidMount () {}
 
   /**
    *
@@ -79,13 +74,16 @@ class UserTopics extends Component {
     }, 0)
   }
 
-  _topic (props, sectionID, rowID) {
-    return <UserTopic {...props} index={rowID} deleteRow={this._deleteTopic.bind(this)}/>
-  }
 
-  _deleteTopic (id, evt) {
-    const { dispatch } = this.props;
-    dispatch({ type: TOPIC_DELETE, id })
+  _renderTopic (rowData, sectionID, rowID) {
+    const { subscribedTopics } = this.props.viewer;
+    return (
+      <TopicSubscribed
+        topic={ rowData.node }
+        user={ this.props.viewer }
+        subscribedTopics={subscribedTopics}
+        index={ rowID } />
+    )
   }
 
   /**
@@ -93,28 +91,24 @@ class UserTopics extends Component {
    * @returns {XML}
    */
   render () {
-    const { user } = this.props;
-    const { selectedTopics, businessSubscription } = user;
-    const { loader, isLoadingTail } = this.state;
-
-    if ( loader ) {
-      return <Loader />
-    }
+    const { viewer } = this.props;
+    const { subscribedTopics } = viewer;
+    const { isLoadingTail } = this.state;
 
     return (
         <View style={ styles.container }>
           <ScrollView ref="_scrollView" showsVerticalScrollIndicator={false}>
-            {!selectedTopics.length ? null :
+            {!subscribedTopics.edges.length ? null :
                 <ScrollListView
-                    dataSource={dataSource.cloneWithRows(selectedTopics)}
-                    renderRow={(props, sectionID, rowID) => this._topic(props, sectionID, rowID)}
+                    dataSource={dataSource.cloneWithRows(subscribedTopics.edges)}
+                    renderRow={(rowData, sectionID, rowID) => this._renderTopic(rowData, sectionID, rowID)}
                     pageSize={14}
                     isLoadingTail={isLoadingTail}
-                    onEndReached={this._onEndReached.bind(this)}
+                    onEndReached={this._onEndReached}
                     onEndReachedThreshold={20}
                     showsVerticalScrollIndicator={false}/>}
 
-            {selectedTopics.length == 3 ? null :
+            {subscribedTopics.edges.length == 3 ? null :
                 <Add addTopic={this._addTopic.bind(this)}/> }
 
             <ButtonsBoris subscribeNow={this.subscribeNow.bind(this)}/>
@@ -152,6 +146,23 @@ const Add = (props) => (
 )
 
 
-export default connect(state => ({
+const ReduxComponent = connect(state => ({
   user: state.user
 }))(UserTopics)
+
+export default Relay.createContainer(ReduxComponent, {
+  fragments: {
+    viewer: () => Relay.QL`
+      fragment on User {                          
+        ${TopicSubscribed.getFragment('user')}                                               
+        subscribedTopics: topics(first: 3, filter: SUBSCRIBED) {
+          edges {
+            node {
+              ${TopicSubscribed.getFragment('topic')}
+            }
+          }
+        }
+      }
+    `
+  }
+});

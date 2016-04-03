@@ -1,56 +1,57 @@
 import React, {
-    AppRegistry,
-    Component,
-    PushNotificationIOS,
-    AlertIOS
+  AppRegistry,
+  Component,
+  AlertIOS,
+  View,
+  Text
 } from 'react-native';
+
+import Relay, { DefaultNetworkLayer } from 'react-relay';
+import { prepareRootRouter } from './app/routes';
+import { graphqlURL } from './app/relay-conf';
 import moment from "moment";
-import {Provider} from 'react-redux';
+import { Provider } from 'react-redux';
 import store from './app/store';
 import DeviceInfo from "react-native-device-info";
-import Router from './app/router';
-import { SAVE_UNIQUE_ID_AND_DATE, UPDATE_APP_START_TIME } from "./app/module_dal/actions/actions";
+import { SAVE_UNIQUE_ID_AND_DATE } from "./app/actions/actions";
+import { EventManager } from './app/event_manager';
 
+Relay.injectNetworkLayer(
+  new DefaultNetworkLayer(graphqlURL, {
+    headers: {
+      'X-Device-Id': 'startup-makers'
+    }
+  })
+);
 
 class Mentor extends Component {
 
-  constructor(props) {
+  constructor (props) {
     super(props)
-    this.state = {}
-
-    PushNotificationIOS.addEventListener('register', this._register.bind(this));
-    PushNotificationIOS.addEventListener('notification', this._notification.bind(this));
+    this.state = {
+      enable: null
+    }
 
     store.dispatch({
       type: SAVE_UNIQUE_ID_AND_DATE,
       id: DeviceInfo.getUniqueID(),
-      appStart : moment()
+      appStart: moment()
+    })
+
+    EventManager.on('enable:network', ()=> {
+      this.setState({
+        enable: true
+      })
     })
   }
 
-  _register(token) {
-    //console.log('You are registered and the device token is: ', token)
-  }
-
-  _notification(notification) {
-    AlertIOS.alert(
-        'Notification Received',
-        'Alert message: ' + notification.getMessage(),
-        [{
-          text: 'Dismiss',
-          onPress: null
-        }]
-    );
-  }
-
-  render() {
+  render () {
     return (
-        <Provider store={store}>
-          <Router {...this.props} store={store} />
-        </Provider>
+      <Provider store={store}>
+        {prepareRootRouter(store)}
+      </Provider>
     )
   }
 }
-
 
 AppRegistry.registerComponent('Mentor2', () => Mentor);

@@ -1,10 +1,11 @@
 import React, {
-    Animated,
-    Component,
-    StyleSheet,
-    View
+  Animated,
+  Component,
+  StyleSheet,
+  View
 } from "react-native";
 import { Boris, Button } from "../../components";
+import Relay from 'react-relay';
 import styles from "./style";
 
 
@@ -35,7 +36,7 @@ class Welcome extends Component {
 
   _navigatorReplace (evt) {
     const { navigator } = this.props;
-    let data = {scene : 'connect', title : 'Connect to start'};
+    let data = { scene: 'connect', title: 'Connect to start' };
 
     navigator.push({
       scene: data.scene,
@@ -60,24 +61,42 @@ class Welcome extends Component {
     const { buttonOpacity } = this.state;
     const styleButton = [ styles.continue, { opacity: buttonOpacity } ]
     return (
-        <View style={ styles.container }>
-          <Boris
-              mood="positive"
-              size="big"
-              note="Hello, meatb... master! I am Boris, and I will guide you from zero to one, as Master Thiel said."
-              style={ styles.boris }
-          />
+      <View style={ styles.container }>
+        <Boris
+          mood="positive"
+          size="big"
+          note="Hello, meatb... master! I am Boris, and I will guide you from zero to one, as Master Thiel said."
+          style={ styles.boris }
+        />
 
-          <Animated.View style={styleButton}>
-            <Button
-                label="Continue"
-                onPress={this._navigatorReplace}
-                color="blue"
-            />
-          </Animated.View>
-        </View>
+        <Animated.View style={styleButton}>
+          <Button
+            label="Continue"
+            onPress={this._navigatorReplace}
+            color="blue"
+          />
+        </Animated.View>
+      </View>
     )
   }
 }
 
-export default Welcome
+
+export default Relay.createContainer(Welcome, {
+  fragments: {
+    viewer: () => Relay.QL`     
+      fragment on User {
+        id
+        name
+        topics(first: 100, filter: DEFAULT) {
+          edges {
+            node {
+              name
+            }
+          }
+        }
+      }
+    `
+  }
+});
+

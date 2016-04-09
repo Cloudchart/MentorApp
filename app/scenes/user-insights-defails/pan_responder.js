@@ -149,6 +149,9 @@ function onPanResponderRelease (e, { vx, vy }) {
       break;
     default:
       DO_AN_ACT = '';
+      /*if (!negative(this.state.pan.x._value) && Math.abs(this.state.pan.x._value) > SWIPE_THRESHOLD_MINI) {
+        this._onMarkGood()
+      }*/
   }
 
   setTimeout(()=> {
@@ -156,9 +159,6 @@ function onPanResponderRelease (e, { vx, vy }) {
     this._hideControlShare()
     this._returnCardToStartingPosition()
   }, 0)
-
-  this.props && this.props.onSwipeStart(true)
-  //this._returnCardToStartingPosition()
 }
 
 

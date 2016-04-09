@@ -104,11 +104,19 @@ class ScrollListView extends Component {
    * @returns {XML}
    */
   renderScrollComponent () {
-    const { horizontal, showsHorizontalScrollIndicator, panHandlers, scrollEnabled } = this.props;
+    const {
+      style,
+      horizontal,
+      showsHorizontalScrollIndicator,
+      panHandlers,
+      scrollEnabled
+    } = this.props;
+
     const panResponder = panHandlers ? this._panResponder.panHandlers : {};
     return (
       <ScrollView
         {...panResponder}
+        style={style}
         keyboardShouldPersistTaps={false}
         scrollEnabled={scrollEnabled}
         horizontal={ horizontal }

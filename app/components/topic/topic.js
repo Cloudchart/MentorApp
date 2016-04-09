@@ -23,20 +23,11 @@ import {
   subscribeOnTopic
 } from '../../actions/topic';
 
-
-function findSubscribedTopic (topics, topicId) {
-  return topics.find((item) => item.node.__dataID__ == topicId);
-}
-
 class Topic extends Component {
 
   constructor (props) {
     super(props)
-    const isSubscribe = findSubscribedTopic(this.props.subscribedTopics.edges, this.props.topic.id);
-
-    this.state = {
-      subscribe: isSubscribe
-    };
+    this.state = {};
 
     this._subscribeOnTopic = this._subscribeOnTopic.bind(this);
     this._unsubscribeFromTopic = this._unsubscribeFromTopic.bind(this);
@@ -55,15 +46,12 @@ class Topic extends Component {
       return;
     }
 
-    if ( this.state.subscribe ) {
+    if ( topic.isSubscribedByViewer ) {
       this._unsubscribeFromTopic()
       return false;
     }
 
     subscribeOnTopic({ topic, user })
-      .then(()=> {
-        this.setState({ subscribe: true })
-      })
   }
 
   /**
@@ -73,9 +61,6 @@ class Topic extends Component {
   _unsubscribeFromTopic () {
     const { topic, user } = this.props;
     unsubscribeFromTopic({ topic, user })
-      .then(()=> {
-        this.setState({ subscribe: false })
-      })
   }
 
   render () {
@@ -91,7 +76,7 @@ class Topic extends Component {
             { topic.name }
           </Text>
 
-          {!this.state.subscribe ? null :
+          {!topic.isSubscribedByViewer ? null :
             <View style={styles.selected}>
               <Icon name="check" style={[baseStyles.crumbIconAngle, styles.selectedIcon]}/>
             </View>
@@ -122,6 +107,7 @@ export default Relay.createContainer(Topic, {
             ${UnsubscribeFromTopicMutation.getFragment('topic')}
             id
             name
+            isSubscribedByViewer
         }
     `
   }

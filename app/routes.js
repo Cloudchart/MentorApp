@@ -11,8 +11,8 @@ import {
   SelectTopic,
   ExploreTopics,
   NotificationsScreen,
-  UserTopicsDetail,
-  AllForNow,
+  UserInsightsUseful,
+  UserInsightsUseless,
   Profile,
   WebViewScreen,
   ReturnInApp,
@@ -21,6 +21,7 @@ import {
 
 import React from "react-native";
 import Relay, { RootContainer } from 'react-relay';
+import { Loader } from "./components";
 import Application from './app';
 
 /**
@@ -35,7 +36,14 @@ export function renderScreen (params) {
     case 'connect':
       return <Connect {...screenParams} />
     case 'advice_for_me':
-      return prepareComponentQueryNode(AdviceForMe, screenParams, screenParams.topicId, (data)=> {
+      return prepareComponentQueryNode(
+        AdviceForMe,
+        screenParams,
+        {
+          id: screenParams.topicId,
+          filter: 'UNRATED'
+        },
+        (data)=> {
           return <AdviceForMe {...screenParams} {...data} />
         }
       )
@@ -57,12 +65,31 @@ export function renderScreen (params) {
       return <UserTopics {...screenParams} />
     case 'explore_topic':
       return <ExploreTopics {...screenParams} />
-    case 'topic_detail':
-      return <UserTopicsDetail {...screenParams}  />
+    case 'insights_useful':
+      return prepareComponentQueryNode(UserInsightsUseful, screenParams, {
+          id: screenParams.collectionId,
+          filter: 'USEFUL'
+        },
+        (data, readyState)=> {
+          return <UserInsightsUseful
+            {...screenParams}
+            {...data}
+            readyState={readyState} />
+        }
+      )
+    case 'insights_useless':
+      return prepareComponentQueryNode(UserInsightsUseless, screenParams, {
+          id: screenParams.collectionId,
+          filter: 'USELESS'
+        },
+        (data, readyState)=> {
+          return <UserInsightsUseless
+            {...screenParams}
+            {...data}
+            readyState={readyState} />}
+      )
     case 'notifications':
       return <NotificationsScreen {...screenParams} />
-    case 'all_for_now':
-      return <AllForNow {...screenParams} />
     case 'profile':
       return <Profile {...screenParams}  />
     case 'web_view':
@@ -81,11 +108,12 @@ export function renderScreen (params) {
  * @param id
  * @returns {XML}
  */
-function prepareComponentQueryNode (component, params, id, callback) {
+function prepareComponentQueryNode (component, params, route, callback) {
   return (
     <RootContainer
       Component={component}
-      route={new QueryNodeId({nodeID : id})}
+      route={new QueryNodeId({nodeID : route.id, filter : route.filter })}
+      forceFetch={true}
       renderFetched={callback}/>
   )
 }
@@ -144,7 +172,10 @@ class QueryNodeId extends Relay.Route {
     `
   }
   static paramDefinitions = {
-    nodeID: { required: true }
+    nodeID: { required: true },
+    filter: { required: true }
   };
 }
+
+
 

@@ -4,30 +4,45 @@ Mentor2 App
 ## Content
 
 1. [Installation](#installation)
-2. [Build](#build)
-3. [How to Test In-app Purchases](#how-to-test-in-app-purchases)
+2. [Running On Device](#running-on-device)
+2. [Running On Simulator](#running-on-simulator)
+3. [How To Test In-app Purchases](#how-to-test-in-app-purchases)
 
 ## Installation
 
 1. Run in the project directory:
 
-  ```bash
-  npm i
-  npm install rnpm -g
-  rnpm link react-native-in-app-utils
-  cd ios
-  sudo gem install cocoapods
-  pod install
-  ```
-  
-2. Now you have to set up your in-app purchases in iTunes Connect. Follow [this tutorial](http://stackoverflow.com/questions/19556336/how-do-you-add-an-in-app-purchase-to-an-ios-application) for easy explanation.
-  
-## Build
+```bash
+sudo npm install -g react-native-cli
+sudo gem install cocoapods
+npm install rnpm -g
 
-1. Open XCode.
-2. Run in the simulator: `cmd + R` 
+npm i 
+cd ios 
+pod install
+```
+  
+2. Now you have to set up your in-app purchases in iTunes Connect. Follow [this tutorial](http://stackoverflow.com/questions/19556336/how-do-you-add-an-in-app-purchase-to-an-ios-application) to get easy explanation.
+  
+## Running On Device
+
+1. Run in the root directory `react-native bundle --entry-file index.ios.js --bundle-output ios/main.jsbundle --minify=true --platform=ios --assets-dest=./ --dev=false`
+2. See [Using offline bundle](https://facebook.github.io/react-native/docs/running-on-device-ios.html)
+3. Do not forget to switch the line -> `AppDelegate.m` :+1: 
+4. Open XCode
+5. `Do what is written paragraph 2`
+6. Open project `mentor2/ops/Mentor2.xcodeproj` 
+7. Start on your phone 
  
-## How to Test In-app Purchases
+## Running On Simulator
+
+1. Run in the root directory `react-native bundle --entry-file index.ios.js --bundle-output ios/main.jsbundle --minify=true --platform=ios --assets-dest=./ --dev=false`
+2. Run `npm start` 
+3. Open XCode.
+4. Open project `mentor2/ops/Mentor2.xcodeproj`
+5. Run in the simulator: `cmd + R`
+
+## How To Test In-app Purchases
 
 For testing your in-app purchases you should *run the app on an actual device*. Using the iOS Simulator will always fail.
 

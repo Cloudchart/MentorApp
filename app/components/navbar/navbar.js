@@ -1,10 +1,10 @@
 import React, {
-    Component,
-    Image,
-    LayoutAnimation,
-    Text,
-    TouchableOpacity,
-    View
+  Component,
+  Image,
+  LayoutAnimation,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
 import { EventManager } from "../../event_manager";
 import _ from "lodash";
@@ -19,7 +19,8 @@ import CounterAdvice from "./counter_advice";
 import { ACTION_ADD_USER_COLLECTION } from "../../actions/actions";
 
 const backRouterIcon = [
-  'topic_detail',
+  'insights_useless',
+  'insights_useful',
   'user_collections',
   'subscription',
   'select_topics',
@@ -40,7 +41,7 @@ export const navBarRouteMapper = {
   LeftButton: (route, navigator) => {
 
     if ( _.includes(backRouterIcon, route.scene) ) {
-      return <AngleLeft navigator={navigator}/>
+      return <AngleLeft navigator={navigator} />
     }
     if ( _.includes(settings, route.scene) ) {
       return <Settings navigator={navigator}/>
@@ -64,7 +65,9 @@ export const navBarRouteMapper = {
       case 'user_collections':
         if ( route.add == 'no' ) return <View />
         return <Add />
-      case 'topic_detail':
+      case 'insights_useless':
+        return <Trash navigator={navigator} route={route}/>
+      case 'insights_useful':
         return <Trash navigator={navigator} route={route}/>
       case 'advice_for_me':
         return <CounterAdvice navigator={navigator}/>
@@ -83,23 +86,23 @@ const Settings = (props) => {
   }
 
   return (
-      <TouchableOpacity
-          activeOpacity={ 0.75 }
-          style={styles.crumbIconPlaceholder}
-          onPress={push}>
-        <Icon name="cog" style={styles.crumbIconSettings}/>
-      </TouchableOpacity>
+    <TouchableOpacity
+      activeOpacity={ 0.75 }
+      style={styles.crumbIconPlaceholder}
+      onPress={push}>
+      <Icon name="cog" style={styles.crumbIconSettings}/>
+    </TouchableOpacity>
   )
 }
 
 const Add = (props) => {
   return (
-      <TouchableOpacity
-          activeOpacity={ 0.75 }
-          style={styles.crumbIconPlaceholder}
-          onPress={() => { EventManager.emit(ACTION_ADD_USER_COLLECTION) }}>
-        <IconMaterial name="add" style={styles.crumbIconPlus}/>
-      </TouchableOpacity>
+    <TouchableOpacity
+      activeOpacity={ 0.75 }
+      style={styles.crumbIconPlaceholder}
+      onPress={() => { EventManager.emit(ACTION_ADD_USER_COLLECTION) }}>
+      <IconMaterial name="add" style={styles.crumbIconPlus}/>
+    </TouchableOpacity>
   )
 }
 
@@ -110,32 +113,32 @@ const AngleLeftReplace = (props) => {
   }
 
   return (
-      <TouchableOpacity
-          activeOpacity={ 0.75 }
-          style={styles.crumbIconPlaceholder}
-          onPress={replace}>
-        <Icon name="angle-left" style={styles.crumbIconAngle}/>
-      </TouchableOpacity>
+    <TouchableOpacity
+      activeOpacity={ 0.75 }
+      style={styles.crumbIconPlaceholder}
+      onPress={replace}>
+      <Icon name="angle-left" style={styles.crumbIconAngle}/>
+    </TouchableOpacity>
   )
 }
 
 const NavLogo = (props) => {
   return (
-      <View style={styles.crumbIconPlaceholder}>
-        <Image
-            style={{width : device.size(30), height : device.size(30)}}
-            source={require('../../images/navbar_logo.png')}/>
-      </View>
+    <View style={styles.crumbIconPlaceholder}>
+      <Image
+        style={{width : device.size(30), height : device.size(30)}}
+        source={require('../../images/navbar_logo.png')}/>
+    </View>
   )
 }
 
 const LaunchTitle = (props) => {
   const title = props.title && props.title.length > 20 ?
-    `${props.title.substr(0, 20)}...`: props.title;
+    `${props.title.substr(0, 20)}...` : props.title;
   return (
-      <View style={styles.title}>
-        <Text style={styles.title_blank}>&nbsp;</Text>
-        <Text style={styles.title_item} numberOfLines={ 1 }>{title || ''}</Text>
-      </View>
+    <View style={styles.title}>
+      <Text style={styles.title_blank}>&nbsp;</Text>
+      <Text style={styles.title_item} numberOfLines={ 1 }>{title || ''}</Text>
+    </View>
   );
 }

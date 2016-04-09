@@ -39,8 +39,6 @@ class AddCard extends Component {
 class ShareCard extends Component {
   constructor(props){
     super(props)
-
-    this.onShare = this.props.onShare.bind(this);
   }
   render(){
     return (
@@ -48,7 +46,7 @@ class ShareCard extends Component {
           <TouchableOpacity
               activeOpacity={ 0.75 }
               style={[styles.controlShare]}
-              onPress={this.onShare}>
+              onPress={this.props.onShare}>
             <Icon name="share" style={[baseStyle.crumbIcon, {color : '#fff'}]}/>
             <Text style={ styles.controlShareText }>
               Share

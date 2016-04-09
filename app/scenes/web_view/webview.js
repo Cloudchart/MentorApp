@@ -56,15 +56,15 @@ class WebViewScreen extends Component {
   }
 
   render () {
-    const { advice } = this.props;
-
+    const { url } = this.props;
+    
     return (
         <View style={ styles.container }>
           <WebView
               style={ styles.webView }
               ref={WEBVIEW_REF}
               automaticallyAdjustContentInsets={false}
-              source={{uri: advice.url}}
+              source={{uri: url}}
               javaScriptEnabled={true}
               domStorageEnabled={true}
               decelerationRate="normal"
@@ -80,7 +80,7 @@ class WebViewScreen extends Component {
             <AngleLeft navigator={this.props.navigator}/>
 
             <View style={styles.rightButton}>
-              <Share url={advice.url}/>
+              <Share url={url}/>
             </View>
           </View>
         </View>

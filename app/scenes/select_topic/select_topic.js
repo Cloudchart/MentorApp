@@ -31,44 +31,23 @@ const dataSource = new ListView.DataSource({
   rowHasChanged: (row1, row2) => row1 !== row2
 })
 
-
-function filterTopic (topics, subscribedTopics) {
-  return topics.filter((topic)=> {
-    const is = subscribedTopics.find((item) => item.node.__dataID__ == topic.node.__dataID__)
-    return !is;
-  })
-}
-
 class SelectTopic extends Component {
 
   constructor (props) {
     super(props)
 
     this.state = {
-      loader: true,
       buttonOpacity: new Animated.Value(0),
       isLoadingTail: false,
       showConfirmation: false,
       topicConfirmationSave: null
     };
 
-    this._selected = false;
     this._tryToAddTopic = this._tryToAddTopic.bind(this);
     this._onEndReached = this._onEndReached.bind(this);
     this._undoConfirmation = this._undoConfirmation.bind(this);
     this._onEndReached = this._onEndReached.bind(this);
     this._pressContinue = this._pressContinue.bind(this);
-  }
-
-  componentDidMount () {
-    setTimeout(()=> {
-      this.setState({ loader: false })
-    }, 500)
-  }
-
-
-  componentWillUnmount () {
-    this.topicsList = this.getTopicList()
   }
 
 
@@ -78,10 +57,9 @@ class SelectTopic extends Component {
    */
   getTopicList () {
     const { viewer, filterUserAddedTopic } = this.props;
-    const { topics, subscribedTopics } = viewer;
-
+    const { topics } = viewer;
     if ( filterUserAddedTopic ) {
-      return filterTopic(topics.edges, subscribedTopics.edges);
+      return topics.edges.filter((topic) => !topic.node.isSubscribedByViewer)
     } else {
       return this.props.viewer.topics.edges;
     }
@@ -180,7 +158,7 @@ class SelectTopic extends Component {
         }
       })
     } catch ( error ) {
-      console.log(error);
+
     }
   }
 
@@ -234,8 +212,7 @@ class SelectTopic extends Component {
   }
 
   render () {
-    const { viewer } = this.props;
-    const { loader, isLoadingTail, showConfirmation } = this.state;
+    const { isLoadingTail, showConfirmation } = this.state;
 
     if ( showConfirmation ) {
       return <ExploreTopicAdd undo={this._undoConfirmation}/>
@@ -270,7 +247,8 @@ export default Relay.createContainer(connect()(SelectTopic), {
             topics(first: $count, filter: DEFAULT) {
                 edges {
                     node {
-                        ${Topic.getFragment('topic')}                                                      
+                        ${Topic.getFragment('topic')}
+                        isSubscribedByViewer
                     }
                 }
                 pageInfo {

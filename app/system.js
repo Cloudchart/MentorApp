@@ -16,9 +16,8 @@ import {
 
 /**
  * check notification permissions
- * @private
  */
-async function checkPermissions () {
+export async function checkPermissions () {
   try {
     let confirm = await AsyncStorage.getItem(STORAGE_KEY);
     let permission = await _checkPermissionsNotification();
@@ -42,9 +41,8 @@ async function checkPermissions () {
 /**
  *
  * @param notification
- * @private
  */
-function notificationMessages (notification) {
+export function notificationMessages (notification) {
   AlertIOS.alert(
     'Notification Received',
     'Alert message: ' + notification.getMessage(),
@@ -55,12 +53,11 @@ function notificationMessages (notification) {
   );
 }
 
-
 /**
  *
- * @private
+ * @param viewer
  */
-function recordNotifications (viewer) {
+export function recordNotifications (viewer) {
   let { notificationsSettings } = viewer;
 
   if ( !notificationsSettings ) notificationsSettings = {};
@@ -81,18 +78,18 @@ function recordNotifications (viewer) {
   );
 }
 
-function checkNET (showAlert) {
+export function checkNET (showAlert) {
   return new Promise((resolve, reject) => {
     NetInfo.fetch().done((reach) => {
       resolve(reach)
       if ( showAlert && reach == 'none' ) {
-        NETAlert()
+        //NETAlert()
       }
     });
   })
 }
 
-function NETAlert () {
+export function NETAlert () {
   AlertIOS.alert(
     'Notification Received',
     'Alert message: No network connection',
@@ -103,26 +100,16 @@ function NETAlert () {
   );
 }
 
+
 /**
  *
  * @returns {Promise}
- * @private
  */
-function checkPermissionsNotification () {
+export function checkPermissionsNotification () {
   return new Promise((resolve, reject) => {
     PushNotificationIOS.checkPermissions((permissions) => {
       const { badge, sound, alert } = permissions;
       resolve(( badge || sound || alert ) ? 'on' : 'off')
     })
   })
-}
-
-
-export {
-  checkPermissionsNotification,
-  checkPermissions,
-  checkNET,
-  NETAlert,
-  recordNotifications,
-  notificationMessages
 }

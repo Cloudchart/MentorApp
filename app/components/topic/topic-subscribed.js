@@ -23,8 +23,7 @@ class TopicSubscribed extends Component {
     super(props)
 
     this.state = {
-      visibility: 0,
-      isOpen: false
+      visibility: 0
     };
 
     this._unsubscribeFromTopic = this._unsubscribeFromTopic.bind(this);
@@ -43,13 +42,20 @@ class TopicSubscribed extends Component {
       component: <View style={styles.iconBasketView}>
         <Icon name="trash" style={[baseStyles.crumbIconAngle, styles.iconBasket]}/>
       </View>,
-      onPress: this._unsubscribeFromTopic
+      onPress: this._unsubscribeFromTopic,
+      isDelete : true
     } ];
 
     this.openedRight = false;
   }
 
+  componentWillUnmount () {
+    this.openedRight = null;
+    this._swipeBtns = null;
+  }
+
   _unsubscribeFromTopic () {
+    this.openedRight = false;
     unsubscribeFromTopic({ topic: this.props.topic, user: this.props.user })
   }
 

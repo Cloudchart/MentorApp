@@ -20,11 +20,15 @@ import { Button, Loader, ScrollListView, Insight } from "../../components";
 import { ADD_CARD_REF, CONTROLS_WIDTH, SHARE_CARD_REF, CONTROL_PIECE } from "./const";
 
 import * as device from "../../utils/device";
-import { connect } from "react-redux";
 import clamp from "clamp";
 
 import { ShareCard, AddCard } from "./add_card_to_collection";
 import { _panResponder } from "./pan_responder";
+
+import {
+  markInsightUsefulInCollection,
+  markInsightUselessInCollection
+} from "../../actions/collections";
 
 import styles from "./style";
 const dimensions = Dimensions.get('window');
@@ -41,14 +45,13 @@ class Advice extends Component {
       shareControl: new Animated.ValueXY({ x: 0, y: 0 }),
       addControl: new Animated.ValueXY({ x: 0, y: 0 }),
       pan: new Animated.ValueXY(),
-      enter: new Animated.Value(0.9)
+      enter: new Animated.Value(0.8)
     };
     this.controlsCardMeasureWidth = 0;
-
     this._onPressCard = this._onPressCard.bind(this);
-    this._onMarkGood = this._onMarkGood.bind(this, 'not_ignore');
+    this._onMarkGood = this._onMarkGood.bind(this);
+    this._onMarkBad = this._onMarkBad.bind(this);
     this._onShare = this._onShare.bind(this);
-    this._openWebView = this._openWebView.bind(this);
   }
 
   componentDidMount () {
@@ -60,22 +63,11 @@ class Advice extends Component {
     this._panResponder = responder();
   }
 
-  componentWillUnmount () {
-
-  }
-
   _navigatorPush (scene, title = "", data, conf) {
     const { navigator } = this.props;
     navigator.push({ scene, title: title, advice: data, sceneConfig: conf })
   }
 
-  _goToNextAdvice () {
-    const { insights } = this.props;
-    let current = insights.list.indexOf(this.props.currentInsights);
-    let newIdx = current + 1;
-
-    this.setState({ currentInsights: insights.list[ newIdx ] });
-  }
 
   _animateEntrance () {
     Animated.spring(this.state.enter, {
@@ -86,54 +78,71 @@ class Advice extends Component {
     ).start();
   }
 
-
-  /**
-   *
-   * @param id
-   * @private
-   */
-  _openWebView (insight) {
-    if ( insight && insight.url ) {
-      this._navigatorPush('web_view', '', insight, { hideBar: true });
-    }
-  }
-
-
   /**
    *
    * Mark Bad card
-   * show comment_bad screen if {currentInsights.confirmation == true}
+   * show comment_bad screen if {insight.confirmation == true}
    * @param params
    * @param evt
    * @private
    */
   _onMarkBad (params, evt) {
-    const { currentInsights, onMarkBad } = this.props;
-    this._animationCardRightAndReset(params)
-
-    setTimeout(()=> {
-      onMarkBad(currentInsights)
-    }, 0)
+    this._animationCardLeftAndReset(params)
   }
 
+  /**
+   *
+   * @param params
+   * @param evt
+   * @private
+   */
   _onMarkGood (params, evt) {
-    const { currentInsights, onMarkGood } = this.props;
-    //this._animationCardRightAndReset(params)
+    const { insight, collection, forceFetch } = this.props;
+    const saveInsight = { ...insight }
 
-    setTimeout(()=> {
-      onMarkGood(currentInsights)
-    }, 0)
+    let setting = {
+      velocity: { x: clamp(7, 3, 5), y: 0 },
+      deceleration: 0.98
+    }
+
+    Animated.decay(this.state.pan, setting)
+            .start(this._resetState.bind(this))
+
+    markInsightUsefulInCollection({ insight, collection })
+      .then((transaction)=> {
+        forceFetch && forceFetch()
+      })
+      .catch((error)=> {
+        forceFetch && forceFetch()
+      })
   }
 
-  _animationCardRightAndReset (params = {}) {
+  /**
+   *
+   * @param params
+   * @private
+   */
+  _animationCardLeftAndReset (params) {
+    const { collection, insight, forceFetch } = this.props;
+    const saveInsight = { ...insight }
+
     let setting = {
       velocity: { x: clamp(100 * -1, 3, 5) * -2, y: 0 },
       deceleration: 0.98,
       ...params
     }
 
+
     Animated.decay(this.state.pan, setting)
-            .start()
+            .start(this._resetState.bind(this))
+
+    markInsightUselessInCollection({ insight, collection })
+      .then((transaction)=> {
+        forceFetch && forceFetch()
+      })
+      .catch((error)=> {
+        forceFetch && forceFetch()
+      })
   }
 
 
@@ -148,22 +157,9 @@ class Advice extends Component {
     this._isHideControlShare()
   }
 
-
-  // TODO:
-  _onAddAdviceToTheCollection () {
-    let setting = {
-      velocity: { x: clamp(7, 3, 5), y: 0 },
-      deceleration: 0.98
-    }
-    Animated.decay(this.state.pan, setting)
-            .start(this._resetState.bind(this))
-  }
-
   _onShare () {
-    const { currentInsights } = this.props;
-    this.props.onShare(currentInsights)
+    this.props.onShare && this.props.onShare()
   }
-
 
   _onPressCard (dataCard) {
 
@@ -187,33 +183,15 @@ class Advice extends Component {
           friction: device.size(9 * 1.2)
         }
         setTimeout(()=> {
-          Animated.spring(this.state.addControl, param).start()
-          Animated.spring(this.state.shareControl, param).start()
+          Animated.spring(this.state.addControl, param).start();
+          Animated.spring(this.state.shareControl, param).start();
         }, 0)
       }
     }
   }
 
-
-  _parallelShowControl () {
-    const param = {
-      toValue: CONTROLS_WIDTH,
-      duration: 100,
-      friction: 8
-    }
-    setTimeout(()=> {
-      Animated.spring(this.state.addControl, param).start()
-      Animated.spring(this.state.shareControl, param).start()
-    }, 0)
-    this._isShowControlShare()
-  }
-
   _isHideControlShare () {
     this.setState({ controlShareIsShow: false })
-  }
-
-  _isShowControlShare () {
-    this.setState({ controlShareIsShow: true })
   }
 
   _returnCardToStartingPosition () {
@@ -221,13 +199,14 @@ class Advice extends Component {
       toValue: { x: 0, y: 0 },
       friction: 4
     }).start()
+    this.props && this.props.onSwipeStart(true);
   }
 
   _resetState () {
     this.state.pan.setValue({ x: 0, y: 0 });
     this.state.enter.setValue(0.9);
     this._hideControlShare();
-    this._goToNextAdvice();
+    //this._goToNextAdvice();
     this._animateEntrance();
   }
 
@@ -244,7 +223,7 @@ class Advice extends Component {
       addControl
     } = this.state;
 
-    const { currentInsights, allAdviceOpacityOn } = this.props;
+    const { insight, allAdviceOpacityOn } = this.props;
 
     const [translateX, translateY] = [ pan.x, pan.y ];
 
@@ -271,8 +250,8 @@ class Advice extends Component {
 
         <Animated.View style={[styles.card, animatedCardStyles]} {...this._panResponder.panHandlers}>
           <Insight
-            insight={currentInsights}
-            openWebView={this._openWebView}
+            insight={insight}
+            navigator={this.props.navigator}
             doNotToggle={controlShareIsShow}
             styleText={styles.cardText}
             onPressCard={this._onPressCard}/>
@@ -282,7 +261,7 @@ class Advice extends Component {
           <Animated.View style={[{width : CONTROLS_WIDTH}, shareStyle]}>
             <View ref={SHARE_CARD_REF} style={{flex: 1}}>
               <ShareCard
-                currentInsights={currentInsights}
+                currentInsights={insight}
                 onShare={this._onShare}/>
             </View>
           </Animated.View>
@@ -290,7 +269,7 @@ class Advice extends Component {
           <Animated.View style={[{width : CONTROLS_WIDTH}, addStyle]}>
             <View ref={ADD_CARD_REF} style={{flex: 1}}>
               <AddCard
-                currentInsights={currentInsights}
+                currentInsights={insight}
                 onMarkGood={this._onMarkGood}/>
             </View>
           </Animated.View>
@@ -300,7 +279,4 @@ class Advice extends Component {
   }
 }
 
-export default connect(state => ({
-  user: state.user,
-  insights: state.insights
-}))(Advice)
+export default Advice

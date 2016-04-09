@@ -3,9 +3,7 @@ import {
   TOPICS_SAVE,
   SET_ROOT_TOPIC,
   TOPIC_ADD,
-  TOPIC_DELETE,
-  USER_MARK_ADVICE,
-  USER_MARK_ADVICE_NEGATIVE
+  TOPIC_DELETE
 } from "../../actions/actions";
 
 /**

@@ -47,9 +47,14 @@ const crumbIconWrapper = {
 export default StyleSheet.create({
   scene: {
     flex: 1,
+    backgroundColor: '#000'
+  },
+  sceneStyle : {
+    flex: 1,
     backgroundColor: '#000',
     paddingTop: device.size(65)
   },
+
   root_view_wrapper: {
     flex: 1
   },
@@ -105,6 +110,10 @@ export default StyleSheet.create({
   crumbIconPlus: {
     ...crumbIcon,
     fontSize: device.fontSize(30)
+  },
+  crumbIconStar : {
+    ...crumbIcon,
+    fontSize: device.fontSize(40)
   },
   crumbIconBasket: {
     ...crumbIcon,

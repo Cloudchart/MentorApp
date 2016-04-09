@@ -86,8 +86,7 @@ class UserCollectionItem extends Component {
   render () {
     const { collection, pressRow } = this.props;
     const { insights } = collection;
-    const insightsList = insights.edges.slice(0, 3)
-    let rowHeight = insights.edges.length > 3 ? (3 * 30 + 30) : insights.edges.length * 30 + 13;
+    let rowHeight = insights.count > 3 ? (3 * 30 + 30) : insights.edges.length * 30 + 13;
     rowHeight = device.size(rowHeight);
 
     return (
@@ -110,7 +109,7 @@ class UserCollectionItem extends Component {
               { collection.name }
             </Text>
             <Text style={ styles.collectionCounterText }>
-              { !insights.edges.length ? '∞' : insights.edges.length }
+              { !insights.count ? '∞' : insights.count }
             </Text>
           </View>
         </Swipeout>
@@ -118,11 +117,11 @@ class UserCollectionItem extends Component {
         {!insights.edges || !insights.edges.length ? null :
           <View style={[styles.collectionItemMore, {height : rowHeight}]}>
             <View style={{flex : 1}}>
-              {insightsList.map(this._adviceItem)}
+              {insights.edges.map(this._adviceItem)}
             </View>
             <View style={{flex : 1}}>
-              {insights.edges.length <= 3 ? null :
-                <Text style={ styles.textMore }>and {insights.edges.length - 3} more</Text>
+              {insights.count <= 3 ? null :
+                <Text style={ styles.textMore }>and {insights.count - insights.edges.length} more</Text>
               }
             </View>
           </View>}

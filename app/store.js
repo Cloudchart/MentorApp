@@ -11,20 +11,6 @@ const middlewares = applyMiddleware(
 );
 let finalCreateStore;
 
-/*if (global.__DEV__) {
- const logger = require('redux-logger')({
- level: 'info',
- collapsed: true,
- colors: false,
- stateTransformer: (state) => state
- });
-
- finalCreateStore = compose(
- applyMiddleware(...middlewares, logger)
- )(createStore);
-
- }*/
-
 finalCreateStore = createStore(
     reducers,
     compose(

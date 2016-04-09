@@ -56,9 +56,6 @@ class Share extends Component {
 
           {!popoverShow ? null :
               <View style={[styles.popover, {width : device.size(dimensions.width - 20)}]}>
-                <TouchableOpacity activeOpacity={0.50} style={[styles.itemTextWrapper, {borderTopWidth : 0}]}>
-                  <Text style={styles.itemText}>Q</Text>
-                </TouchableOpacity>
                 <TouchableOpacity
                     activeOpacity={0.50}
                     style={ styles.itemTextWrapper }

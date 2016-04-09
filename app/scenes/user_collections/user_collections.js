@@ -10,7 +10,7 @@ import React, {
 } from "react-native";
 import { Loader, ScrollListView } from "../../components";
 import {
-  ADD_TO_COLLECTIONS,
+  UPDATE_COLLECTIONS,
   ACTION_ADD_USER_COLLECTION
 } from "../../actions/actions";
 import Relay from 'react-relay';
@@ -26,7 +26,6 @@ import {
 import {
   COUNT_INSIGHTS_PLUS,
   SET_COLLECTIONS,
-  SET_CURRENT_COLLECTION,
   COUNT_INSIGHTS_COLLECTIONS
 } from "../../actions/actions";
 
@@ -38,12 +37,6 @@ import UserCollectionItem from "./collection_item";
 import OnlyAdd from "./only_add";
 import styles from "./style";
 import baseStyles from "../../styles/base";
-import { _flex } from "../../styles/base";
-
-
-const dataSource = new ListView.DataSource({
-  rowHasChanged: (row1, row2) => row1 !== row2
-})
 
 class UserCollections extends Component {
 
@@ -59,7 +52,9 @@ class UserCollections extends Component {
 
     // subscribe to an event to create a new collection
     this._showControlAddNewItem = this._showControlAddNewItem.bind(this);
+    this._forceFetch = this._forceFetch.bind(this);
     EventManager.addListener(ACTION_ADD_USER_COLLECTION, this._showControlAddNewItem);
+    EventManager.addListener(UPDATE_COLLECTIONS, this._forceFetch)
 
     this.keyboardDidShowSubscription = DeviceEventEmitter.addListener('keyboardDidShow', this._keyboardDidShow.bind(this));
     this.keyboardWillHideSubscription = DeviceEventEmitter.addListener('keyboardWillHide', this._keyboardWillHide.bind(this));
@@ -72,6 +67,9 @@ class UserCollections extends Component {
     this._keyboardDidShow = this._keyboardDidShow.bind(this);
   }
 
+  componentWillReceiveProps (nextProps) {
+
+  }
 
   componentDidMount () {
     const { dispatch, viewer } = this.props;
@@ -97,6 +95,7 @@ class UserCollections extends Component {
 
   componentWillUnmount () {
     EventManager.removeListener(ACTION_ADD_USER_COLLECTION, this._showControlAddNewItem);
+    EventManager.removeListener(UPDATE_COLLECTIONS, this._forceFetch);
     this.keyboardDidShowSubscription.remove()
     this.keyboardWillHideSubscription.remove()
   }
@@ -161,7 +160,7 @@ class UserCollections extends Component {
 
     createCollection({ collection: collectionData, user: viewer })
       .then((transaction)=> {
-        this.props.relay.forceFetch();
+        this._forceFetch();
         this.setState({ collectionName: '' })
       })
   }
@@ -186,7 +185,7 @@ class UserCollections extends Component {
     const { dispatch, relay, navigator } = this.props;
     addToCollection({ insight: this.state.advice, collection })
       .then((transaction)=> {
-        relay.forceFetch();
+        this._forceFetch();
         dispatch({ type: COUNT_INSIGHTS_PLUS })
         navigator.pop()
       })
@@ -206,6 +205,9 @@ class UserCollections extends Component {
     }
   }
 
+  _forceFetch () {
+    this.props.relay.forceFetch();
+  }
 
   _onEndReached () {
     const { relay, viewer } = this.props;
@@ -223,22 +225,28 @@ class UserCollections extends Component {
   }
 
   /**
+   * if usefulCount == 0 then go to  showBadAdvice: true
    *
    * @param collection
    * @param evt
    * @private
    */
   _onPressRow (collection, evt) {
-    const { dispatch, navigator } = this.props;
-    dispatch({ type: SET_CURRENT_COLLECTION, id: collection.id })
-
-    setTimeout(()=> {
-      navigator.push({
-        scene: 'topic_detail',
-        title: collection.name,
-        collectionId: collection.id
-      })
-    }, 0)
+    const { navigator } = this.props;
+    const { insights } = collection;
+    let routeParams = {
+      scene: 'insights_useful',
+      title: collection.name,
+      collectionId: collection.id
+    };
+    if ( !insights.usefulCount && insights.uselessCount ) {
+      routeParams = {
+        ...routeParams,
+        scene: 'insights_useless',
+        showBadAdvice: true
+      }
+    }
+    navigator.push(routeParams)
   }
 
   _addNewItem () {
@@ -254,7 +262,6 @@ class UserCollections extends Component {
             placeholderTextColor="hsl(137, 100%, 83%)"
             autoFocus={ true }
             onChangeText={ this._handleCollectionNameChange }
-            onEndEditing={ this._handleCollectionNameEdit }
             onFocus={ this._keyboardDidShow }
             onBlur={ this._handleCollectionNameBlur }
           />
@@ -264,15 +271,15 @@ class UserCollections extends Component {
   }
 
   /**
-   *
    * @param props
    * @returns {XML}
    * @private
    */
-  _renderCollectionItem (rowData, sectionID, rowID) {
+  _renderCollectionItem (rowData, insightsLenght, rowID) {
     const collection = rowData.node;
+    const { viewer } = this.props;
 
-    const last = (parseInt(rowID) + 1) == this.props.viewer.collections.edges.length;
+    const last = (parseInt(rowID) + 1) == viewer.collections.edges.length;
     const { addControlShow, advice } = this.state;
     const isShow = addControlShow && last;
 
@@ -281,7 +288,7 @@ class UserCollections extends Component {
         <View key={rowID}>
           <OnlyAdd
             collection={collection}
-            user={this.props.viewer}
+            user={viewer}
             pressRow={this._addInsightToCollection.bind(this, collection)}/>
           {!isShow ? null : this._addNewItem()}
         </View>
@@ -291,7 +298,7 @@ class UserCollections extends Component {
         <View key={rowID}>
           <UserCollectionItem
             collection={collection}
-            user={this.props.viewer}
+            user={viewer}
             deleteRow={ this._deleteRow }
             pressRow={ this._onPressRow.bind(this, collection) }
           />
@@ -345,13 +352,16 @@ class UserCollections extends Component {
   }
 }
 
-const ReduxComponent = connect()(UserCollections)
 
+const ReduxComponent = connect()(UserCollections)
 var collectionFragment = Relay.QL`
     fragment on UserCollection {
         id
         name
-        insights(first : $count) {
+        insights(first : 3, filter : $filter) {
+            count
+            usefulCount
+            uselessCount
             edges {
                 node {
                     id
@@ -364,7 +374,8 @@ var collectionFragment = Relay.QL`
 
 export default Relay.createContainer(ReduxComponent, {
   initialVariables: {
-    count: 20
+    count: 20,
+    filter: 'ALL'
   },
   fragments: {
     viewer: () => Relay.QL`
@@ -376,7 +387,6 @@ export default Relay.createContainer(ReduxComponent, {
                     node {
                         ${collectionFragment}
                         ${AddInsightToCollectionMutation.getFragment('collection')}
-                        ${OnlyAdd.getFragment('collection')}
                     }
                 }
                 pageInfo {

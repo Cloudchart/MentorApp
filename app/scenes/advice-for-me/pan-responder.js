@@ -143,7 +143,7 @@ function onPanResponderRelease (e, { vx, vy }) {
     default:
       DO_AN_ACT = '';
       if (!negative(this.state.pan.x._value) && Math.abs(this.state.pan.x._value) > SWIPE_THRESHOLD_MINI) {
-        this._onAddAdviceToTheCollection()
+        this._onLikeInsight()
       }
   }
 

@@ -12,9 +12,9 @@ function _getInsightsFromUserCollections (collections) {
   const newColl = [ ...collections.edges ];
   const coll = _.map(newColl, 'node');
   const insights = _.map(coll, 'insights'); // get insights into topics
-  const insightsEdges = _.flatten(_.map(insights, 'edges')); // get and flatten insights edges
-  const insight = _.map(insightsEdges, 'node'); // done :)
-  return insight.length;
+  let count = 0;
+  insights.forEach((item)=>{ count += item.count })
+  return count;
 }
 
 /**
@@ -30,7 +30,9 @@ function findCollection(collections, id){
 
 const collections = (state = {
   list: [],
-  currentCollection : null,
+  currentCollection : {
+    insights : null
+  },
   count_insight: 0
 }, action) => {
   switch ( action.type ) {
@@ -42,7 +44,7 @@ const collections = (state = {
     case SET_CURRENT_COLLECTION:
       return {
         ...state,
-        currentCollection: findCollection(state.list, action.id)
+        currentCollection: action.collection
       }
     case COUNT_INSIGHTS_COLLECTIONS:
       return {

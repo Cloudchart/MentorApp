@@ -15,7 +15,7 @@ class OnlyAdd extends Component {
 
   render () {
     const { collection, pressRow } = this.props;
-    const insightsList = collection.insights.edges;
+    const { insights } = collection;
 
     return (
       <TouchableOpacity
@@ -29,7 +29,7 @@ class OnlyAdd extends Component {
             { collection.name }
           </Text>
           <Text style={ styles.collectionCounterText }>
-            { !insightsList.length ? '∞' : insightsList.length }
+            { !insights.count ? '∞' : insights.count }
           </Text>
         </View>
       </TouchableOpacity>
@@ -46,20 +46,6 @@ export default Relay.createContainer(OnlyAdd, {
     user: () => Relay.QL`
         fragment on User {
             id
-        }
-    `,
-
-    collection: () => Relay.QL`
-        fragment on UserCollection {
-            id
-            name
-            insights(first : $count) {
-                edges {
-                    node {
-                        id
-                    }
-                }
-            }
         }
     `
   }

@@ -1,5 +1,4 @@
 import _ from "lodash";
-import { USER_MARK_ADVICE, USER_MARK_ADVICE_NEGATIVE } from "../../actions/actions";
 
 
 let list = _.shuffle([
@@ -18,7 +17,6 @@ const questions = (state = {
   list: list
 }, action) => {
   switch ( action.type ) {
-    case USER_MARK_ADVICE_NEGATIVE:
     default:
       return { ...state }
   }

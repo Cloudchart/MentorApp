@@ -41,6 +41,49 @@ export const commentStyle = StyleSheet.create({
   }
 })
 
+export const allForNowStyle = StyleSheet.create({
+  container: {
+    ...root_view,
+    justifyContent: 'flex-end',
+    paddingBottom: device.size(20)
+  },
+
+  borisContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    marginBottom: device.size(30)
+  },
+  button: {
+    marginHorizontal: device.size(18)
+  },
+  buttonText: {
+    color: '#000',
+    alignSelf: 'center',
+    fontSize: device.fontSize(22),
+    fontWeight: '500'
+  }
+})
+
+export const topicFinished = StyleSheet.create({
+
+  container: {
+    ...root_view,
+    justifyContent: 'flex-end'
+  },
+
+  star: {
+    alignItems: 'center',
+    marginTop: device.size(30)
+  },
+
+  text: {
+    color : '#fff',
+    alignSelf: 'center',
+    paddingBottom: device.size(20),
+    fontSize: device.fontSize(32)
+  }
+})
+
 
 export default StyleSheet.create({
   container: {

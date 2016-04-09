@@ -1,4 +1,10 @@
-import React, { Component, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, {
+  Component,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
 import styles, { Colors } from "./style";
 
 class Button extends Component {

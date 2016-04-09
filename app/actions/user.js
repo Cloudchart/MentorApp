@@ -1,4 +1,5 @@
 import Relay from 'react-relay';
+import { getErrors } from '../utils/get-errors-actions';
 import {
   ActivateUserMutation,
   ResetUserMutation,
@@ -19,8 +20,7 @@ export function setUserPushToken (data) {
           resolve(transaction)
         },
         onFailure: (transaction) => {
-          let error = transaction.getError()
-          reject(error.source)
+          reject(getErrors(transaction))
         }
       }
     )
@@ -40,8 +40,7 @@ export function activateUser (data) {
           resolve(transaction)
         },
         onFailure: (transaction) => {
-          let error = transaction.getError()
-          reject(error.source)
+          reject(getErrors(transaction))
         }
       }
     )

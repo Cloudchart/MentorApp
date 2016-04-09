@@ -1,10 +1,10 @@
 import React, {
-    Component,
-    Image,
-    LayoutAnimation,
-    Text,
-    TouchableOpacity,
-    View
+  Component,
+  Image,
+  LayoutAnimation,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
 import { connect } from "react-redux";
 import Icon from "react-native-vector-icons/FontAwesome";
@@ -19,41 +19,44 @@ class Trash extends Component {
   }
 
   _showBadAdvice () {
-    const { navigator, route, collections } = this.props;
-    const {currentCollectionAdvicesBad} = collections;
-    const bad = currentCollectionAdvicesBad;
+    const { navigator, route, collection } = this.props;
 
-    if ( bad && bad.advicesBad && bad.advicesBad.length ) {
-      navigator.push({
-        scene: 'topic_detail',
+    if ( collection.insights.uselessCount ) {
+      let routeParams = {
+        scene: 'insights_useless',
         title: route.title,
+        collectionId: collection.id,
         showBadAdvice: true
-      })
+      }
+      if ( !route.showBadAdvice ) {
+        navigator.push({ ...routeParams });
+      }
     }
   }
 
   render () {
-    let count = 0
-    const {currentCollectionAdvicesBad} = this.props.collections;
-
-    if ( currentCollectionAdvicesBad && currentCollectionAdvicesBad.advicesBad ) {
-      count = currentCollectionAdvicesBad.advicesBad.length
+    const { insights } = this.props.collection;
+    const { route } = this.props;
+    let uselessCount = 0;
+    if ( insights ) {
+      uselessCount = insights.uselessCount;
     }
 
+
     return (
-        <TouchableOpacity
-            style={styles.crumbIconWrapper}
-            activeOpacity={ 0.75 }
-            onPress={this._showBadAdvice}>
-          <Icon name="trash" style={styles.crumbIconBasket}/>
-          <Text>&nbsp;</Text>
-          <Text style={styles.crumbIconBasketText}>{count}</Text>
-        </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.crumbIconWrapper, {opacity : route.showBadAdvice ? 0.5 : 1}]}
+        activeOpacity={ 0.75 }
+        onPress={this._showBadAdvice}>
+        <Icon name="trash" style={styles.crumbIconBasket}/>
+        <Text>&nbsp;</Text>
+        <Text style={styles.crumbIconBasketText}>{uselessCount}</Text>
+      </TouchableOpacity>
     )
   }
 }
 
 
 export default connect(state => ({
-  collections: state.collections
+  collection: state.collections.currentCollection
 }))(Trash)

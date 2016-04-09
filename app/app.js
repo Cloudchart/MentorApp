@@ -25,7 +25,8 @@ import {
   SelectTopic,
   ExploreTopics,
   NotificationsScreen,
-  UserTopicsDetail,
+  UserInsightsUseful,
+  UserInsightsUseless,
   AllForNow,
   Profile,
   WebViewScreen,
@@ -37,12 +38,16 @@ import Relay from 'react-relay';
 import styles from "./styles/base";
 import { CustomSceneConfig } from "./router-conf";
 import { renderScreen } from "./routes";
-import { navBarRouteMapper } from "./components";
+import { navBarRouteMapper, UserNotifications } from "./components";
 import moment from "moment";
-import store from './store';
-import { UPDATE_APP_START_TIME, APP_BACKGROUND_TIME } from "./actions/actions";
+import {
+  UPDATE_APP_START_TIME,
+  APP_BACKGROUND_TIME,
+  HIDE_NOTIFICATION
+} from "./actions/actions";
 import DeviceInfo from "react-native-device-info";
 import { FBSDKAccessToken } from "react-native-fbsdkcore";
+import { EventManager } from './event_manager';
 import {
   setUserPushToken,
   activateUser,
@@ -51,9 +56,7 @@ import {
 import {
   checkPermissions,
   NETAlert,
-  checkNET,
-  recordNotifications,
-  notificationMessages
+  checkNET
 } from './system';
 
 /**
@@ -68,6 +71,10 @@ class Application extends Component {
   constructor (props) {
     super(props)
     this.state = {
+      notifications : {
+        network : 'No Internet Connection'
+      },
+      networkNone: false,
       userIsAuthorize: '',
       returnInAppAfterOneMinute: false,
       currentAppState: ''
@@ -77,6 +84,9 @@ class Application extends Component {
     PushNotificationIOS.addEventListener('notification', this._notification.bind(this));
     AppState.addEventListener('change', this._appStateChange.bind(this))
     NetInfo.addEventListener('change', this._NetInfo.bind(this));
+    EventManager.on(HIDE_NOTIFICATION, ()=>{
+      this.setState({networkNone : false})
+    });
 
     /**
      * if user is authorized show him screen advice_for_me
@@ -89,7 +99,11 @@ class Application extends Component {
       }
     })
 
-    checkNET(true)
+    checkNET().then((reach)=> {
+      if ( reach == 'none' ) {
+        this.notifyNetworkError();
+      }
+    })
   }
 
   /**
@@ -102,11 +116,21 @@ class Application extends Component {
     try {
       this._diffTimeStartApp(currentAppState)
       if ( currentAppState == 'active' ) {
-        checkNET(true)
+        checkNET().then((reach)=> {
+          if ( reach == 'none' ) {
+            this.notifyNetworkError()
+          }
+        })
         checkPermissions();
       }
     } catch ( e ) {
     }
+  }
+
+  notifyNetworkError(){
+    this.setState({
+      networkNone: this.state.notifications.network
+    })
   }
 
   /**
@@ -116,7 +140,7 @@ class Application extends Component {
    */
   _NetInfo (reach) {
     if ( this.state.currentAppState != 'background' && reach == 'none' ) {
-      NETAlert()
+      this.notifyNetworkError()
     }
   }
 
@@ -153,41 +177,41 @@ class Application extends Component {
    * @param currentAppState
    * @private
    */
-  _diffTimeStartApp (currentAppState) {
-    const now = moment();
+  async _diffTimeStartApp (currentAppState) {
+    try {
 
-    setTimeout(()=> {
       switch ( currentAppState ) {
         case 'active':
-          store.dispatch({
-            type: UPDATE_APP_START_TIME,
-            appStart: now
-          })
+          const now = moment();
+          AsyncStorage.setItem(UPDATE_APP_START_TIME, now);
           break;
         case 'background':
-          store.dispatch({
-            type: APP_BACKGROUND_TIME,
-            background: moment()
-          })
+          const date = moment();
+          AsyncStorage.setItem(APP_BACKGROUND_TIME, date.toString());
           break;
         default:
       }
-    }, 0)
 
-    // add active
-    if ( currentAppState == 'active' ) {
-      const { application } = store.getState()
-      if ( !application.background.diff ) return;
-      const diffMinute = Math.abs(application.background.diff(now, 'minute'));
-      const diffHour = Math.abs(application.background.diff(now, 'hour'));
+      // add active
+      if ( currentAppState == 'active' ) {
+        const now = moment();
+        const background = await AsyncStorage.getItem(APP_BACKGROUND_TIME);
+        const backgroundDate = moment(new Date(background));
 
-      // after one minute
-      if ( diffMinute > 1 ) {
-        this.setState({
-          returnInAppAfterOneMinute: true,
-          currentAppState
-        })
+        if ( !backgroundDate.diff ) return;
+        const diffMinute = Math.abs(backgroundDate.diff(now, 'minute'));
+        const diffHour = Math.abs(backgroundDate.diff(now, 'hour'));
+
+
+        // after one minute
+        if ( diffMinute > 1 ) {
+          this.setState({
+            returnInAppAfterOneMinute: true,
+            currentAppState
+          })
+        }
       }
+    } catch ( e ) {
     }
   }
 
@@ -234,7 +258,7 @@ class Application extends Component {
 
   render () {
     const { isActive } = this.props.viewer;
-    const { userIsAuthorize } = this.state;
+    const { userIsAuthorize, networkNone } = this.state;
     let init_scene = (userIsAuthorize !== false) ? 'advice_for_me' : 'welcome';
     // || isActive
 
@@ -242,14 +266,21 @@ class Application extends Component {
       return <View />
     }
 
-    return <Navigator
-      ref={ (navigator) => this._navigator = navigator }
-      initialRoute={{ scene: init_scene, title : 'Virtual Mentor' }}
-      navigationBar={<NavigationBar routeMapper={this._navBarRouteMapper()} />}
-      renderScene={ this._renderScene.bind(this) }
-      configureScene={(route, routeStack)=>CustomSceneConfig}
-      sceneStyle={ styles.scene }
-    />
+    return (
+      <View style={styles.scene}>
+        <Navigator
+          ref={ (navigator) => this._navigator = navigator }
+          initialRoute={{ scene: init_scene, title : 'Virtual Mentor' }}
+          navigationBar={<NavigationBar routeMapper={this._navBarRouteMapper()} />}
+          renderScene={ this._renderScene.bind(this) }
+          configureScene={(route, routeStack)=>CustomSceneConfig}
+          sceneStyle={ styles.sceneStyle }
+        />
+
+        {!networkNone ? null :
+          <UserNotifications notification={networkNone} /> }
+      </View>
+    )
   }
 }
 
@@ -290,7 +321,8 @@ export default Relay.createContainer(Application, {
             ${SelectTopic.getFragment('viewer')}
             ${ExploreTopics.getFragment('viewer')}
             ${NotificationsScreen.getFragment('viewer')}
-            ${UserTopicsDetail.getFragment('viewer')}
+            ${UserInsightsUseful.getFragment('viewer')}
+            ${UserInsightsUseless.getFragment('viewer')}
             ${Profile.getFragment('viewer')}
             ${WebViewScreen.getFragment('viewer')}
             ${ReturnInApp.getFragment('viewer')}

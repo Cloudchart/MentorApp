@@ -7,9 +7,10 @@ import React, {
   View,
   PanResponder
 } from "react-native";
-import Relay from 'react-relay';
 import Icon from "react-native-vector-icons/FontAwesome";
+import Filters from "../../utils/filters";
 import { Presets } from "../../utils/animation";
+import Url from 'url';
 import styles from "./style";
 
 
@@ -22,6 +23,8 @@ class Insight extends Component {
       isOpen: false
     };
 
+    this._openWebView = this._openWebView.bind(this);
+
     this._panResponder = PanResponder.create({
       onStartShouldSetPanResponder: (evt, gestureState) => true,
       onStartShouldSetPanResponderCapture: (evt, gestureState) => true,
@@ -30,10 +33,7 @@ class Insight extends Component {
       onPanResponderGrant: (evt, gestureState) => {
         // The guesture has started. Show visual feedback so the user knows
         // what is happening!
-        const { openWebView } = this.props;
-        if ( openWebView ) {
-          openWebView(this.props)
-        }
+        this._openWebView()
       },
       onPanResponderMove: (evt, gestureState) => {
         // The most recent move distance is gestureState.move{X,Y}
@@ -89,6 +89,19 @@ class Insight extends Component {
     })
   }
 
+
+  _openWebView () {
+    const { navigator, insight } = this.props;
+    if ( insight && insight.origin && insight.origin.url ) {
+      navigator.push({
+        scene: 'web_view',
+        title: '',
+        url: insight.origin.url,
+        sceneConfig: { hideBar: true }
+      })
+    }
+  }
+
   /**
    *
    * @returns {{height: number}}
@@ -132,6 +145,15 @@ class Insight extends Component {
 }
 
 const Origin = (props) => {
+  let url = props.origin && props.origin.url ? props.origin.url : '';
+  let parseUrl = '';
+  if ( isUrl(url) ) {
+    parseUrl = Url.parse(url).host;
+    parseUrl = parseUrl.indexOf('www') == 0 ?
+      parseUrl.substr(4, url.length - 1) :
+      parseUrl;
+  }
+
   return (
     <View style={[styles.itemMore, props.styleOrigin]}
       {...props._panResponder.panHandlers}>
@@ -141,7 +163,7 @@ const Origin = (props) => {
             {props.origin.author}
           </Text>
           <Text style={ styles.itemMoreText }>
-            {props.origin.url}
+            {parseUrl}
           </Text>
           <Text style={ styles.itemMoreTextTime }>
             <Icon name="clock-o" style={styles.crumbIcon}/>
@@ -151,6 +173,10 @@ const Origin = (props) => {
         </View> }
     </View>
   )
+}
+
+function isUrl (url) {
+  return Filters.reWeburl.test(url)
 }
 
 export default Insight;

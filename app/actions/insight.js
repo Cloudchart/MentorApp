@@ -1,4 +1,5 @@
 import Relay from 'react-relay';
+import { getErrors } from '../utils/get-errors-actions';
 import {
   LikeInsightInTopicMutation,
   DislikeInsightInTopicMutation
@@ -9,17 +10,19 @@ import {
  * @param insight
  * @returns {Promise}
  */
-export function likeInsightInTopic (insight) {
+export function likeInsightInTopic (insight, shouldAddToUserCollectionWithTopicName) {
   return new Promise((resolve, reject)=> {
     Relay.Store.commitUpdate(
-      new LikeInsightInTopicMutation({ insight, topic: insight.relationTopic }), {
+      new LikeInsightInTopicMutation({
+        insight,
+        topic: insight.relationTopic,
+        shouldAddToUserCollectionWithTopicName
+      }), {
         onSuccess: (transaction) => {
-          console.log('LikeInsightInTopicMutation', transaction);
           resolve(transaction)
         },
         onFailure: (transaction) => {
-          let error = transaction.getError()
-          reject(error.source)
+          reject(getErrors(transaction))
         }
       }
     );
@@ -36,12 +39,10 @@ export function dislikeInsightInTopic (insight) {
     Relay.Store.commitUpdate(
       new DislikeInsightInTopicMutation({ insight, topic: insight.relationTopic }), {
         onSuccess: (transaction) => {
-          console.log('DislikeInsightInTopicMutation', transaction);
           resolve(transaction)
         },
         onFailure: (transaction) => {
-          let error = transaction.getError()
-          reject(error.source)
+          reject(getErrors(transaction))
         }
       }
     );

@@ -7,10 +7,11 @@ class LikeInsightInTopicMutation extends Relay.Mutation {
   }
 
   getVariables () {
+    const {insight, topic, shouldAddToUserCollectionWithTopicName} = this.props;
     return {
-      insightID: this.props.insight.id,
-      topicID : this.props.topic.id,
-      shouldAddToUserCollectionWithTopicName : this.props.shouldAddToUserCollection
+      insightID: insight.id,
+      topicID: topic.id,
+      shouldAddToUserCollectionWithTopicName : shouldAddToUserCollectionWithTopicName
     }
   }
 
@@ -25,18 +26,19 @@ class LikeInsightInTopicMutation extends Relay.Mutation {
     `
   }
 
-  getConfigs() {
+  getConfigs () {
+    const {insight, topic } = this.props;
     return [
       {
         type: 'FIELDS_CHANGE',
         fieldIDs: {
-          insight: this.props.insight.id,
-          topic: this.props.insight.topic
+          insight: insight.id,
+          topic: topic.id
         }
       }, {
         type: 'RANGE_ADD',
         parentName: 'topic',
-        parentID: this.props.topic.id,
+        parentID: topic.id,
         connectionName: 'topics',
         edgeName: 'insightEdge',
         rangeBehaviors: {

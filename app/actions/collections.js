@@ -1,15 +1,16 @@
 import Relay from 'react-relay';
+import { getErrors } from '../utils/get-errors-actions';
 import {
   AddCollectionToUserMutation,
   AddInsightToCollectionMutation,
-  RemoveCollectionFromUserMutation
+  RemoveCollectionFromUserMutation,
+  MarkInsightUselessInCollectionMutation,
+  MarkInsightUsefulInCollectionMutation
 } from "../mutations";
 
 /**
  *
- * @param insight
- * @param collectionData
- * @param viewer
+ * @param data
  * @returns {Promise}
  */
 export function createCollection (data) {
@@ -20,8 +21,7 @@ export function createCollection (data) {
           resolve(transaction)
         },
         onFailure: (transaction) => {
-          let error = transaction.getError();
-          reject(error.source)
+          reject(getErrors(transaction))
         }
       }
     );
@@ -42,8 +42,7 @@ export function removeCollection (data) {
           resolve(transaction)
         },
         onFailure: (transaction) => {
-          let error = transaction.getError()
-          reject(error.source)
+          reject(getErrors(transaction))
         }
       }
     );
@@ -64,8 +63,47 @@ export function addToCollection (data) {
           resolve(transaction)
         },
         onFailure: (transaction) => {
-          let error = transaction.getError()
-          reject(error)
+          reject(getErrors(transaction))
+        }
+      }
+    );
+  })
+}
+
+/**
+ *
+ * @param data
+ * @returns {Promise}
+ */
+export function markInsightUsefulInCollection (data) {
+  return new Promise((resolve, reject)=> {
+    Relay.Store.commitUpdate(
+      new MarkInsightUsefulInCollectionMutation(data), {
+        onSuccess: (transaction) => {
+          resolve(transaction)
+        },
+        onFailure: (transaction) => {
+          reject(getErrors(transaction))
+        }
+      }
+    );
+  })
+}
+
+/**
+ *
+ * @param data
+ * @returns {Promise}
+ */
+export function markInsightUselessInCollection (data) {
+  return new Promise((resolve, reject)=> {
+    Relay.Store.commitUpdate(
+      new MarkInsightUselessInCollectionMutation(data), {
+        onSuccess: (transaction) => {
+          resolve(transaction)
+        },
+        onFailure: (transaction) => {
+          reject(getErrors(transaction))
         }
       }
     );

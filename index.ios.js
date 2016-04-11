@@ -7,14 +7,14 @@ import React, {
 } from 'react-native';
 
 import Relay, { DefaultNetworkLayer } from 'react-relay';
-import { prepareRootRouter } from './app/routes';
-import { graphqlURL } from './app/relay-conf';
+import { prepareRootRouter } from './src/routes';
+import { graphqlURL } from './src/relay-conf';
 import moment from "moment";
 import { Provider } from 'react-redux';
-import store from './app/store';
+import store from './src/store';
 import DeviceInfo from "react-native-device-info";
-import { SAVE_UNIQUE_ID_AND_DATE } from "./app/actions/actions";
-import { EventManager } from './app/event_manager';
+import { SAVE_UNIQUE_ID_AND_DATE } from "./src/actions/actions";
+import { EventManager } from './src/event-manager';
 
 Relay.injectNetworkLayer(
   new DefaultNetworkLayer(graphqlURL, {

@@ -31,7 +31,7 @@
     "react-native-swipeout": "git+https://bitbucket.org/DenisIzmaylov/react-native-swipeout2.git",
     "react-native-vector-icons": "1.2.0",
     "react-redux": "4.4.0",
-    "react-relay": "^0.7.3",
+    "react-relay": "0.8.0",
     "redux": "3.2.1",
     "redux-promise": "^0.5.1",
     "redux-thunk": "^1.0.3",

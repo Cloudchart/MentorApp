@@ -34,7 +34,7 @@ pod install
 6. Open project `mentor2/ops/Mentor2.xcodeproj` 
 7. Start on your phone 
  
-## Running On Simulator
+## Run On Simulator
 
 1. Run in the root directory `react-native bundle --entry-file index.ios.js --bundle-output ios/main.jsbundle --minify=true --platform=ios --assets-dest=./ --dev=false`
 2. Run `npm start` 

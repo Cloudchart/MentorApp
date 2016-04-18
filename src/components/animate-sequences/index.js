@@ -6,13 +6,12 @@ import React, {
 
 class AnimateSequences extends Component {
 
+  state = {
+    imageIndex: 0
+  }
+
   constructor (props) {
     super(props)
-
-    this.state = {
-      imageIndex: 0
-    }
-
     this.intervalId = null;
     this.animationRepeatCount = 0;
   }

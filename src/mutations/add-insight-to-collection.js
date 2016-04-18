@@ -10,11 +10,6 @@ class AddInsightToCollectionMutation extends Relay.Mutation {
     `
   };
 
-
-  getMutation () {
-    return Relay.QL`mutation { addInsightToCollection }`
-  }
-
   getVariables () {
     const { insight, collection } = this.props;
     return {
@@ -23,40 +18,30 @@ class AddInsightToCollectionMutation extends Relay.Mutation {
     }
   }
 
+  getMutation () {
+    return Relay.QL`mutation { addInsightToCollection }`
+  }
+
   getFatQuery () {
     return Relay.QL`
         fragment on AddInsightToCollectionMutationPayload {
-            insight {
-                id
-                content
-            }
+            insight
             insightID
+            collection
             insightEdge
         }
     `
   }
 
   getConfigs () {
-    const { collection, insight } = this.props;
+    const { insight } = this.props;
     return [
       {
         type: "FIELDS_CHANGE",
         fieldIDs: {
           insight: insight.id
         }
-      },
-      {
-        type: 'RANGE_ADD',
-        parentName: 'insight',
-        parentID: insight.id,
-        connectionName: 'insight',
-        edgeName: 'insightEdge',
-        rangeBehaviors: {
-          '': 'append',
-          'filter(ALL)': 'append'
-        }
-      }
-    ];
+      } ];
   }
 }
 

@@ -1,7 +1,7 @@
 import React, { StyleSheet, Dimensions } from "react-native";
 import { root_view } from "../../styles/base";
 import * as device from "../../utils/device";
-import { CONTROLS_WIDTH } from "./const";
+import { CONTROLS_WIDTH } from "../../components/insight/const";
 const dimensions = Dimensions.get('window');
 
 
@@ -16,74 +16,6 @@ const controls = {
   position: 'absolute',
   bottom: device.size(5)
 }
-
-
-export const commentStyle = StyleSheet.create({
-  container: {
-    ...root_view,
-    justifyContent: 'flex-end',
-    paddingBottom: device.size(23)
-  },
-  borisContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    marginBottom: device.size(30)
-  },
-  button: {
-    marginHorizontal: device.size(18),
-    marginBottom: device.size(15)
-  },
-  buttonText: {
-    color: '#fff',
-    alignSelf: 'center',
-    fontSize: device.fontSize(22),
-    fontWeight: '500'
-  }
-})
-
-export const allForNowStyle = StyleSheet.create({
-  container: {
-    ...root_view,
-    justifyContent: 'flex-end',
-    paddingBottom: device.size(20)
-  },
-
-  borisContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    marginBottom: device.size(30)
-  },
-  button: {
-    marginHorizontal: device.size(18)
-  },
-  buttonText: {
-    color: '#000',
-    alignSelf: 'center',
-    fontSize: device.fontSize(22),
-    fontWeight: '500'
-  }
-})
-
-export const topicFinished = StyleSheet.create({
-
-  container: {
-    ...root_view,
-    justifyContent: 'flex-end'
-  },
-
-  star: {
-    alignItems: 'center',
-    marginTop: device.size(30)
-  },
-
-  text: {
-    color : '#fff',
-    alignSelf: 'center',
-    paddingBottom: device.size(20),
-    fontSize: device.fontSize(32)
-  }
-})
-
 
 export default StyleSheet.create({
   container: {
@@ -103,15 +35,6 @@ export default StyleSheet.create({
     paddingHorizontal: device.size(10),
     paddingVertical: device.size(10),
     backgroundColor: 'transparent'
-  },
-  //pass into a component Card
-  cardText: {
-    color: '#000',
-    flex: 1,
-    lineHeight: device.fontSize(40),
-    fontSize: device.fontSize(34),
-    fontWeight: '500',
-    overflow: 'hidden'
   },
   controlWrapper: {
     flex: 1,

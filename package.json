@@ -8,7 +8,7 @@
     "clean:babel": "find node_modules -type f -name .babelrc | grep -v /react-native/ | xargs rm",
     "build:schema": "node tools/build-graphql-schema.js",
     "postinstall": "npm run clean:babel && npm run build:schema",
-    "startApp": "node_modules/react-native/packager/packager.sh --port 6000 --reset-cache",
+    "startApp": "node node_modules/react-native/local-cli/cli.js --port 8081 --reset-cache",
     "start": "NODE_ENV=development TYPE_ENV=development npm run build:schema && npm run startApp",
     "buildIOS": "react-native bundle --entry-file index.ios.js --bundle-output ios/main.jsbundle --minify=true --platform=ios --assets-dest=./ --dev=false"
   },

@@ -16,30 +16,21 @@ import React, {
 import Relay from 'react-relay';
 import { connect } from "react-redux";
 import { _ } from "lodash";
-
-import { Button, Loader, ScrollListView, Insight, TopicSubscribed } from "../../components";
-import { ADD_CARD_REF, CONTROLS_WIDTH, SHARE_CARD_REF, CONTROL_PIECE } from "./const";
-import { COUNT_INSIGHTS_COLLECTIONS } from "../../actions/actions";
-
-import {
-  likeInsightInTopic,
-  dislikeInsightInTopic
-} from "../../actions/insight";
-
+import { Button, Loader, ScrollListView, TopicSubscribed } from "../../components";
+import { RandomAdvice } from '../../components/confirmation-screens/insights-parts';
+import * as InsightAnimations from '../../components/insight';
+import * as constant from '../../components/insight/const';
+import * as actions from '../../actions/actions';
 import * as device from "../../utils/device";
+import ConfirmationScreens from "./confirmation";
+import Insight from "../../components/insight";
 import Icon from "react-native-vector-icons/FontAwesome";
 import baseStyle from "../../styles/base";
 import clamp from "clamp";
-
+import { likeInsightInTopic, dislikeInsightInTopic } from "../../actions/insight";
 import { ShareCard, AddCard } from "./add-card-to-collection";
-import {
-  CommentGood,
-  CommentBad,
-  AllForNow,
-  AllEnded,
-  TopicFinished
-} from "./part-screens";
 import { _panResponder } from "./pan-responder";
+import { nodeQueryTopic, collectionInsightFragment } from "./fragments";
 
 import styles from "./style";
 const dimensions = Dimensions.get('window');
@@ -48,15 +39,13 @@ const dimensions = Dimensions.get('window');
 class InsightsForMe extends Component {
 
   state = {
+    shouldAddToUserCollectionWithTopicName: true,
     allRatedInsights: [],
     allInsights: [],
     currentInsights: null,
     controlShareIsShow: false,
-    comment_bad: false,
-    comment_good: false,
-    allfor_now: false,
-    all_ended: false,
-    topic_finished: false,
+    confirmationScreensShow: false,
+    conditionConfirmation: '',
     shareControl: new Animated.ValueXY({ x: 0, y: 0 }),
     addControl: new Animated.ValueXY({ x: 0, y: 0 }),
     top: dimensions.height / 4.5,
@@ -66,30 +55,23 @@ class InsightsForMe extends Component {
 
   constructor (props) {
     super(props)
-    this._forbidLikeInsight = false;
+    this._stopAlert = false;
     this._onPressCard = this._onPressCard.bind(this);
     this._onLikeInsight = _.throttle(this._onLikeInsight.bind(this), 700);
     this._onDelete = _.throttle(this._onDelete.bind(this, {}), 700);
     this._onShare = this._onShare.bind(this);
-    this.addToCollectionNotIgnore = this._onAddToCollection.bind(this, 'not_ignore');
+    this.collectInsights = _.throttle(this.collectInsights.bind(this), 300);
+    this._onAddToCollection = this._onAddToCollection.bind(this)
     this._continueLearning = this._continueLearning.bind(this);
     this._resetState = this._resetState.bind(this);
+    this._continueLearning = this._continueLearning.bind(this);
+    this._commentGoodContinue = this._commentGoodContinue.bind(this);
+    this._commentBadUndo = this._commentBadUndo.bind(this);
   }
+
 
   componentDidMount () {
-    //this._animateEntrance();
-  }
 
-  /**
-   * When updated props { go to Settings -> Your topics -> add new topic and go back  }
-   * @param nextProps
-   */
-  componentWillReceiveProps (nextProps) {
-    console.log('componentWillReceiveProps ');
-    clearTimeout(this._timeOutCollectInsights);
-    this._timeOutCollectInsights = setTimeout(()=> {
-      this.collectInsights();
-    }, 300)
   }
 
 
@@ -98,11 +80,9 @@ class InsightsForMe extends Component {
    * added to the collection of insight
    */
   componentWillMount () {
-    const responder = _panResponder.bind(this)
+    const responder = _panResponder.bind(this);
     this._panResponder = responder();
-    this._timeOutCollectInsights = setTimeout(()=> {
-      this.collectInsights();
-    }, 300)
+    this.collectInsights();
   }
 
 
@@ -112,7 +92,7 @@ class InsightsForMe extends Component {
   collectInsights () {
     const { dispatch, viewer, node } = this.props;
     let insights = [];
-    if ( node && node.insights && node.insights.edges.length ) {
+    if ( node && node.insights ) {
       insights = this._getInsightsFromNode()
     } else {
       insights = this._getInsightsFromTopics()
@@ -120,7 +100,7 @@ class InsightsForMe extends Component {
 
     this._setCurrentAdvice(insights);
     dispatch({
-      type: COUNT_INSIGHTS_COLLECTIONS,
+      type: actions.COUNT_INSIGHTS_COLLECTIONS,
       collections: viewer.collections
     })
   }
@@ -134,23 +114,15 @@ class InsightsForMe extends Component {
   _getInsightsFromNode () {
     const { node } = this.props;
     let insightCollection = [];
-    let topicsCompletion = [];
-
     const insights = node.insights;
+
     if ( !insights ) return;
 
     insights.edges.map((inst)=> {
-      const insight = inst.node;
-      insight.relationTopic = { ...node }
-      insightCollection.push({ ...insight })
-    })
-
-    // TODO: Statistics for each topic
-    topicsCompletion.push({
-      totalCount: insights.edges.length,
-      ratedCount: insights.ratedCount,
-      unratedCount: insights.unratedCount
+      inst.topic = { ...node };
+      insightCollection.push({ ...inst })
     });
+
     this._topicsCompletion(insightCollection)
     return insightCollection;
   }
@@ -173,21 +145,42 @@ class InsightsForMe extends Component {
    * @private
    */
   _topicsCompletion (edges) {
+    const { filter } = this.props;
+    const { currentInsights } = this.state;
     let conf = {
-      comment_bad: false, comment_good: false,
-      allfor_now: false, topic_finished: false, all_ended: false
-    };
-    if ( !edges.length ) {
-      this.setState({
-        ...conf,
-        all_ended: true,
-        allInsights: [],
-        currentInsights: null
-      })
-      return;
-    } else {
-      this.setState(conf)
+      conditionConfirmation: '',
+      confirmationScreensShow: false
     }
+
+    if ( !edges.length ) {
+      if ( filter && filter == 'PREVIEW' ) {
+        conf = {
+          allInsights: [],
+          conditionConfirmation: 'add_demo_topic',
+          confirmationScreensShow: true
+        }
+      } else {
+        conf = {
+          conditionConfirmation: 'all_ended',
+          confirmationScreensShow: true,
+          allInsights: [],
+          currentInsights: null
+        }
+      }
+
+
+    }
+
+    // TODO : TopicFinished
+    if ( currentInsights && (edges.length && currentInsights.topic.isFinishedByViewer) ) {
+      conf = {
+        conditionConfirmation: 'topic_finished',
+        confirmationScreensShow: true
+      }
+    }
+
+
+    this.setState(conf)
   }
 
 
@@ -203,10 +196,10 @@ class InsightsForMe extends Component {
    */
   _goToNextInsights (insights_opt_param) {
     const { allInsights, currentInsights } = this.state;
-    let localAllInsights = [];
+    let localAllInsights = _.compact(allInsights);
     let conf = {};
 
-    localAllInsights = allInsights.filter((insight, i)=> {
+    localAllInsights = localAllInsights.filter((insight, i)=> {
       const node = insight.node;
       return node.id != currentInsights.node.id;
     });
@@ -218,16 +211,21 @@ class InsightsForMe extends Component {
       conf.allInsights = insights_opt_param;
       conf.currentInsights = insights_opt_param.length ? insights_opt_param[ 0 ] : null;
     }
+
+    if ( !conf.allInsights.length ) {
+      this._topicsCompletion(conf.allInsights);
+      return;
+    }
+
+    // test isFinishedByViewer
+    //currentInsights.topic.isFinishedByViewer = true;
+    this._topicsCompletion(conf.allInsights);
+
     this.setState({ ...conf });
   }
 
   _animateEntrance () {
-    Animated.spring(this.state.enter, {
-        toValue: 1,
-        duration: 500,
-        friction: 8
-      }
-    ).start();
+    InsightAnimations.animateEntrance(this.state.enter);
   }
 
 
@@ -241,6 +239,8 @@ class InsightsForMe extends Component {
       allInsights,
       currentInsights: allInsights.length ? allInsights[ 0 ] : null
     });
+
+    setTimeout(()=> {this._animateEntrance()}, 200)
   }
 
   /**
@@ -253,12 +253,12 @@ class InsightsForMe extends Component {
   _removeFromLocalStack (saveCurrentInsights, setCurrent) {
     const { allRatedInsights, allInsights } = this.state;
     let deleted = [];
-    this._forbidLikeInsight = false;
-
+    let localAllInsights = allInsights;
     let index = 0;
+
     const foundIns = allRatedInsights.find((insight, i)=> {
-      const node = insight.node;
       index = i;
+      const node = insight.node;
       return node.id == saveCurrentInsights.node.id;
     })
 
@@ -266,26 +266,56 @@ class InsightsForMe extends Component {
       deleted = this.state.allRatedInsights.splice(index, 1);
     }
 
-
-    if ( setCurrent && deleted.length ) {
-      allInsights.unshift(deleted[ 0 ]);
-      this._goToNextInsights(allInsights);
+    if ( setCurrent && !this._stopAlert ) {
+      this._stopAlert = true;
+      localAllInsights.unshift(deleted[ 0 ]);
+      setTimeout(()=> {this._showAlertErrorMutation(localAllInsights, index)}, 0)
     }
   }
 
-
+  /**
+   *
+   * @param currentInsights
+   * @private
+   */
   _saveToLocalStack (currentInsights) {
     const { allRatedInsights } = this.state;
 
-    const found = allRatedInsights.find((insight, i)=> {
-      const node = insight.node;
-      return node.id == currentInsights.node.id;
-    })
+    if ( !allRatedInsights.length ) {
+      this.state.allRatedInsights.push(currentInsights)
+      return;
+    }
+
+    const found = allRatedInsights.find((insight) => insight.node.id == currentInsights.node.id)
 
     if ( !found ) {
       this.state.allRatedInsights.push(currentInsights)
     }
   }
+
+  /**
+   *
+   * @param index
+   * @private
+   */
+  _showAlertErrorMutation (allInsights, index) {
+    AlertIOS.alert('Error save advice', 'return back to the list ?', [
+        {
+          text: 'Cancel', onPress: () => {
+          this.state.allRatedInsights.splice(index, 1);
+          this._stopAlert = false;
+        }
+        },
+        {
+          text: 'OK', onPress: ()=> {
+          this._goToNextInsights(allInsights);
+          this._stopAlert = false;
+        }
+        }
+      ]
+    );
+  }
+
 
   /**
    *
@@ -297,9 +327,14 @@ class InsightsForMe extends Component {
    */
   _onDelete (params, evt) {
     const { currentInsights } = this.state;
-    if ( currentInsights.confirmation ) {
-      this.setState({ comment_bad: true })
-    } else {
+    if ( !currentInsights ) return;
+    if ( currentInsights.node.dislikeReaction ) {
+      this.setState({
+        confirmationScreensShow: true,
+        conditionConfirmation: 'comment_bad'
+      })
+    }
+    else {
       this._animationCardLeftAndReset(params || {})
     }
   }
@@ -312,31 +347,22 @@ class InsightsForMe extends Component {
    */
   _animationCardLeftAndReset (params) {
     const { currentInsights } = this.state;
+    const { filter } = this.props;
     const saveCurrentInsights = { ...currentInsights }
-    let setting = {
-      velocity: { x: clamp(100 * -1, 3, 5) * -3, y: 0 },
-      deceleration: 0.98,
-      ...params
+    this._saveToLocalStack(saveCurrentInsights);
+    InsightAnimations.animationCardLeft(params, this.state.pan, this._resetState)
+
+    if ( filter && filter == 'PREVIEW' ) {
+      return;
     }
 
-    this._forbidLikeInsight = true;
-    this._saveToLocalStack(saveCurrentInsights);
-
-    Animated
-      .decay(this.state.pan, setting)
-      .start(this._resetState)
-
-    setTimeout(()=> {
-      dislikeInsightInTopic(currentInsights)
-        .then((tran)=> {
-          console.log(tran);
-          this._removeFromLocalStack(saveCurrentInsights)
-        })
-        .catch((error)=> {
-          console.log(error);
-          this._removeFromLocalStack(saveCurrentInsights, true)
-        })
-    }, 2000)
+    dislikeInsightInTopic(currentInsights)
+      .then((tran)=> {
+        this._removeFromLocalStack(saveCurrentInsights)
+      })
+      .catch((error)=> {
+        this._removeFromLocalStack(saveCurrentInsights, true)
+      })
   }
 
 
@@ -344,22 +370,20 @@ class InsightsForMe extends Component {
    *
    * @private
    */
-  _onLikeInsight (opt_params = true) {
-    const { currentInsights } = this.state;
-    const saveCurrentInsights = { ...currentInsights }
-    let setting = {
-      velocity: { x: clamp(7, 3, 5), y: 0 },
-      deceleration: 0.98
+  _onLikeInsight () {
+    const { currentInsights, shouldAddToUserCollectionWithTopicName } = this.state;
+    const { dispatch, filter } = this.props;
+    const saveCurrentInsights = { ...currentInsights };
+    this._saveToLocalStack(saveCurrentInsights);
+    InsightAnimations.animationCardRight(this.state.pan, this._resetState)
+
+    if ( filter && filter == 'PREVIEW' ) {
+      return;
     }
 
-    this._forbidLikeInsight = true;
-    Animated
-      .decay(this.state.pan, setting)
-      .start(this._resetState)
-
-
-    likeInsightInTopic(currentInsights, opt_params)
+    likeInsightInTopic(currentInsights, shouldAddToUserCollectionWithTopicName)
       .then((tran)=> {
+        dispatch({ type: actions.COUNT_INSIGHTS_PLUS })
         this._removeFromLocalStack(saveCurrentInsights)
       })
       .catch((error)=> {
@@ -377,7 +401,7 @@ class InsightsForMe extends Component {
       if ( !this.state.showPiece ) {
         this.state.showPiece = true;
         const param = {
-          toValue: CONTROL_PIECE,
+          toValue: constant.CONTROL_PIECE,
           duration: 200,
           friction: device.size(9 * 1.2)
         }
@@ -396,7 +420,7 @@ class InsightsForMe extends Component {
    */
   _onShowFullAdd () {
     Animated.spring(this.state.addControl, {
-        toValue: CONTROLS_WIDTH,
+        toValue: constant.CONTROLS_WIDTH,
         duration: 100,
         friction: 8
       }
@@ -406,24 +430,11 @@ class InsightsForMe extends Component {
 
   _onShowFullShare () {
     Animated.spring(this.state.shareControl, {
-        toValue: CONTROLS_WIDTH,
+        toValue: constant.CONTROLS_WIDTH,
         duration: 100,
         friction: 8
       }
     ).start();
-    this._isShowControlShare()
-  }
-
-  _parallelShowControl () {
-    const param = {
-      toValue: CONTROLS_WIDTH,
-      duration: 100,
-      friction: 8
-    }
-    setTimeout(()=> {
-      Animated.spring(this.state.addControl, param).start()
-      Animated.spring(this.state.shareControl, param).start()
-    }, 0)
     this._isShowControlShare()
   }
 
@@ -446,13 +457,22 @@ class InsightsForMe extends Component {
    * @param evt
    * @private
    */
-  _onAddToCollection (param, evt) {
-    const { currentInsights } = this.state;
-    if ( currentInsights.confirmation && param != 'ignore' ) {
-      this.setState({ comment_good: true })
-    } else {
-      setTimeout(()=> { this._onLikeInsight(false) }, 0)
-      this._navigatorPush('user-collections', '', this.state.currentInsights.node)
+  _onAddToCollection (param = true, reaction_ignore) {
+    const { currentInsights, shouldAddToUserCollectionWithTopicName } = this.state;
+    if ( !currentInsights ) return;
+    this.state.shouldAddToUserCollectionWithTopicName = param;
+    if ( currentInsights.node.likeReaction && !reaction_ignore ) {
+      this.setState({
+        confirmationScreensShow: true,
+        conditionConfirmation: 'comment_good',
+        shouldAddToUserCollectionWithTopicName: param
+      });
+      return;
+    }
+
+    this._onLikeInsight()
+    if ( !param ) {
+      this._navigatorPush('user-collections', 'Saved advices', currentInsights.node)
     }
   }
 
@@ -485,14 +505,10 @@ class InsightsForMe extends Component {
 
 
   _returnCardToStartingPosition () {
-    Animated.spring(this.state.pan, {
-      toValue: { x: 0, y: 0 },
-      friction: 4
-    }).start()
+    InsightAnimations.returnCardToStartingPosition(this.state.pan)
   }
 
   _resetState () {
-    console.log('_resetState');
     this.state.pan.setValue({ x: 0, y: 0 });
     this.state.enter.setValue(0.9);
     this._hideControlShare();
@@ -509,7 +525,7 @@ class InsightsForMe extends Component {
    * @private
    */
   _commentBadUndo (opt_param, evt) {
-    this.setState({ comment_bad: false })
+    this.setState({ confirmationScreensShow: false })
 
     if ( opt_param == 'delete' ) {
       setTimeout(()=> {
@@ -521,16 +537,15 @@ class InsightsForMe extends Component {
   }
 
   _commentGoodContinue () {
-    this._onAddToCollection('ignore')
+    const { shouldAddToUserCollectionWithTopicName } = this.state;
+    this.setState({ confirmationScreensShow: false });
     setTimeout(()=> {
-      this.setState({ comment_good: false })
+      this._onAddToCollection(shouldAddToUserCollectionWithTopicName, 'ignore');
     }, 300)
   }
 
   _continueLearning () {
-    setTimeout(()=> {
-      this.setState({ topic_finished: false })
-    }, 300)
+    this.setState({ confirmationScreensShow: false })
   }
 
   /**
@@ -543,14 +558,12 @@ class InsightsForMe extends Component {
       enter,
       currentInsights,
       showCardTopicName,
-      comment_good,
-      comment_bad,
       shareControl,
       addControl,
-      allfor_now,
-      all_ended,
-      topic_finished
+      conditionConfirmation,
+      confirmationScreensShow
     } = this.state;
+    const { node, reactions, viewer, navigator } = this.props;
 
     const [translateX, translateY] = [ pan.x, pan.y ];
 
@@ -565,8 +578,8 @@ class InsightsForMe extends Component {
     const animatedYupStyles = { transform: [ { scale: yupScale } ] }
 
     const interpolateControls = {
-      inputRange: [ 0, CONTROL_PIECE, CONTROLS_WIDTH ],
-      outputRange: [ 0, -CONTROL_PIECE, -CONTROLS_WIDTH ],
+      inputRange: [ 0, constant.CONTROL_PIECE, constant.CONTROLS_WIDTH ],
+      outputRange: [ 0, -constant.CONTROL_PIECE, -constant.CONTROLS_WIDTH ],
       extrapolate: 'clamp'
     }
     const share = shareControl.x.interpolate(interpolateControls);
@@ -574,21 +587,23 @@ class InsightsForMe extends Component {
     const add = addControl.x.interpolate(interpolateControls);
     const addStyle = { transform: [ { translateX: add } ] }
 
-    if ( comment_bad ) {
-      return <CommentBad {...this.props} undo={this._commentBadUndo.bind(this)}/>
-    } else if ( comment_good ) {
-      return <CommentGood {...this.props} continue={this._commentGoodContinue.bind(this)}/>
-    } else if ( allfor_now ) {
-      return <AllForNow {...this.props} />
-    } else if ( all_ended ) {
-      return <AllEnded {...this.props} />
-    } else if ( topic_finished ) {
-      return <TopicFinished {...this.props} continueLearning={this._continueLearning}/>
+    if ( reactions.show || confirmationScreensShow ) {
+      return (
+        <ConfirmationScreens
+          condition={conditionConfirmation}
+          reactions={reactions}
+          viewer={viewer}
+          navigator={navigator}
+          currentInsights={currentInsights}
+          continueLearning={this._continueLearning}
+          commentGoodContinue={this._commentGoodContinue}
+          commentBadUndo={this._commentBadUndo}/>
+      )
     }
 
     return (
       <View style={ styles.container }>
-        {!showCardTopicName ? null :
+        {!showCardTopicName || (node && node.insights) ? null :
           <TitleAdvice topicName={currentInsights.topic.name ||  '' }/>}
 
         {!currentInsights ? null :
@@ -597,7 +612,6 @@ class InsightsForMe extends Component {
             <Insight
               navigator={this.props.navigator}
               insight={currentInsights.node}
-              styleText={styles.cardText}
               onPressCard={this._onPressCard}/>
           </Animated.View>}
 
@@ -605,41 +619,39 @@ class InsightsForMe extends Component {
         {/* controls share */}
 
         <View style={[styles.wrapperAddCardControl, {top}]}>
-          <Animated.View style={[{width : CONTROLS_WIDTH}, shareStyle]}>
-            <View ref={SHARE_CARD_REF} style={{flex: 1}}>
+          <Animated.View style={[{width : constant.CONTROLS_WIDTH}, shareStyle]}>
+            <View ref={constant.SHARE_CARD_REF} style={{flex: 1}}>
               <ShareCard onShare={this._onShare}/>
             </View>
           </Animated.View>
 
-          <Animated.View style={[{width : CONTROLS_WIDTH}, addStyle]}>
-            <View ref={ADD_CARD_REF} style={{flex: 1}}>
-              <AddCard onAddToCollection={this.addToCollectionNotIgnore}/>
+          <Animated.View style={[{width : constant.CONTROLS_WIDTH}, addStyle]}>
+            <View ref={constant.ADD_CARD_REF} style={{flex: 1}}>
+              <AddCard />
             </View>
           </Animated.View>
         </View>
 
 
-        {/* controls */}
-        {showCardTopicName ? null :
-          <View style={styles.controlWrapper }>
-            <Animated.View style={[styles.controlLeft, animatedNopeStyles]}>
-              <TouchableOpacity
-                activeOpacity={ 0.95 }
-                style={[styles.controlInner, {paddingTop: 0, left : -1}]}
-                onPress={this._onDelete}>
-                <Icon name="times" style={[baseStyle.crumbIcon, styles.icons]}/>
-              </TouchableOpacity>
-            </Animated.View>
+        <View style={styles.controlWrapper }>
+          <Animated.View style={[styles.controlLeft, animatedNopeStyles]}>
+            <TouchableOpacity
+              activeOpacity={ 0.95 }
+              style={[styles.controlInner, {paddingTop: 0, left : -1}]}
+              onPress={this._onDelete}>
+              <Icon name="times" style={[baseStyle.crumbIcon, styles.icons]}/>
+            </TouchableOpacity>
+          </Animated.View>
 
-            <Animated.View style={[styles.controlRight, animatedYupStyles]}>
-              <TouchableOpacity
-                activeOpacity={ 0.95 }
-                style={styles.controlInner}
-                onPress={this._onLikeInsight}>
-                <Icon name="plus" style={[baseStyle.crumbIcon, styles.icons]}/>
-              </TouchableOpacity>
-            </Animated.View>
-          </View>}
+          <Animated.View style={[styles.controlRight, animatedYupStyles]}>
+            <TouchableOpacity
+              activeOpacity={ 0.95 }
+              style={styles.controlInner}
+              onPress={()=>{this._onAddToCollection()}}>
+              <Icon name="plus" style={[baseStyle.crumbIcon, styles.icons]}/>
+            </TouchableOpacity>
+          </Animated.View>
+        </View>
       </View>
     )
   }
@@ -654,88 +666,32 @@ const TitleAdvice = (props) => {
   )
 }
 
-const ReduxComponent = connect()(InsightsForMe)
-
-
-var insightFragment = Relay.QL`
-    fragment on Insight {
-        id
-        content
-        origin {
-            author
-            url
-            title
-            duration
-        }
-    }
-`;
-
-var insightQuery = Relay.QL`
-    fragment on TopicInsightsConnection {
-        ratedCount
-        unratedCount
-        edges {
-            node {
-                ${insightFragment}
-            }
-        }
-    }
-`;
-var topicFragment = Relay.QL`
-    fragment on  Topic {
-        id
-        name
-        isDefault
-        isPaid
-        isSubscribedByViewer
-    }
-`;
+const ReduxComponent = connect(state => ({
+  reactions: state.reactions
+}))(InsightsForMe)
 
 export default Relay.createContainer(ReduxComponent, {
   initialVariables: {
     countInsights: 100,
     filter: 'UNRATED',
+    filterInsights: 'UNRATED',
     filterInsightsInCollection: 'ALL'
   },
   fragments: {
     node : () => Relay.QL`
         fragment on Topic {
-            id
-            name
-            isSubscribedByViewer
-            isPaid
-            insights (first: $countInsights, filter : $filter) {
-                edges {
-                    node {
-                        ${insightFragment}
-                    }
-                }
-            }
+            ${nodeQueryTopic}
         }
     `,
     viewer: () => Relay.QL`
         fragment on User {
-            insights(first: $countInsights, filter: $filter ) {
+            ${RandomAdvice.getFragment('viewer')}
+            ${collectionInsightFragment}
+            subscribedTopics: topics(first: 100, filter: SUBSCRIBED) {
                 edges {
                     node {
-                        ${insightFragment}
-                    }
-                    topic {
-                        ${topicFragment}
-                    }
-                }
-            }
-            collections(first: $countInsights) {
-                edges {
-                    node {
-                        insights(first : $countInsights, filter : $filterInsightsInCollection) {
-                            count
-                            edges {
-                                node {
-                                    id
-                                }
-                            }
-                        }
+                        id
+                        name
                     }
                 }
             }

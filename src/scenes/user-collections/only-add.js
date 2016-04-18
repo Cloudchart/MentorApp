@@ -28,7 +28,7 @@ class OnlyAdd extends Component {
             { collection.name }
           </Text>
           <Text style={ styles.collectionCounterText }>
-            { !insights.count ? '∞' : insights.count }
+            { !insights.count ? 0 : insights.count }
           </Text>
         </View>
       </TouchableOpacity>

@@ -5,13 +5,12 @@ import React, {
   TouchableOpacity,
   View
 } from "react-native";
-import { Boris, Button, TransparentButton } from "../../components";
+import Relay from 'react-relay';
+import _ from 'lodash';
+import { Boris, Button, TransparentButton } from "../index";
 import Icon from "react-native-vector-icons/FontAwesome";
-import { commentStyle } from "./style";
-import { allForNowStyle } from "./style";
-import { topicFinished } from "./style";
 import styles from "../../styles/base";
-
+import { commentStyle, allForNowStyle, topicFinished } from "./style";
 const BorisNote = "That's all for now! Want more advice more often? Human up and subscribe!";
 const BorisNoteAllEnded = "Achievement unlocked! You have mastered all the topics, thus achieving supreme knowledge. I bow to you, Master";
 const BorisNoteTopicFinished = "Congratulations, apprentice! You're not as hopeless as I thought. But no time to celebrate, let the learning go on!";
@@ -19,24 +18,29 @@ const BorisNoteTopicFinished = "Congratulations, apprentice! You're not as hopel
 
 class CommentBad extends Component {
 
+  state = {
+    user: null
+  }
+
   constructor (props) {
     super(props)
-    this.state = {
-      user: null
-    }
-
     this._undo = this.props.undo.bind(this, 'undo');
     this._delete = this.props.undo.bind(this, 'delete');
   }
 
   render () {
+    const { dislikeReaction } = this.props;
+    const { mood, content } = dislikeReaction;
+    let ifMood = mood ? mood : 'negative';
+    let ifContent = content ? content : '';
+
     return (
       <View style={ commentStyle.container }>
         <View style={ commentStyle.borisContainer }>
           <Boris
-            mood="negative"
+            mood={ifMood}
             size="small"
-            note={"Really? Really?! You swipe left on Startup L. Jackson? My boy, you won't get too far!"}/>
+            note={ifContent}/>
         </View>
 
         <Button
@@ -61,24 +65,29 @@ class CommentBad extends Component {
 
 class CommentGood extends Component {
 
+  state = {
+    user: null
+  }
+
   constructor (props) {
     super(props)
-
-    this.state = {
-      user: null
-    }
-
     this._continue = this.props.continue.bind(this);
   }
 
   render () {
+    const { likeReaction } = this.props;
+    const { mood, content } = likeReaction;
+    let ifMood = mood ? mood : 'positive';
+    let ifContent = content ? content : '';
+
+
     return (
       <View style={ commentStyle.container }>
         <View style={ commentStyle.borisContainer }>
           <Boris
-            mood="positive"
+            mood={ifMood}
             size="small"
-            note={"668 more users also approve this advice. You're on the right track, young padawan!"}/>
+            note={ifContent}/>
         </View>
 
         <Button
@@ -95,10 +104,10 @@ class CommentGood extends Component {
 
 class AllForNow extends Component {
 
+  state = {}
+
   constructor (props) {
     super(props)
-
-    this.state = {};
     this.subscribeNow = this.subscribeNow.bind(this)
   }
 
@@ -133,10 +142,11 @@ class AllForNow extends Component {
 
 class AllEnded extends Component {
 
+
+  state = {}
+
   constructor (props) {
     super(props)
-
-    this.state = {};
     this.subscribeNow = this.subscribeNow.bind(this)
   }
 
@@ -159,7 +169,7 @@ class AllEnded extends Component {
         <Button
           onPress={this.subscribeNow}
           label=""
-          color="orange"
+          color="green"
           style={ allForNowStyle.button }>
           <Text style={ allForNowStyle.buttonText }>Okay</Text>
         </Button>
@@ -171,16 +181,20 @@ class AllEnded extends Component {
 
 class TopicFinished extends Component {
 
+  state = {}
+
   constructor (props) {
     super(props)
-
-    this.state = {};
     this.exploreTopic = this.exploreTopic.bind(this)
   }
 
   exploreTopic () {
     const { navigator } = this.props;
-    navigator.push({ scene: 'explore-topic', title: 'Explore' })
+    navigator.push({
+      scene: 'select_topics',
+      title: 'Select up to 3 topics to start:',
+      filterUserAddedTopic: true
+    })
   }
 
   /**
@@ -204,7 +218,7 @@ class TopicFinished extends Component {
         <Button
           onPress={this.exploreTopic}
           label=""
-          color="orange"
+          color="green"
           style={ allForNowStyle.button }>
           <Text style={ allForNowStyle.buttonText }>Add another topic </Text>
         </Button>
@@ -222,11 +236,72 @@ class TopicFinished extends Component {
 }
 
 
+class RandomAdvice extends Component {
+
+  constructor (props) {
+    super(props)
+    this.gotIt = this.gotIt.bind(this);
+  }
+
+  gotIt () {
+    this.props.undo && this.props.undo('hide');
+  }
+
+  render () {
+    const { viewer } = this.props;
+    let mood = 'positive';
+    let note = '';
+
+    if ( !viewer.reactions.edges.length ) {
+      mood = 'negative';
+      note = 'error';
+    } else {
+      const reactions = _.sample(_.shuffle(_.map(viewer.reactions.edges, 'node')));
+      mood = reactions.mood;
+      note = reactions.content;
+    }
+
+    return (
+      <View style={ commentStyle.container }>
+        <View style={ commentStyle.borisContainer }>
+          <Boris mood={mood} size="small" note={note}/>
+        </View>
+
+        <Button
+          label=""
+          color="green"
+          onPress={this.gotIt}
+          style={ commentStyle.button }>
+          <Text style={ commentStyle.buttonText }>Got it</Text>
+        </Button>
+      </View>
+    )
+  }
+}
+
+RandomAdvice = Relay.createContainer(RandomAdvice, {
+  fragments: {
+    viewer: () => Relay.QL`
+        fragment on User {
+            reactions(first : 100, scope: "clicker") {
+                edges {
+                    node {
+                        mood
+                        content
+                        weight
+                    }
+                }
+            }
+        }
+    `
+  }
+});
+
 export {
   CommentBad,
   CommentGood,
   AllForNow,
   AllEnded,
-  TopicFinished
+  TopicFinished,
+  RandomAdvice
 }
-

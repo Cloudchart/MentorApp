@@ -14,8 +14,8 @@ export function likeInsightInTopic (insight, shouldAddToUserCollectionWithTopicN
   return new Promise((resolve, reject)=> {
     const transaction = Relay.Store.applyUpdate(
       new LikeInsightInTopicMutation({
-        insight,
-        topic: insight.relationTopic,
+        insight : insight.node,
+        topic: insight.topic,
         shouldAddToUserCollectionWithTopicName
       }), {
         onSuccess: (transaction) => {
@@ -39,7 +39,7 @@ export function likeInsightInTopic (insight, shouldAddToUserCollectionWithTopicN
 export function dislikeInsightInTopic (insight) {
   return new Promise((resolve, reject)=> {
     const transaction = Relay.Store.applyUpdate(
-      new DislikeInsightInTopicMutation({ insight, topic: insight.relationTopic }), {
+      new DislikeInsightInTopicMutation({ insight : insight.node, topic: insight.topic }), {
         onSuccess: (transaction) => {
           resolve(transaction)
         },

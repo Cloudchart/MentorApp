@@ -17,9 +17,9 @@ import React, {
 import Relay from 'react-relay';
 import { connect } from "react-redux";
 import { checkPermissionsNotification } from "../../system";
-import { Boris, Button, Loader, Topic, ExploreTopicAdd, ScrollListView } from "../../components";
-
+import { Boris, Button, Loader, Topic, ScrollListView, SubscribeTopicAdd } from "../../components";
 import { STORAGE_KEY } from "../../actions/actions";
+
 import { subscribeOnTopic } from "../../actions/topic";
 
 import * as device from "../../utils/device";
@@ -33,19 +33,19 @@ const dataSource = new ListView.DataSource({
 
 class SelectTopic extends Component {
 
+  state = {
+    buttonOpacity: new Animated.Value(0),
+    isLoadingTail: false,
+    showConfirmation: false,
+    topicConfirmationSave: null
+  }
+
   constructor (props) {
     super(props)
-
-    this.state = {
-      buttonOpacity: new Animated.Value(0),
-      isLoadingTail: false,
-      showConfirmation: false,
-      topicConfirmationSave: null
-    };
-
     this.PAGE_SIZE = 30;
 
     this._tryToAddTopic = this._tryToAddTopic.bind(this);
+    this._onPress = this._onPress.bind(this);
     this._onEndReached = this._onEndReached.bind(this);
     this._undoConfirmation = this._undoConfirmation.bind(this);
     this._onEndReached = this._onEndReached.bind(this);
@@ -63,9 +63,7 @@ class SelectTopic extends Component {
     if ( filterUserAddedTopic ) {
       return topics.edges.filter((topic) => !topic.node.isSubscribedByViewer)
     } else {
-      let test = this.props.viewer.topics.edges;
-      test = test.concat(test);
-      return test;//this.props.viewer.topics.edges;
+      return this.props.viewer.topics.edges;
     }
   }
 
@@ -84,21 +82,13 @@ class SelectTopic extends Component {
 
   /**
    *
+   * if the number is 3 topics
+   * back to the settings
    * @private
    */
-  _addTopic () {
+  _addTopicAndBack () {
     const { viewer, filterUserAddedTopic, navigator } = this.props;
     const { subscribedTopics } = viewer;
-    const { topicConfirmationSave } = this.state;
-
-    subscribeOnTopic({
-      topic: topicConfirmationSave.topic,
-      user: topicConfirmationSave.user
-    })
-    /**
-     * if the number is 3 topics
-     * back to the settings
-     */
     if ( filterUserAddedTopic && (subscribedTopics.edges.length + 1) == 3 ) {
       setTimeout(()=> {
         navigator.pop()
@@ -115,7 +105,7 @@ class SelectTopic extends Component {
   _undoConfirmation (params, evt) {
     switch ( params ) {
       case 'add':
-        this._addTopic()
+      //this._addTopicAndBack()
       case 'not_now':
         this.setState({ showConfirmation: false })
       default:
@@ -141,6 +131,9 @@ class SelectTopic extends Component {
     });
   }
 
+  _onPress () {
+    this.props.relay.forceFetch()
+  }
 
   /**
    * @private
@@ -156,11 +149,12 @@ class SelectTopic extends Component {
         return;
       }
 
-      checkPermissionsNotification().then((data)=> {
-        if ( data == 'off' ) {
-          navigator.push({ scene: 'notifications', title: 'Notifications' })
-        }
-      })
+      checkPermissionsNotification()
+        .then((data)=> {
+          if ( data == 'off' ) {
+            navigator.push({ scene: 'notifications', title: 'Notifications' })
+          }
+        })
     } catch ( error ) {
 
     }
@@ -201,7 +195,7 @@ class SelectTopic extends Component {
 
   _renderTopic (rowData, sectionID, rowID) {
     const { subscribedTopics } = this.props.viewer;
-    const confirmation = this.props.filterUserAddedTopic ? this._tryToAddTopic : null;
+    const _onPressUserAddedTopic = this.props.filterUserAddedTopic ? this._tryToAddTopic : null;
 
     return (
       <Topic
@@ -209,18 +203,20 @@ class SelectTopic extends Component {
         user={ this.props.viewer }
         subscribedTopics={subscribedTopics}
         index={ rowID }
-        onConfirmation={confirmation}/>
+        onPressUserAddedTopic={_onPressUserAddedTopic}
+        onPress={this._onPress}
+      />
     )
   }
 
   render () {
-    const { isLoadingTail, showConfirmation } = this.state;
+    const { isLoadingTail, showConfirmation, topicConfirmationSave } = this.state;
     const { filterUserAddedTopic, viewer } = this.props;
     const topicCount = viewer.subscribedTopics.edges.length;
     const styleScroll = { marginBottom: !topicCount ? device.size(120) : device.size(80) };
 
     if ( showConfirmation ) {
-      return <ExploreTopicAdd undo={this._undoConfirmation}/>
+      return <SubscribeTopicAdd undo={this._undoConfirmation} {...topicConfirmationSave}  />
     }
 
     return (

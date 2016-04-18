@@ -1,6 +1,5 @@
-import _ from "lodash";
 import {
-    SET_ADVICES
+  ACTION_SHOW_RANDOM_ADVICE,
 } from "../actions/actions";
 
 
@@ -10,19 +9,20 @@ import {
  * @param action
  * @returns {*}
  */
-const insights = (state = {
-  list: []
+const reactions = (state = {
+  show: false
 }, action) => {
   switch ( action.type ) {
-    case SET_ADVICES:
+    case ACTION_SHOW_RANDOM_ADVICE:
       return {
         ...state,
-        list: _.shuffle(action.insights)
+        show: action.show
       }
     default:
       return { ...state }
   }
 }
 
-export default insights;
+export default reactions;
+
 

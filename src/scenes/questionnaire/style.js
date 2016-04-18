@@ -5,7 +5,8 @@ import { root_view } from "../../styles/base";
 export default StyleSheet.create({
   container: {
     ...root_view,
-    paddingTop: device.size(0)
+    paddingTop: device.size(0),
+    paddingBottom: device.size(20)
   },
   boris: {
     paddingBottom: device.size(30)

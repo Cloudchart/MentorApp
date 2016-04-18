@@ -17,12 +17,13 @@ import * as device from "../../utils/device";
 const dimensions = Dimensions.get('window');
 
 class Share extends Component {
+
+  state = {
+    popoverShow: false
+  }
+
   constructor (props) {
     super(props)
-    this.state = {
-      popoverShow: false
-    }
-
     this._showPopover = this._showPopover.bind(this);
     this._copyLink = this._copyLink.bind(this);
     this._openUrlInSafari = this._openUrlInSafari.bind(this)

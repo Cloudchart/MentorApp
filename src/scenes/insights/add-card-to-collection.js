@@ -19,8 +19,7 @@ export const AddCard = (props) => {
       <LinearGradient colors={['#00aced', '#1cb8f6']} style={ {flex : 1} }>
         <TouchableOpacity
             activeOpacity={ 0.75 }
-            style={styles.controlShare}
-            onPress={props.onAddToCollection}>
+            style={styles.controlShare}>
           <Icon name="folder-open-o" style={[baseStyle.crumbIcon, {color : '#fff'}]}/>
           <Text style={ styles.controlShareText }>
             Add to collection

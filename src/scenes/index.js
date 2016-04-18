@@ -11,6 +11,7 @@ import InsightsForMe from './insights';
 import WebViewScreen from './web-view';
 import Profile from './profile';
 import ExploreTopics from './explore-topic';
+import ReplaceTopic from './replace-topic';
 import ReturnInApp from './return-in-app';
 import NetError from './network-error';
 import UserInsightsUseful from './user-insights-defails/user-insights-useful';
@@ -26,6 +27,7 @@ export {
   UserCollections,
   UserTopics,
   ExploreTopics,
+  ReplaceTopic,
   Welcome,
   SelectTopic,
   NotificationsScreen,

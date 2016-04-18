@@ -17,9 +17,9 @@ class MarkInsightUselessInCollectionMutation extends Relay.Mutation {
   getFatQuery () {
     return Relay.QL`
         fragment on MarkInsightUselessInCollectionMutationPayload {
+            collection
             insight
             insightID
-            collection
             insightEdge
         }
     `
@@ -27,22 +27,12 @@ class MarkInsightUselessInCollectionMutation extends Relay.Mutation {
 
   getConfigs () {
     const { insight, collection } = this.props;
-    return [
-      {
-        type: 'FIELDS_CHANGE',
-        fieldIDs: {
-          insight: insight.id,
-          collection: collection.id
-        }
-      }, {
-        type: 'RANGE_DELETE',
-        parentName: 'collection',
-        parentID: collection.id,
-        connectionName: 'collections',
-        deletedIDFieldName: 'insightID',
-        pathToConnection: [ 'user', 'collections' ]
+    return [ {
+      type: 'FIELDS_CHANGE',
+      fieldIDs: {
+        insight: insight.id
       }
-    ]
+    } ]
   }
 }
 

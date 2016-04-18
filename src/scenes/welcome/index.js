@@ -5,7 +5,7 @@ import React, {
   View
 } from "react-native";
 import { Boris, Button } from "../../components";
-import Relay from 'react-relay';
+import Relay, { RootContainer } from 'react-relay';
 import styles from "./style";
 
 
@@ -15,14 +15,12 @@ class Welcome extends Component {
     onForward: React.PropTypes.func
   };
 
+  state = {
+    buttonOpacity: new Animated.Value(0)
+  }
 
   constructor (props) {
     super(props)
-
-    this.state = {
-      buttonOpacity: new Animated.Value(0)
-    }
-
     this._navigatorReplace = this._navigatorReplace.bind(this)
   }
 
@@ -84,18 +82,18 @@ class Welcome extends Component {
 
 export default Relay.createContainer(Welcome, {
   fragments: {
-    viewer: () => Relay.QL`     
-      fragment on User {
-        id
-        name
-        topics(first: 100, filter: DEFAULT) {
-          edges {
-            node {
-              name
+    viewer: () => Relay.QL`
+        fragment on User {
+            id
+            name
+            topics(first: 100, filter: DEFAULT) {
+                edges {
+                    node {
+                        name
+                    }
+                }
             }
-          }
         }
-      }
     `
   }
 });

@@ -43,15 +43,15 @@ class Trash extends Component {
     }
 
 
-    return (
-      <TouchableOpacity
-        style={[styles.crumbIconWrapper, {opacity : route.showBadAdvice ? 0.5 : 1}]}
-        activeOpacity={ 0.75 }
-        onPress={this._showBadAdvice}>
-        <Icon name="trash" style={styles.crumbIconBasket}/>
-        <Text>&nbsp;</Text>
-        <Text style={styles.crumbIconBasketText}>{uselessCount}</Text>
-      </TouchableOpacity>
+    return (!uselessCount || route.showBadAdvice ? null :
+        <TouchableOpacity
+          style={styles.crumbIconWrapper}
+          activeOpacity={ 0.75 }
+          onPress={this._showBadAdvice}>
+          <Icon name="trash" style={styles.crumbIconBasket}/>
+          <Text>&nbsp;</Text>
+          <Text style={styles.crumbIconBasketText}>{uselessCount}</Text>
+        </TouchableOpacity>
     )
   }
 }

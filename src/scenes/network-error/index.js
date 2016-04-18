@@ -19,12 +19,12 @@ class NetError extends Component {
     onForward: React.PropTypes.func
   };
 
+  state = {
+    buttonOpacity: new Animated.Value(0)
+  }
+
   constructor (props) {
     super(props)
-    this.state = {
-      buttonOpacity: new Animated.Value(0)
-    }
-
     this._appStateChange = this._appStateChange.bind(this)
     this._netChange = this._netChange.bind(this)
     AppState.addEventListener('change', this._appStateChange)

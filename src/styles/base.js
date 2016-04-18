@@ -77,7 +77,7 @@ export default StyleSheet.create({
     borderBottomColor: '#E8E8E6',
     //borderBottomWidth: 1,
     position: 'relative',
-    top: device.size(-20),
+    top: device.size(-18),
     height: device.size(65)
   },
   title_item: {
@@ -109,7 +109,7 @@ export default StyleSheet.create({
   },
   crumbIconPlus: {
     ...crumbIcon,
-    fontSize: device.fontSize(30)
+    fontSize: device.fontSize(30, true)
   },
   crumbIconStar : {
     ...crumbIcon,
@@ -130,20 +130,20 @@ export default StyleSheet.create({
   },
   crumbIconAngle: {
     ...crumbIcon,
-    fontSize: device.fontSize(35),
+    fontSize: device.fontSize(37, true),
     bottom: 4
   },
 
   crumbIconSearch: {
     ...crumbIcon,
-    fontSize: device.fontSize(24),
+    fontSize: device.fontSize(24, true),
     fontWeight: '200',
     bottom: 0
   },
 
   crumbIconSettings: {
     ...crumbIcon,
-    fontSize: device.fontSize(35),
+    fontSize: device.fontSize(35, true),
     color: '#00c568',
     bottom: 2
   },

@@ -1,15 +1,15 @@
 import React, {
-    Component,
-    StyleSheet,
-    View,
-    Text,
-    ListView,
-    ScrollView,
-    TouchableOpacity
+  Component,
+  StyleSheet,
+  View,
+  Text,
+  ListView,
+  ScrollView,
+  TouchableOpacity
 } from "react-native";
 import Relay from 'react-relay';
-import { connect } from "react-redux";
 import { Boris, Answers, ScrollListView, Loader } from "../../components";
+import { answerTheQuestion } from "../../actions/questions";
 import styles from "./style";
 
 const dataSource = new ListView.DataSource({
@@ -19,70 +19,98 @@ const dataSource = new ListView.DataSource({
 
 class Questionnaire extends Component {
 
+  static defaultProps = {
+    questions: {}
+  }
+
+  state = {
+    isLoadingTail: false,
+    addControlShow: false
+  }
+
   constructor (props) {
     super(props)
-    this.state = {
-      loader: true,
-      isLoadingTail: false,
-      addControlShow: false
-    };
+
+    this.PAGE_SIZE = 30;
   }
 
   componentDidMount () {
-    /*setTimeout(()=> {
-      this.setState({ loader: false })
-    }, 1000)*/
+
   }
 
-  _onSelect (key) {
+  _onSelect (questionID, answerID) {
     const { navigator } = this.props;
-    navigator.push({
-      scene: 'select_topics',
-      title: 'Select up to 3 topics to start:',
-      data: { key }
-    })
+
+    answerTheQuestion({ questionID, answerID })
+      .then((transaction)=> {
+        navigator.push({
+          scene: 'select_topics',
+          title: 'Select up to 3 topics to start:'
+        })
+      })
   }
 
   _onEndReached () {
+    const { relay, viewer, questions } = this.props;
+    let pageNext = questions.pageInfo;
+    let count = relay.variables.count;
 
+    if ( !pageNext || !pageNext.hasNextPage ) {
+      return;
+    }
+
+    this.setState({ isLoadingTail: true })
+    relay.setVariables({ count: count + this.PAGE_SIZE }, (transaction) => {
+      if ( transaction.done ) this.setState({ isLoadingTail: false })
+    });
+  }
+
+  _renderAnswer (rawData, sectionID, rowID) {
+    const { questions } = this.props.viewer;
+    const question = questions.edges[ 0 ].node;
+    return (
+      <Answer
+        {...rawData.node}
+        rowID={rowID}
+        onSelect={this._onSelect.bind(this, question.id, rawData.node.id)}/>
+    )
   }
 
   render () {
-    const { loader, isLoadingTail } = this.state;
-    const { questions } = this.props;
+    const { isLoadingTail } = this.state;
+    const { questions } = this.props.viewer;
 
-    /*if ( loader ) {
-      return <Loader />
-    }*/
+    if ( !questions.edges.length ) {
+      return null;
+    }
+
+    const question = questions.edges[ 0 ].node;
+    const answers = question.answers.edges;
 
     return (
-        <View style={styles.container}>
-          <ScrollView showsVerticalScrollIndicator={false}>
+      <View style={styles.container}>
+        <ScrollView showsVerticalScrollIndicator={false}>
 
-            <Boris
-                size="small"
-                mood="positive"
-                note={"Tell me a bit about yourself so I can fine-tune my advice engines for you!"}
-                style={ styles.boris }
-            />
+          <Boris
+            size="small"
+            mood="positive"
+            note={`Tell me something about yourself so I can adjust my setup to serve you better.        ${question.content}`}
+            style={ styles.boris }
+          />
 
+          {!answers.length ? null :
             <ListView
-                dataSource={dataSource.cloneWithRows(questions.list)}
-                renderRow={(props, sectionID, rowID) => {
-                    return <Answer {...props}
-                      questionsCount={questions.list.length}
-                      rowID={rowID}
-                      onSelect={this._onSelect.bind(this)} />
-                  }}
-                pageSize={14}
-                isLoadingTail={isLoadingTail}
-                onEndReached={this._onEndReached.bind(this)}
-                onEndReachedThreshold={20}
-                showsVerticalScrollIndicator={false}
-                style={styles.answerList}
-            />
-          </ScrollView>
-        </View>
+              dataSource={dataSource.cloneWithRows(answers)}
+              renderRow={(rawData, sectionID, rowID) => this._renderAnswer(rawData, sectionID, rowID)}
+              pageSize={30}
+              isLoadingTail={isLoadingTail}
+              onEndReached={this._onEndReached.bind(this)}
+              onEndReachedThreshold={20}
+              showsVerticalScrollIndicator={false}
+              style={styles.answerList}
+            />}
+        </ScrollView>
+      </View>
     )
   }
 }
@@ -96,45 +124,100 @@ class Questionnaire extends Component {
 
 class Answer extends Component {
 
+  static defaultProps = {
+    id: 0,
+    content: '',
+    position: 1,
+    reaction: {
+      id: 0,
+      scope: '',
+      mood: '',
+      content: '',
+      weight: 0
+    }
+  }
+
   constructor (props) {
     super(props)
-
-    this.onSelect = this.props.onSelect.bind(null, this.props.id)
   }
 
   render () {
     return (
-        <TouchableOpacity
-            onPress={this.onSelect}
-            key={ this.props.key }
-            activeOpacity={ 0.75 }
-            style={styles.answer}>
-          <Text style={ styles.answerText }>
-            { this.props.value }
-          </Text>
-        </TouchableOpacity>
+      <TouchableOpacity
+        onPress={this.props.onSelect}
+        activeOpacity={ 0.75 }
+        style={styles.answer}>
+        <Text style={ styles.answerText }>
+          { this.props.content }
+        </Text>
+      </TouchableOpacity>
     )
   }
 }
 
 
-const ReduxComponent = connect(state => ({
-  questions: state.questions
-}))(Questionnaire)
+var botReactionFragment = Relay.QL`
+    fragment on BotReaction {
+        id
+        mood
+        content
+    }
+`;
 
-export default Relay.createContainer(ReduxComponent, {
-  fragments: {
-    viewer: () => Relay.QL`     
-      fragment on User {       
-        topics(first: 100, filter: DEFAULT) {
-          edges {
-            node {
-              name
-            }
-          }
+var answerFragment = Relay.QL`
+    fragment on Answer {
+        id
+        content
+        position
+        reaction {
+            ${botReactionFragment}        
         }
-      }
+    }
+`;
+
+var questionFragment = Relay.QL`
+    fragment on Question {
+        id
+        content
+        reaction {
+            ${botReactionFragment}
+        }
+        answers(first: 100) {
+            edges {
+                node {
+                    ${answerFragment}
+                }
+            }
+        }
+
+    }
+`;
+
+
+export default Relay.createContainer(Questionnaire, {
+  initialVariables: {
+    count: 30,
+    filter: 'ALL'
+  },
+  fragments: {
+    viewer: () => Relay.QL`
+        fragment on User {
+            questions(first: $count) {
+                edges {
+                    node {
+                        ${questionFragment}
+                    }
+                }
+                pageInfo {
+                    hasNextPage
+                    startCursor
+                    endCursor
+                }
+            }
+        }
     `
   }
 });
+
+
 

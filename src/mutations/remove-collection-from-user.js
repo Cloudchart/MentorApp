@@ -15,10 +15,7 @@ class RemoveCollectionFromUserMutation extends Relay.Mutation {
   getFatQuery () {
     return Relay.QL`
         fragment on RemoveCollectionFromUserMutationPayload {
-            collection {
-                id
-                name
-            }
+            collection
             collectionID
         }
     `
@@ -31,7 +28,6 @@ class RemoveCollectionFromUserMutation extends Relay.Mutation {
         parentName: 'collection',
         parentID: this.props.collection.id,
         connectionName: 'collections',
-        edgeName: 'collectionEdge',
         deletedIDFieldName: 'collectionID',
         pathToConnection: [ 'user', 'collections' ]
       },
@@ -40,7 +36,6 @@ class RemoveCollectionFromUserMutation extends Relay.Mutation {
         parentName: 'collection',
         parentID: this.props.collection.id,
         connectionName: 'collections',
-        edgeName: 'collectionEdge',
         deletedIDFieldName: 'collectionID'
       }
     ]

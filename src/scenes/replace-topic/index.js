@@ -18,7 +18,11 @@ const dataSource = new ListView.DataSource({
   rowHasChanged: (row1, row2) => row1 !== row2
 })
 
-class ExploreTopics extends Component {
+class ReplaceTopic extends Component {
+
+  static defaultProps = {
+    newTopic : null
+  }
 
   state = {
     loader: true,
@@ -43,17 +47,18 @@ class ExploreTopics extends Component {
    * @param topic
    * @private
    */
-  _selectTopic (topic) {
+  _replaceTopic (topic) {
     const { navigator } = this.props;
 
-    setTimeout(()=> {
+
+    /*setTimeout(()=> {
       navigator.push({
         scene: 'advice_for_me',
         title: topic.name,
         topicId: topic.id,
-        filter: 'PREVIEW'
+        filter : 'PREVIEW'
       })
-    }, 0)
+    }, 0)*/
   }
 
 
@@ -82,14 +87,13 @@ class ExploreTopics extends Component {
 
   _renderTopic (rowData, sectionID, rowID) {
     const { viewer } = this.props;
-    const topic = rowData.node;
 
     return (
       <TopicEmpty
-        topic={ topic }
+        topic={ rowData.node }
         user={ this.props.viewer }
         index={ rowID }
-        selectTopic={this._selectTopic.bind(this, topic)}/>
+        selectTopic={this._replaceTopic.bind(this, rowData.node)}/>
     )
   }
 
@@ -97,14 +101,10 @@ class ExploreTopics extends Component {
     const { viewer } = this.props;
     const { isLoadingTail } = this.state;
 
-    const topics = viewer.topics.edges.filter((topic)=>
-      !topic.node.isSubscribedByViewer
-    )
-
     return (
       <View style={styles.container}>
         <ScrollListView
-          dataSource={dataSource.cloneWithRows(topics)}
+          dataSource={dataSource.cloneWithRows(viewer.topics.edges)}
           renderRow={(rowData, sectionID, rowID) => this._renderTopic(rowData, sectionID, rowID)}
           pageSize={30}
           isLoadingTail={isLoadingTail}
@@ -120,7 +120,7 @@ class ExploreTopics extends Component {
 
 
 
-export default Relay.createContainer(ExploreTopics, {
+export default Relay.createContainer(ReplaceTopic, {
   initialVariables: {
     count: 30
   },
@@ -133,7 +133,6 @@ export default Relay.createContainer(ExploreTopics, {
                     node {
                         id
                         name
-                        isSubscribedByViewer
                         ${TopicEmpty.getFragment('topic')}
                     }
                 }

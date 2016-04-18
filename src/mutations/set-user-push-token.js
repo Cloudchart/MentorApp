@@ -7,8 +7,10 @@ class SetUserPushTokenMutation extends Relay.Mutation {
   }
 
   getVariables () {
+    const { token, user } = this.props;
     return {
-      token: this.props.token
+      token: token,
+      userId : user.id
     }
   }
 
@@ -21,11 +23,12 @@ class SetUserPushTokenMutation extends Relay.Mutation {
   }
 
   getConfigs () {
+    const { token, user } = this.props;
     return [
       {
         type: 'FIELDS_CHANGE',
         fieldIDs: {
-          user: this.props.user
+          user: user.id
         }
       }
     ]

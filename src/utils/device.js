@@ -37,13 +37,13 @@ function size (value) {
   return value;
 }
 
-function fontSize (value) {
+function fontSize (value, opt_param) {
   value = Number(value);
   if ( isTablet() ) {
     return value * 1.15
   }
 
-  if ( isIphone5() ) {
+  if ( !opt_param && isIphone5() ) {
     return value * 0.8
   }
 

@@ -14,21 +14,16 @@ import styles from "./style";
 import baseStyles from "../../styles/base";
 
 import {
-  SubscribeOnTopicMutation,
-  UnsubscribeFromTopicMutation
-} from '../../mutations';
-
-import {
   unsubscribeFromTopic,
   subscribeOnTopic
 } from '../../actions/topic';
 
 class Topic extends Component {
 
+  state = {}
+
   constructor (props) {
     super(props)
-    this.state = {};
-
     this._subscribeOnTopic = this._subscribeOnTopic.bind(this);
     this._unsubscribeFromTopic = this._unsubscribeFromTopic.bind(this);
   }
@@ -39,10 +34,10 @@ class Topic extends Component {
    * @private
    */
   _subscribeOnTopic () {
-    const { onConfirmation, topic, user } = this.props;
+    const { onPressUserAddedTopic, topic, user } = this.props;
 
-    if ( onConfirmation ) {
-      onConfirmation(topic, user);
+    if ( onPressUserAddedTopic ) {
+      onPressUserAddedTopic(topic, user);
       return;
     }
 
@@ -52,6 +47,9 @@ class Topic extends Component {
     }
 
     subscribeOnTopic({ topic, user })
+      .then(()=> {
+        this.props.relay.forceFetch()
+      })
   }
 
   /**
@@ -61,6 +59,9 @@ class Topic extends Component {
   _unsubscribeFromTopic () {
     const { topic, user } = this.props;
     unsubscribeFromTopic({ topic, user })
+      .then(()=> {
+        this.props.onPress && this.props.onPress(topic, user);
+      })
   }
 
   render () {
@@ -95,16 +96,12 @@ export default Relay.createContainer(Topic, {
   fragments: {
     user: () => Relay.QL`
         fragment on User {
-            ${SubscribeOnTopicMutation.getFragment('user')}
-            ${UnsubscribeFromTopicMutation.getFragment('user')}
             id
         }
     `,
 
     topic: () => Relay.QL`
         fragment on Topic {
-            ${SubscribeOnTopicMutation.getFragment('topic')}
-            ${UnsubscribeFromTopicMutation.getFragment('topic')}
             id
             name
             isSubscribedByViewer

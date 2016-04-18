@@ -4,7 +4,7 @@ import * as device from "../../utils/device";
 export const Colors = {
   blue: 'hsl(202, 78%, 51%)',
   green: 'hsl(137, 54%, 50%)',
-  orange: 'hsl(44, 94%, 54%)',
+  orange: '#f8bc35',
   red: 'hsl(359, 73%, 55%)'
 }
 

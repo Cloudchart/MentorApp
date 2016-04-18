@@ -90,7 +90,7 @@ class NotificationsScreen extends Component {
         <View style={ styles.containerButtons }>
           <Button
             label="Turn on notifications"
-            onPress={this._customAlert}
+            onPress={this._requestPermissions}
             color="blue"
           />
           <TransparentButton

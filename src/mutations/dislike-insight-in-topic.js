@@ -34,15 +34,15 @@ class DislikeInsightInTopicMutation extends Relay.Mutation {
           insight: insight.id,
           topic: topic.id
         }
-      },
-      {
+      }
+      /* ,{
         type: 'RANGE_DELETE',
         parentName: 'topic',
         parentID: topic.id,
         connectionName: 'topics',
         deletedIDFieldName: 'insightID',
         pathToConnection: [ 'user', 'topics' ]
-      }
+      }*/
     ]
   }
 }

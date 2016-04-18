@@ -12,16 +12,17 @@ import styles from "./style";
 
 class Connect extends Component {
 
+  state = {
+    errorRegister: false
+  }
+
   constructor (props) {
     super(props)
-    this.state = {
-      errorRegister: false
-    }
-
     this._onLogin = this._onLogin.bind(this)
     this._onError = this._onError.bind(this)
     this._onCancel = this._onCancel.bind(this)
     this._onPermissionsMissing = this._onPermissionsMissing.bind(this)
+    this._skip = this._skip.bind(this)
   }
 
   componentDidMount () {
@@ -30,9 +31,10 @@ class Connect extends Component {
 
   _onLogin (data) {
     const { navigator } = this.props;
+
     setTimeout(()=> {
       this.setState({ errorRegister: false })
-      navigator.push({ scene: 'questionnaire', title: '' })
+      this._skip();
     }, 0)
   }
 
@@ -50,6 +52,18 @@ class Connect extends Component {
 
   _onPermissionsMissing (data) {
 
+  }
+
+  _skip () {
+    const { navigator, viewer } = this.props;
+    if ( !viewer.questions.edges.length ) {
+      navigator.push({
+        scene: 'select_topics',
+        title: 'Select up to 3 topics to start:'
+      })
+    } else {
+      navigator.push({ scene: 'questionnaire', title: '' })
+    }
   }
 
   render () {
@@ -83,7 +97,7 @@ class Connect extends Component {
           />
           <TransparentButton
             label="Skip"
-            onPress={ ()=>{ navigator.push({scene : 'questionnaire', title: '' }) } }
+            onPress={this._skip}
             color="blue"
             style={ styles.skipButtonStyle }
           />
@@ -97,10 +111,10 @@ export default Relay.createContainer(Connect, {
   fragments: {
     viewer: () => Relay.QL`
         fragment on User {
-            topics(first: 1, filter: DEFAULT) {
+            questions(first: 3) {
                 edges {
                     node {
-                        name
+                        id
                     }
                 }
             }

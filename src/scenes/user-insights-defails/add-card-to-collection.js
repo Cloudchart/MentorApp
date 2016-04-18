@@ -17,7 +17,6 @@ import styles from "./style";
 class AddCard extends Component {
   constructor(props){
     super(props)
-
   }
   render(){
     return (

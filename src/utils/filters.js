@@ -141,7 +141,7 @@ let Filters = {
   },
 
   /**
-   * choosePlural(11, ['стол', 'стола', 'столов'])
+   * filterPlural(11, ['стол', 'стола', 'столов'])
    */
   filterPlural(number, titles) {
     var cases = [ 2, 0, 1, 1, 1, 2 ];

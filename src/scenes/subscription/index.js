@@ -22,11 +22,13 @@ const ActiveOpacity = {
 };
 
 class Subscription extends Component {
+
+  state = {
+    loadedProducts: {}
+  }
+  
   constructor (props, context) {
     super(props, context);
-    this.state = {
-      loadedProducts: {}
-    };
   }
 
   componentDidMount () {

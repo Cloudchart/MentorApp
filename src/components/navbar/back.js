@@ -8,7 +8,13 @@ const AngleLeft = (props) => {
     <TouchableOpacity
       activeOpacity={ 0.75 }
       style={styles.crumbIconPlaceholder}
-      onPress={()=>{props.navigator.pop()}}>
+      onPress={()=>{
+        if(props.back) {
+          props.back()
+        } else {
+          props.navigator.pop()
+        }               
+      }}>
       <Icon name="angle-left" style={styles.crumbIconAngle}/>
     </TouchableOpacity>
   )

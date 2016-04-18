@@ -6,30 +6,16 @@ import React, {
   TouchableHighlight,
   View,
   ListView,
-  DeviceEventEmitter
+  DeviceEventEmitter,
+  PanResponder
 } from "react-native";
-import { Loader, ScrollListView } from "../../components";
-import {
-  UPDATE_COLLECTIONS,
-  ACTION_ADD_USER_COLLECTION
-} from "../../actions/actions";
 import Relay from 'react-relay';
 import { connect } from "react-redux";
 import { ScrollHandler } from "../../utils/animation";
-
-import {
-  createCollection,
-  removeCollection,
-  addToCollection
-} from "../../actions/collections";
-
-import {
-  COUNT_INSIGHTS_PLUS,
-  SET_COLLECTIONS,
-  COUNT_INSIGHTS_COLLECTIONS
-} from "../../actions/actions";
-
+import { createCollection, removeCollection, addToCollection } from "../../actions/collections";
+import * as actions from '../../actions/actions';
 import { AddInsightToCollectionMutation } from "../../mutations";
+import { ScrollListView } from "../../components";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { EventManager } from "../../event-manager";
 import UserCollectionItem from "./collection-item";
@@ -44,23 +30,23 @@ const dataSource = new ListView.DataSource({
 
 class UserCollections extends Component {
 
+  state = {
+    loader: false,
+    isLoadingTail: false,
+    collectionName: '',
+    collections: [],
+    addControlShow: false
+  }
+
   constructor (props) {
     super(props)
-
-    this.state = {
-      loader: false,
-      isLoadingTail: false,
-      collectionName: '',
-      addControlShow: false
-    };
-
     this.PAGE_SIZE = 20;
 
     // subscribe to an event to create a new collection
     this._showControlAddNewItem = this._showControlAddNewItem.bind(this);
     this._forceFetch = this._forceFetch.bind(this);
-    EventManager.addListener(ACTION_ADD_USER_COLLECTION, this._showControlAddNewItem);
-    EventManager.addListener(UPDATE_COLLECTIONS, this._forceFetch)
+    EventManager.addListener(actions.ACTION_ADD_USER_COLLECTION, this._showControlAddNewItem);
+    EventManager.addListener(actions.UPDATE_COLLECTIONS, this._forceFetch)
 
     this.keyboardDidShowSubscription = DeviceEventEmitter.addListener('keyboardDidShow', this._keyboardDidShow.bind(this));
     this.keyboardWillHideSubscription = DeviceEventEmitter.addListener('keyboardWillHide', this._keyboardWillHide.bind(this));
@@ -72,37 +58,41 @@ class UserCollections extends Component {
     this._onEndReached = this._onEndReached.bind(this);
     this._keyboardDidShow = this._keyboardDidShow.bind(this);
     this.renderHeader = this.renderHeader.bind(this);
+
+    this._panResponder = PanResponder.create({
+      onStartShouldSetPanResponderCapture: (evt, gestureState) => {
+        this.setState({ closeAllItems: true });
+        return false;
+      }
+    });
   }
 
-  componentWillReceiveProps (nextProps) {
 
+  componentWillReceiveProps (nextProps) {
+    this.state.collections = _.map(nextProps.viewer.collections.edges, 'node');
+    this._updateCounterAdvice(nextProps.viewer.collections);
   }
 
   componentDidMount () {
     const { dispatch, viewer } = this.props;
-    dispatch({ type: SET_COLLECTIONS, collections: viewer.collections })
+    dispatch({ type: actions.SET_COLLECTIONS, collections: viewer.collections })
   }
 
   componentWillMount () {
     this.state.advice = this.props.advice;
+    this.state.collections = _.map(this.props.viewer.collections.edges, 'node');
   }
 
   componentDidUpdate (prevProps) {
     const { dispatch, viewer } = this.props;
-    const prevCountCollections = prevProps.viewer.collections.edges.length;
-
-    if ( viewer.collections.edges.length < prevCountCollections ) {
-      dispatch({
-        type: COUNT_INSIGHTS_COLLECTIONS,
-        collections: viewer.collections
-      })
+    if ( this.state.collections < viewer.collections.edges.length ) {
+      this._updateCounterAdvice(viewer.collections)
     }
-
   }
 
   componentWillUnmount () {
-    EventManager.removeListener(ACTION_ADD_USER_COLLECTION, this._showControlAddNewItem);
-    EventManager.removeListener(UPDATE_COLLECTIONS, this._forceFetch);
+    EventManager.removeListener(actions.ACTION_ADD_USER_COLLECTION, this._showControlAddNewItem);
+    EventManager.removeListener(actions.UPDATE_COLLECTIONS, this._forceFetch);
     this.keyboardDidShowSubscription.remove()
     this.keyboardWillHideSubscription.remove()
   }
@@ -116,7 +106,7 @@ class UserCollections extends Component {
   _keyboardDidShow (frames) {
     if ( !frames.endCoordinates ) return;
     const { viewer } = this.props;
-    const coll = viewer.collections.edges;
+    const coll = this.state.collections;
     if ( coll.length && coll.length > 3 ) {
       setTimeout(() => {
         let scrollResponder = this.refs._scrollView.getScrollResponder();
@@ -138,6 +128,22 @@ class UserCollections extends Component {
     setTimeout(()=> {
       scrollResponder.scrollTo({ y: 0, animated: false })
     }, 0)
+  }
+
+  /**
+   *
+   * @param collections
+   * @private
+   */
+  _updateCounterAdvice (collections) {
+    const { dispatch } = this.props;
+    const throttle = _.throttle(()=> {
+      dispatch({
+        type: actions.COUNT_INSIGHTS_COLLECTIONS,
+        collections: collections
+      })
+    }, 100);
+    throttle();
   }
 
 
@@ -166,13 +172,36 @@ class UserCollections extends Component {
     }
 
     createCollection({ collection: collectionData, user: viewer })
-      .then((transaction)=> {
-        this._forceFetch();
-        this.setState({ collectionName: '' })
+      .then((tran)=> {
+        if ( tran.addCollectionToUser && tran.addCollectionToUser.collection ) {
+          let collection = tran.addCollectionToUser.collection;
+          this.state.collections.push(this.prepareCollectionData(collection))
+          this.setState({
+            collections: [ ...this.state.collections ],
+            collectionName: ''
+          })
+        }
       })
       .catch((transaction)=> {
         this.setState({ collectionName: '' })
       })
+  }
+
+  /**
+   *
+   * @param coll
+   * @returns {{}}
+   */
+  prepareCollectionData (coll) {
+    let collection = { ...coll };
+    collection.__dataID__ = collection.id;
+    collection.insights = {
+      count: 0,
+      edges: [],
+      usefulCount: 0,
+      uselessCount: 0
+    };
+    return collection
   }
 
 
@@ -184,6 +213,15 @@ class UserCollections extends Component {
   _deleteRow (collection) {
     const viewer = this.props.viewer;
     removeCollection({ collection: collection, user: viewer })
+      .then((tran)=> {
+        if ( tran.removeCollectionFromUser && tran.removeCollectionFromUser.collection ) {
+          const collections = this.state.collections.filter((coll)=> {
+            return coll.id != tran.removeCollectionFromUser.collection.id
+          })
+          this.setState({ collections, collectionName: '' })
+          this._forceFetch()
+        }
+      })
   }
 
   /**
@@ -198,7 +236,7 @@ class UserCollections extends Component {
     addToCollection({ insight: this.state.advice, collection })
       .then((transaction)=> {
         this._forceFetch();
-        dispatch({ type: COUNT_INSIGHTS_PLUS })
+        dispatch({ type: actions.COUNT_INSIGHTS_PLUS })
       })
   }
 
@@ -216,6 +254,7 @@ class UserCollections extends Component {
     }
   }
 
+  // TODO:
   _forceFetch () {
     this.props.relay.forceFetch();
   }
@@ -291,10 +330,10 @@ class UserCollections extends Component {
    * @private
    */
   _renderCollectionItem (rowData, sectionID, rowID) {
-    const collection = rowData.node;
+    const collection = rowData;
     const { viewer } = this.props;
 
-    const last = (parseInt(rowID) + 1) == viewer.collections.edges.length;
+    const last = (parseInt(rowID) + 1) == this.state.collections.length;
     const { addControlShow, advice } = this.state;
     const isShow = addControlShow && last;
 
@@ -314,6 +353,7 @@ class UserCollections extends Component {
           <UserCollectionItem
             collection={collection}
             user={viewer}
+            closeAllItems={this.state.closeAllItems}
             deleteRow={ this._deleteRow }
             pressRow={ this._onPressRow.bind(this, collection) }
           />
@@ -321,6 +361,12 @@ class UserCollections extends Component {
         </View>
       )
     }
+  }
+
+  _renderList () {
+    return this.state.collections.map((collection, index)=> {
+      return this._renderCollectionItem(collection, null, index)
+    })
   }
 
   render () {
@@ -336,7 +382,7 @@ class UserCollections extends Component {
     }
 
     return (
-      <View style={ styles.container }>
+      <View style={ styles.container } {...this._panResponder.panHandlers}>
         <ScrollView
           onScroll={_scroll}
           ref="_scrollView"
@@ -345,16 +391,16 @@ class UserCollections extends Component {
           automaticallyAdjustContentInsets={false}
           scrollEventThrottle={16}
           showsVerticalScrollIndicator={true}>
-          <ScrollListView
-            dataSource={dataSource.cloneWithRows(viewer.collections.edges)}
+          <ListView
+            enableEmptySections={true}
+            dataSource={dataSource.cloneWithRows(this.state.collections)}
             renderRow={(rowData, sectionID, rowID) => this._renderCollectionItem(rowData, sectionID, rowID)}
             pageSize={20}
             isLoadingTail={isLoadingTail}
             renderHeader={this.renderHeader}/>
 
 
-          {/* infernal */}
-          {!viewer.collections.edges.length ? this._addNewItem() : null  }
+          {!this.state.collections.length ? this._addNewItem() : null  }
           <View ref="newItemInput"></View>
         </ScrollView>
       </View>

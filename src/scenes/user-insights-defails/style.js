@@ -46,16 +46,6 @@ export default StyleSheet.create({
     paddingVertical: device.size(10),
     backgroundColor: 'transparent'
   },
-  //pass into a component Card
-  cardText: {
-    color: '#000',
-    flex: 1,
-    lineHeight: device.fontSize(40),
-    fontSize: device.fontSize(34),
-    fontWeight: '500',
-    overflow: 'hidden'
-  },
-
 
   icons: {
     fontSize: device.fontSize(60),
@@ -77,5 +67,10 @@ export default StyleSheet.create({
     color: '#fff',
     fontWeight: '500',
     marginLeft: device.size(15)
+  },
+  borisContainerCenter: {
+    flex: 1,
+    justifyContent: 'center',
+    marginBottom: device.size(30)
   }
 })

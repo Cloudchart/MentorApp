@@ -1,7 +1,7 @@
 import Relay from 'react-relay'
 
 class AddCollectionToUserMutation extends Relay.Mutation {
-  
+
   getMutation () {
     return Relay.QL`mutation { addCollectionToUser }`
   }
@@ -14,8 +14,11 @@ class AddCollectionToUserMutation extends Relay.Mutation {
 
   getFatQuery () {
     return Relay.QL`
-        fragment on AddCollectionToUserMutationPayload {
-            collection
+        fragment on AddCollectionToUserMutationPayload @relay(pattern: true) {
+            collection {
+                id
+                name
+            }
             collectionID
             collectionEdge
         }
@@ -34,6 +37,7 @@ class AddCollectionToUserMutation extends Relay.Mutation {
                         id
                         name
                     }
+                    collectionID
                     collectionEdge
                 }
           `

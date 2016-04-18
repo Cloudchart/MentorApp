@@ -18,7 +18,6 @@ class ScrollListView extends Component {
 
   constructor (props, context) {
     super(props, context);
-
     this.renderHeader = this.renderHeader.bind(this);
     this.renderFooter = this.renderFooter.bind(this);
     this.renderScrollComponent = this.renderScrollComponent.bind(this);
@@ -122,7 +121,9 @@ class ScrollListView extends Component {
       horizontal,
       showsHorizontalScrollIndicator,
       panHandlers,
-      scrollEnabled
+      scrollEnabled,
+      pageSize,
+      ...others
     } = this.props;
 
     const panResponder = panHandlers ? this._panResponder.panHandlers : {};
@@ -130,6 +131,7 @@ class ScrollListView extends Component {
       <ScrollView
         {...panResponder}
         style={style}
+        pageSize={pageSize}
         keyboardShouldPersistTaps={false}
         scrollEnabled={scrollEnabled}
         horizontal={ horizontal }
@@ -139,7 +141,9 @@ class ScrollListView extends Component {
         onScroll={this._onScrollHandler.bind(this)}
         scrollEventThrottle={1}
         automaticallyAdjustContentInsets={true}
-        showsHorizontalScrollIndicator={showsHorizontalScrollIndicator}/>
+        showsHorizontalScrollIndicator={showsHorizontalScrollIndicator}
+        {...others}
+      />
     )
   }
 
@@ -155,7 +159,8 @@ class ScrollListView extends Component {
       pageSize,
       onEndReachedThreshold,
       showsVerticalScrollIndicator,
-      scrollEnabled
+      scrollEnabled,
+      ...others
     } = this.props;
 
     return (
@@ -171,6 +176,7 @@ class ScrollListView extends Component {
         pageSize={pageSize}
         onEndReachedThreshold={onEndReachedThreshold}
         showsVerticalScrollIndicator={showsVerticalScrollIndicator}
+        {...others}
       />
     );
   }

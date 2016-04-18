@@ -2,25 +2,11 @@ import Relay from 'react-relay'
 
 class SubscribeOnTopicMutation extends Relay.Mutation {
 
-  static fragments = {
-    topic: () => Relay.QL`
-      fragment on Topic {
-        id
-      }
-    `,
-
-    user: () => Relay.QL`
-      fragment on User {
-        id
-      }
-    `
-  };
-
   getMutation() {
     return Relay.QL`mutation { subscribeOnTopic }`
   }
 
-  getVariables() {
+  getVariables () {
     return {
       topicID: this.props.topic.id
     }
@@ -28,33 +14,25 @@ class SubscribeOnTopicMutation extends Relay.Mutation {
 
   getFatQuery() {
     return Relay.QL`
-      fragment on SubscribeOnTopicMutationPayload {
-        topic {
-          isSubscribedByViewer
+        fragment on SubscribeOnTopicMutationPayload {
+            topic {
+                isSubscribedByViewer
+            }
+            topicEdge
+            user {
+                topics
+            }
         }
-        topicEdge
-        user {
-          topics
-        }
-      }
     `
   }
 
-  getConfigs() {
+  getConfigs () {
     return [
       {
         type: 'FIELDS_CHANGE',
         fieldIDs: {
-          topic: this.props.topic.id
-        }
-      }, {
-        type: 'RANGE_ADD',
-        parentName: 'user',
-        parentID: this.props.user.id,
-        connectionName: 'topics',
-        edgeName: 'topicEdge',
-        rangeBehaviors: {
-          'filter(SUBSCRIBED)': 'append'
+          topic: this.props.topic.id,
+          user: this.props.user.id
         }
       }
     ]

@@ -12,12 +12,24 @@ import { FBSDKLoginManager } from "react-native-fbsdklogin";
 
 class FBLoginButton extends Component {
 
+  static propTypes = {
+    style: View.propTypes.style,
+    onPress: React.PropTypes.func,
+    onLogin: React.PropTypes.func,
+    onLogout: React.PropTypes.func
+  }
+
+  static defaultProps = {
+    permissions: [ "email", "user_friends" ]
+  }
+
+  state = {
+    errorRegister: false,
+    user: null
+  }
+
   constructor (props) {
     super(props)
-    this.state = {
-      errorRegister: false,
-      user: null
-    }
     FBSDKLoginManager.setLoginBehavior('native');
     this.onPress = this.onPress.bind(this)
   }
@@ -103,16 +115,5 @@ const Logout = (props) => (
     </Text>
   </Button>
 )
-
-FBLoginButton.propTypes = {
-  style: View.propTypes.style,
-  onPress: React.PropTypes.func,
-  onLogin: React.PropTypes.func,
-  onLogout: React.PropTypes.func
-}
-
-FBLoginButton.defaultProps = {
-  permissions: [ "email", "user_friends" ]
-}
 
 export default FBLoginButton;

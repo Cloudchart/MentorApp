@@ -25,15 +25,14 @@ import {
 
 class UserCollectionItem extends Component {
 
+  state = {
+    isLoadingTail: false,
+    visibility: 0,
+    isOpen: false
+  }
+
   constructor (props) {
     super(props)
-
-    this.state = {
-      isLoadingTail: false,
-      visibility: 0,
-      isOpen: false
-    }
-
     this.deleteNote = this.deleteNote.bind(this);
 
     this._swipeBtns = [ {
@@ -54,6 +53,11 @@ class UserCollectionItem extends Component {
     } ];
   }
 
+  componentWillReceiveProps (nextProps) {
+    if ( nextProps.closeAllItems ) {
+      this.state.closeAllItems = nextProps.closeAllItems;
+    }
+  }
 
   deleteNote () {
     setTimeout(()=> {
@@ -70,6 +74,7 @@ class UserCollectionItem extends Component {
     if ( this.openedRight ) {
       this.openedRight = false;
     }
+    this.state.closeAllItems = false;
   }
 
   _adviceItem (props, i) {
@@ -98,6 +103,7 @@ class UserCollectionItem extends Component {
         <Swipeout
           right={this._swipeBtns}
           autoClose='true'
+          close={this.state.closeAllItems}
           autoCloseAfterPressButton='false'
           openedRightCallback={this._openedRightCallback.bind(this)}
           closeSwipeoutCallback={this._closeSwipeoutCallback.bind(this)}
@@ -109,7 +115,7 @@ class UserCollectionItem extends Component {
               { collection.name }
             </Text>
             <Text style={ styles.collectionCounterText }>
-              { !insights.count ? '∞' : insights.count }
+              { !insights.count ? 0 : insights.count }
             </Text>
           </View>
         </Swipeout>

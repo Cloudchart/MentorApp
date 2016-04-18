@@ -1,27 +1,8 @@
-import {
-  Connect,
-  InsightsForMe,
-  Questionnaire,
-  Welcome,
-  Settings,
-  Subscription,
-  SystemThemesList,
-  UserCollections,
-  UserTopics,
-  SelectTopic,
-  ExploreTopics,
-  NotificationsScreen,
-  UserInsightsUseful,
-  UserInsightsUseless,
-  Profile,
-  WebViewScreen,
-  ReturnInApp,
-  NetError
-} from "./scenes";
-
-import React from "react-native";
+import * as Scenes from './scenes';
+import React, { View } from "react-native";
 import Relay, { RootContainer } from 'react-relay';
 import { Loader } from "./components";
+import styles from "./styles/base";
 import Application from './app';
 
 /**
@@ -34,68 +15,66 @@ export function renderScreen (params) {
 
   switch ( scene ) {
     case 'connect':
-      return <Connect {...screenParams} />
+      return <Scenes.Connect {...screenParams} />
     case 'advice_for_me':
       return prepareComponentQueryNode(
-        InsightsForMe,
+        Scenes.InsightsForMe,
         screenParams,
         {
           id: screenParams.topicId,
-          filter: 'UNRATED'
+          filter: screenParams.filter || 'UNRATED'
         },
         (data)=> {
-          return <InsightsForMe {...screenParams} {...data} />
+          return <Scenes.InsightsForMe {...screenParams} {...data} />
         }
       )
     case 'questionnaire':
-      return <Questionnaire {...screenParams} />
+      return <Scenes.Questionnaire {...screenParams} />
     case 'select_topics':
-      return <SelectTopic {...screenParams} />
+      return <Scenes.SelectTopic {...screenParams}  />
     case 'welcome':
-      return <Welcome {...screenParams}  />
+      return <Scenes.Welcome {...screenParams}  />
     case 'settings':
-      return <Settings {...screenParams} />
+      return <Scenes.Settings {...screenParams} />
     case 'subscription':
-      return <Subscription {...screenParams} />
-    case 'system_themes_list':
-      return <SystemThemesList {...screenParams}  />
+      return <Scenes.Subscription {...screenParams} />
     case 'user-collections':
-      return <UserCollections {...screenParams} />
+      return <Scenes.UserCollections {...screenParams} />
     case 'user-topics':
-      return <UserTopics {...screenParams} />
+      return <Scenes.UserTopics {...screenParams} />
     case 'explore-topic':
-      return <ExploreTopics {...screenParams} />
+      return <Scenes.ExploreTopics {...screenParams} />
+    case 'replace-topic':
+      return <Scenes.ReplaceTopic {...screenParams} />
     case 'insights_useful':
-      return prepareComponentQueryNode(UserInsightsUseful, screenParams, {
+      return prepareComponentQueryNode(Scenes.UserInsightsUseful, screenParams, {
           id: screenParams.collectionId,
           filter: 'USEFUL'
         },
         (data, readyState)=> {
-          return <UserInsightsUseful
-            {...screenParams}
-            {...data}
-            readyState={readyState} />
+          return <Scenes.UserInsightsUseful {...screenParams} {...data} />
         }
       )
     case 'insights_useless':
-      return prepareComponentQueryNode(UserInsightsUseless, screenParams, {
+      return prepareComponentQueryNode(Scenes.UserInsightsUseless, screenParams, {
           id: screenParams.collectionId,
           filter: 'USELESS'
         },
         (data, readyState)=> {
-          return <UserInsightsUseless
+          return <Scenes.UserInsightsUseless
             {...screenParams}
             {...data}
-            readyState={readyState} />}
+            readyState={readyState}/>
+        }
       )
     case 'notifications':
-      return <NotificationsScreen {...screenParams} />
+      return <Scenes.NotificationsScreen {...screenParams} />
     case 'profile':
-      return <Profile {...screenParams}  />
+      return <Scenes.Profile {...screenParams}  />
     case 'web-view':
-      return <WebViewScreen {...screenParams}  />
+      return <Scenes.WebViewScreen {...screenParams}  />
     case 'return_in_app_after_min':
-      return <ReturnInApp {...screenParams} />
+      return <Scenes.ReturnInApp {...screenParams} />
     default:
       return null
   }
@@ -113,6 +92,10 @@ function prepareComponentQueryNode (component, params, route, callback) {
     <RootContainer
       Component={component}
       route={new QueryNodeId({nodeID : route.id, filter : route.filter })}
+      forceFetch={true}
+      renderLoading={(error, retry) => {
+         <View style={styles.scene} />
+      }}
       renderFetched={callback}/>
   )
 }
@@ -128,6 +111,9 @@ export function prepareRootRouter (store) {
       store={store}
       Component={Application}
       route={new ViewerRoute()}
+      renderLoading={(error, retry) => {
+         <View style={styles.scene} />
+      }}
       renderFailure={(error, retry) => {
         if(error &&  (error == 'TypeError: Network request failed')) {
             return (

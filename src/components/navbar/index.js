@@ -13,8 +13,9 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import IconMaterial from "react-native-vector-icons/MaterialIcons";
 import styles from "../../styles/base";
 import Trash from "./trash";
+import Settings from "./settings";
 import AngleLeft from "./back";
-import Search from "./search";
+import NavLogo from "./nav-logo";
 import CounterAdvice from "./counter_advice";
 import { ACTION_ADD_USER_COLLECTION } from "../../actions/actions";
 
@@ -23,7 +24,9 @@ const backRouterIcon = [
   'insights_useful',
   'user-collections',
   'subscription',
-  'select_topics',
+  //'select_topics',
+  'replace-topic',
+  'connect',
   'questionnaire',
   'notifications',
   'profile',
@@ -40,8 +43,16 @@ const settings = [
 export const navBarRouteMapper = {
   LeftButton: (route, navigator) => {
 
+    if ( route.scene == 'advice_for_me' && route.filter ) {
+      return <AngleLeft navigator={navigator}/>
+    }
+
+    if ( route.scene == 'select_topics' && route.filterUserAddedTopic ) {
+      return <AngleLeft navigator={navigator}/>
+    }
+
     if ( _.includes(backRouterIcon, route.scene) ) {
-      return <AngleLeft navigator={navigator} />
+      return <AngleLeft navigator={navigator}/>
     }
     if ( _.includes(settings, route.scene) ) {
       return <Settings navigator={navigator}/>
@@ -53,6 +64,9 @@ export const navBarRouteMapper = {
     const { title } = route;
     switch ( route.scene ) {
       case 'advice_for_me':
+        if ( route.filter ) {
+          return <LaunchTitle title={title}/>
+        }
         return <NavLogo />
       case 'all_for_now':
         return <NavLogo />
@@ -70,29 +84,13 @@ export const navBarRouteMapper = {
       case 'insights_useful':
         return <Trash navigator={navigator} route={route}/>
       case 'advice_for_me':
-        return <CounterAdvice navigator={navigator}/>
-      case 'all_for_now':
-        return <CounterAdvice navigator={navigator}/>
+        if ( route.filter != 'PREVIEW' ) {
+          return <CounterAdvice navigator={navigator}/>
+        }
       default:
         return <View />
     }
   }
-}
-
-
-const Settings = (props) => {
-  function push () {
-    props.navigator.push({ scene: 'settings', title: 'Settings' })
-  }
-
-  return (
-    <TouchableOpacity
-      activeOpacity={ 0.75 }
-      style={styles.crumbIconPlaceholder}
-      onPress={push}>
-      <Icon name="cog" style={styles.crumbIconSettings}/>
-    </TouchableOpacity>
-  )
 }
 
 const Add = (props) => {
@@ -109,7 +107,12 @@ const Add = (props) => {
 const AngleLeftReplace = (props) => {
 
   function replace () {
-    props.navigator.replace({ scene: props.scene, title: props.title || '' })
+    if ( props.back ) {
+      props.back()
+    } else {
+      props.navigator.replace({ scene: props.scene, title: props.title || '' })
+    }
+
   }
 
   return (
@@ -119,16 +122,6 @@ const AngleLeftReplace = (props) => {
       onPress={replace}>
       <Icon name="angle-left" style={styles.crumbIconAngle}/>
     </TouchableOpacity>
-  )
-}
-
-const NavLogo = (props) => {
-  return (
-    <View style={styles.crumbIconPlaceholder}>
-      <Image
-        style={{width : device.size(30), height : device.size(30)}}
-        source={require('image!navbar_logo')}/>
-    </View>
   )
 }
 

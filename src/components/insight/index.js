@@ -7,26 +7,73 @@ import React, {
   TouchableWithoutFeedback,
   View,
   Linking,
-  PanResponder
+  PanResponder,
+  Animated
 } from "react-native";
+import Relay from 'react-relay';
 import Icon from "react-native-vector-icons/FontAwesome";
 import Filters from "../../utils/filters";
 import { Presets } from "../../utils/animation";
 import Url from 'url';
+import moment from "moment";
 import styles from "./style";
+import clamp from "clamp";
 import * as device from "../../utils/device";
 
 
+export function animationCardLeft (params, animate_prop, callback) {
+  let setting = {
+    velocity: { x: clamp(100 * -1, 3, 5) * -3, y: 0 },
+    deceleration: 0.98,
+    ...params
+  }
+
+  Animated
+    .decay(animate_prop, setting)
+    .start(callback ? callback : ()=> {})
+}
+
+export function animationCardRight (animate_prop, callback) {
+  let setting = {
+    velocity: { x: clamp(7, 3, 5), y: 0 },
+    deceleration: 0.98
+  }
+  Animated
+    .decay(animate_prop, setting)
+    .start(callback ? callback : ()=> {})
+}
+
+export function returnCardToStartingPosition (animate_prop) {
+  Animated.spring(animate_prop, {
+    toValue: { x: 0, y: 0 },
+    friction: 4
+  }).start()
+}
+
+export function animateEntrance (animate_prop) {
+  Animated.spring(animate_prop, {
+      toValue: 1,
+      duration: 500,
+      friction: 8
+    }
+  ).start();
+}
+
+
 class Insight extends Component {
+
+  state = {
+    rowHeight: 0,
+    visibility: 0,
+    update: 0
+  }
+
   constructor (props) {
     super(props)
-    this.state = {
-      rowHeight: 0,
-      visibility: 0,
-      isOpen: false
-    };
 
     this._openWebView = this._openWebView.bind(this);
+    this._onPressCard = this._onPressCard.bind(this)
+
     this._panResponder = PanResponder.create({
       onStartShouldSetPanResponder: (evt, gestureState) => true,
       onStartShouldSetPanResponderCapture: (evt, gestureState) => true,
@@ -58,12 +105,37 @@ class Insight extends Component {
         return true;
       }
     });
+    this._panResponderStop = PanResponder.create({
+      onStartShouldSetPanResponder: (evt, gestureState) => true,
+      onStartShouldSetPanResponderCapture: (evt, gestureState) => true,
+      onMoveShouldSetPanResponder: (evt, gestureState) => true,
+      onMoveShouldSetPanResponderCapture: (evt, gestureState) => true,
+      onPanResponderGrant: (evt, gestureState) => {
+        // The guesture has started. Show visual feedback so the user knows
+        // what is happening!
+      },
+      onPanResponderMove: (evt, gestureState) => {
+        // The most recent move distance is gestureState.move{X,Y}
 
-    this._onPressCard = this._onPressCard.bind(this)
-  }
-
-  conponentWillUnmount () {
-    this.state.visibility = 0;
+        // The accumulated gesture distance since becoming responder is
+        // gestureState.d{x,y}
+      },
+      onPanResponderTerminationRequest: (evt, gestureState) => true,
+      onPanResponderRelease: (evt, gestureState) => {
+        // The user has released all touches while this view is the
+        // responder. This typically means a gesture has succeeded
+      },
+      onPanResponderTerminate: (evt, gestureState) => {
+        // Another component has become the responder, so this gesture
+        // should be cancelled
+      },
+      onShouldBlockNativeResponder: (evt, gestureState) => {
+        // Returns whether this component should block native components from becoming the JS
+        // responder. Returns true by default. Is currently only supported on android.
+        return true;
+      }
+    });
+    this._isLayoutAnimationRun = false;
   }
 
   /**
@@ -80,17 +152,19 @@ class Insight extends Component {
     }
   }
 
-  _toggle () {
+  _toggle (opt_param) {
+    this._isLayoutAnimationRun = true;
     LayoutAnimation.configureNext(Presets.Linear, ()=> {
-      this.state.isOpen = (!this.state.isOpen ? true : false)
       this.setState({
-        visibility: this.state.isOpen ? 1 : 0
+        visibility: this.state.visibility ? 1 : 0,
+        update: Math.random(1000) * 1000
       })
     })
 
     this.setState({
       rowHeight: this.state.rowHeight > 0 ? 0 : 120,
-      visibility: 1
+      visibility: 1,
+      update: Math.random(1000) * 1000
     })
   }
 
@@ -108,104 +182,121 @@ class Insight extends Component {
    */
   getStyle () {
     return {
-      height: this.state.rowHeight
+      height: !this._isLayoutAnimationRun ? 0 : this.state.rowHeight
     };
   }
 
   calculateContentFontSize (content) {
-    const baseContentSize = device.isIphone5() ? 50 : 75;
-    const baseFontSize = 38;
+    const baseContentSize = device.isIphone5() ? 75 : 100;
+    const baseFontSize = 34;
+    const minFontSize = 14;
+    let conf = {};
 
     if ( content.length > baseContentSize ) {
       let ratio = content.length / baseContentSize;
       let percentFontSize = Math.ceil(baseFontSize / ratio);
-      percentFontSize -= 2;
+      percentFontSize = percentFontSize < minFontSize ? minFontSize : percentFontSize;
 
-      if ( content.length > 150 && content.length < 200 ) {
-        percentFontSize += 5;
+      if ( content.length > 100 && content.length < 140 ) {
+        percentFontSize += 3;
       }
 
-      if ( content.length > 200 ) {
-        percentFontSize += 8;
+      if ( content.length >= 140 && content.length < 165 ) {
+        percentFontSize += 3.8;
       }
 
-      if ( content.length >= 250 ) {
-        percentFontSize -= 2;
+      if ( content.length >= 165 && content.length < 200 ) {
+        percentFontSize += 3;
       }
 
-      if ( content.length >= 350 ) {
-        percentFontSize -= 4;
+      if ( content.length > 200 && content.length < 300 ) {
+        percentFontSize += 6;
       }
 
-      return {
-        fontSize: device.fontSize(percentFontSize),
-        lineHeight: device.fontSize(percentFontSize * 1.5)
+      if ( content.length >= 300 && content.length < 350 ) {
+        percentFontSize += 2;
       }
-    } else {
-      return {}
+
+      if ( content.length >= 350 && content.length < 400 ) {
+        percentFontSize += 9;
+      }
+
+      conf.fontSize = device.fontSize(percentFontSize);
+      conf.lineHeight = device.fontSize(percentFontSize * 1.2)
     }
+
+    return conf;
   }
 
   render () {
-    const { styleText } = this.props;
     const { content, origin } = this.props.insight;
     const { visibility } = this.state;
 
-    //this.props.onPressIn && this.props.onPressIn(this.props.insight)
-    // delayPressIn={0}
-    //onPressIn={this._onPressCard}
+    let url = origin && origin.url ? origin.url : '';
+    let parseUrl = '';
+    let duration = '';
+    if ( isUrl(url) ) {
+      parseUrl = Url.parse(url).host;
+      parseUrl = parseUrl.indexOf('www') == 0 ?
+        parseUrl.substr(4, url.length - 1) :
+        parseUrl;
+    }
+
+    if ( origin.duration ) {
+      const now = moment();
+      const durationDate = moment().add(origin.duration, 'seconds');
+      const diffSeconds = Math.abs(durationDate.diff(now, 'seconds'));
+      const diffMinute = Math.abs(durationDate.diff(now, 'minute'));
+      const diffHour = Math.abs(durationDate.diff(now, 'hour'));
+
+      if ( diffHour ) {
+        duration = `less than a ${diffHour} ${Filters.filterPlural(diffHour, [ 'hour', 'hours', 'hours' ])}`
+      } else if ( diffMinute ) {
+        duration = `less than a ${diffMinute} ${Filters.filterPlural(diffMinute, [ 'minute', 'minutes', 'minutes' ])}`
+      } else if ( diffSeconds ) {
+        duration = `less than a ${diffSeconds} ${Filters.filterPlural(diffSeconds, [ 'second', 'seconds', 'seconds' ])}`
+      }
+    }
+
     return (
       <TouchableOpacity
         activeOpacity={ 0.75 }
         style={styles.item}
         onPress={this._onPressCard}>
         <View style={ styles.itemInner }>
-          <Text style={[styles.itemText, styleText, this.calculateContentFontSize(content)]}>
-            {content}
+          <Text style={[styles.itemText, this.calculateContentFontSize(content)]}>
+            {content.length ? content.trim() : content}
           </Text>
         </View>
 
         {!origin ? null :
-          <Origin
-            visibility={visibility}
-            origin={origin}
-            styleOrigin={this.getStyle()}
-            _panResponder={this._panResponder}/>}
+          <View style={[styles.itemMore, this.getStyle()]}>
+            {!visibility ? null :
+              <View style={styles.itemMoreInner}>
+                <View
+                  style={{alignSelf: 'flex-start'}} {...this._panResponder.panHandlers}>
+                  <Text style={ styles.itemMoreText }>
+                    {origin.author}
+                  </Text>
+                  <Text style={ styles.itemMoreText }>
+                    {parseUrl}
+                  </Text>
+                </View>
+
+                {!origin.duration ? null :
+                  <View {...this._panResponderStop.panHandlers}>
+                    <Text style={ styles.itemMoreTextTime }>
+                      <Icon name="clock-o" style={styles.crumbIcon}/>
+                      <Text>&nbsp;</Text>
+                      <Text numberOfLines={1} style={ styles.itemTime }>{duration}</Text>
+                    </Text>
+                  </View>}
+              </View>}
+          </View>}
       </TouchableOpacity>
 
     )
   }
-}
-
-const Origin = (props) => {
-  let url = props.origin && props.origin.url ? props.origin.url : '';
-  let parseUrl = '';
-  if ( isUrl(url) ) {
-    parseUrl = Url.parse(url).host;
-    parseUrl = parseUrl.indexOf('www') == 0 ?
-      parseUrl.substr(4, url.length - 1) :
-      parseUrl;
-  }
-
-  return (
-    <View style={[styles.itemMore, props.styleOrigin]}
-      {...props._panResponder.panHandlers}>
-      {!props.visibility ? null :
-        <View style={styles.itemMoreInner}>
-          <Text style={ styles.itemMoreText }>
-            {props.origin.author}
-          </Text>
-          <Text style={ styles.itemMoreText }>
-            {parseUrl}
-          </Text>
-          <Text style={ styles.itemMoreTextTime }>
-            <Icon name="clock-o" style={styles.crumbIcon}/>
-            <Text>&nbsp;</Text>
-            <Text style={ styles.itemTime }>{props.origin.duration} sec</Text>
-          </Text>
-        </View> }
-    </View>
-  )
 }
 
 function isUrl (url) {

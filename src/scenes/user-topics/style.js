@@ -5,6 +5,7 @@ import * as device from "../../utils/device";
 export default StyleSheet.create({
   container: {
     ...root_view,
+    paddingTop: device.size(12),
     paddingBottom: device.size(20)
   },
   item: {

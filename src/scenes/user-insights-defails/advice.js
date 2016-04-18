@@ -16,8 +16,15 @@ import React, {
   PanResponder
 } from "react-native";
 
-import { Button, Loader, ScrollListView, Insight } from "../../components";
-import { ADD_CARD_REF, CONTROLS_WIDTH, SHARE_CARD_REF, CONTROL_PIECE } from "./const";
+import { Button, Loader, ScrollListView } from "../../components";
+import Insight, {
+  animationCardLeft,
+  animationCardRight,
+  returnCardToStartingPosition,
+  animateEntrance
+} from "../../components/insight";
+
+import { ADD_CARD_REF, CONTROLS_WIDTH, SHARE_CARD_REF, CONTROL_PIECE } from "../../components/insight/const";
 
 import * as device from "../../utils/device";
 import clamp from "clamp";
@@ -36,46 +43,35 @@ const dimensions = Dimensions.get('window');
 
 class Advice extends Component {
 
+  state = {
+    removeView: false,
+    opacityOn: false,
+    shareControl: new Animated.ValueXY({ x: 0, y: 0 }),
+    addControl: new Animated.ValueXY({ x: 0, y: 0 }),
+    pan: new Animated.ValueXY(),
+    enter: new Animated.Value(1)
+  }
+
   constructor (props) {
     super(props)
-
-    this.state = {
-      opacityOn: false,
-      controlShareIsShow: false,
-      shareControl: new Animated.ValueXY({ x: 0, y: 0 }),
-      addControl: new Animated.ValueXY({ x: 0, y: 0 }),
-      pan: new Animated.ValueXY(),
-      enter: new Animated.Value(0.8)
-    };
-    this.controlsCardMeasureWidth = 0;
     this._onPressCard = this._onPressCard.bind(this);
     this._onMarkGood = this._onMarkGood.bind(this);
     this._onMarkBad = this._onMarkBad.bind(this);
     this._onShare = this._onShare.bind(this);
   }
 
-  componentDidMount () {
-    this._animateEntrance();
-  }
 
   componentWillMount () {
     const responder = _panResponder.bind(this)
     this._panResponder = responder();
   }
 
-  _navigatorPush (scene, title = "", data, conf) {
-    const { navigator } = this.props;
-    navigator.push({ scene, title: title, advice: data, sceneConfig: conf })
+  componentDidMount () {
+
   }
 
+  componentWillUnmount () {
 
-  _animateEntrance () {
-    Animated.spring(this.state.enter, {
-        toValue: 1,
-        duration: 500,
-        friction: 8
-      }
-    ).start();
   }
 
   /**
@@ -92,22 +88,14 @@ class Advice extends Component {
 
   /**
    *
+   * TODO - forceFetch :(
    * @param params
    * @param evt
    * @private
    */
   _onMarkGood (params, evt) {
     const { insight, collection, forceFetch } = this.props;
-    const saveInsight = { ...insight }
-
-    let setting = {
-      velocity: { x: clamp(7, 3, 5), y: 0 },
-      deceleration: 0.98
-    }
-
-    Animated.decay(this.state.pan, setting)
-            .start(this._resetState.bind(this))
-
+    animationCardRight(this.state.pan, this._resetState.bind(this))
     markInsightUsefulInCollection({ insight, collection })
       .then((transaction)=> {
         forceFetch && forceFetch()
@@ -119,23 +107,13 @@ class Advice extends Component {
 
   /**
    *
+   * TODO - forceFetch :(
    * @param params
    * @private
    */
   _animationCardLeftAndReset (params) {
     const { collection, insight, forceFetch } = this.props;
-    const saveInsight = { ...insight }
-
-    let setting = {
-      velocity: { x: clamp(100 * -1, 3, 5) * -2, y: 0 },
-      deceleration: 0.98,
-      ...params
-    }
-
-
-    Animated.decay(this.state.pan, setting)
-            .start(this._resetState.bind(this))
-
+    animationCardLeft(params, this.state.pan, this._resetState.bind(this))
     markInsightUselessInCollection({ insight, collection })
       .then((transaction)=> {
         forceFetch && forceFetch()
@@ -158,7 +136,27 @@ class Advice extends Component {
   }
 
   _onShare () {
-    this.props.onShare && this.props.onShare()
+    const { insight } = this.props;
+    let origin = {
+      url: '',
+      content: ''
+    };
+    if ( insight && insight.origin ) {
+      origin.url = insight.origin.url || '';
+      origin.content = insight.origin.content || '';
+    }
+    ActionSheetIOS.showShareActionSheetWithOptions({
+        url: origin.url,
+        message: origin.content,
+        subject: 'a subject to go in the email heading'
+      },
+      (error) => {
+        this._returnCardToStartingPosition()
+      },
+      (success, method) => {
+        this._returnCardToStartingPosition()
+      }
+    );
   }
 
   _onPressCard (dataCard) {
@@ -191,23 +189,20 @@ class Advice extends Component {
   }
 
   _isHideControlShare () {
-    this.setState({ controlShareIsShow: false })
+
   }
 
   _returnCardToStartingPosition () {
-    Animated.spring(this.state.pan, {
-      toValue: { x: 0, y: 0 },
-      friction: 4
-    }).start()
+    returnCardToStartingPosition(this.state.pan)
     this.props && this.props.onSwipeStart(true);
   }
 
   _resetState () {
     this.state.pan.setValue({ x: 0, y: 0 });
-    this.state.enter.setValue(0.9);
-    this._hideControlShare();
-    //this._goToNextAdvice();
-    this._animateEntrance();
+    /*
+     this.state.enter.setValue(1);
+     this._hideControlShare();
+     //animateEntrance(this.state.enter)*/
   }
 
   /**
@@ -218,12 +213,11 @@ class Advice extends Component {
     const {
       pan,
       enter,
-      controlShareIsShow,
       shareControl,
-      addControl
+      addControl,
     } = this.state;
 
-    const { insight, allAdviceOpacityOn } = this.props;
+    const { insight } = this.props;
 
     const [translateX, translateY] = [ pan.x, pan.y ];
 
@@ -231,7 +225,7 @@ class Advice extends Component {
     const opacity = pan.x.interpolate({ inputRange: [ -200, 0, 200 ], outputRange: [ 0.5, 1, 0.5 ] })
     const scale = enter;
 
-    const animatedCardStyles = { transform: [ { translateX }, { translateY }, { rotate }, { scale } ], opacity };
+    const animatedCardStyles = { transform: [ { translateX }, { translateY }, { rotate }, { scale } ], opacity }
 
     const interpolateControls = {
       inputRange: [ 0, CONTROL_PIECE, CONTROLS_WIDTH ],
@@ -243,25 +237,24 @@ class Advice extends Component {
     const add = addControl.x.interpolate(interpolateControls);
     const addStyle = { transform: [ { translateX: add } ] }
 
-    const blockOpacity = !controlShareIsShow && allAdviceOpacityOn ? 0.7 : 1
-
     return (
       <View style={ {flex: 1, flexDirection: 'row'} }>
 
-        <Animated.View style={[styles.card, animatedCardStyles]} {...this._panResponder.panHandlers}>
-          <Insight
-            insight={insight}
-            navigator={this.props.navigator}
-            doNotToggle={controlShareIsShow}
-            styleText={styles.cardText}
-            onPressCard={this._onPressCard}/>
-        </Animated.View>
+
+        <View style={styles.card} {...this._panResponder.panHandlers}>
+          <Animated.View style={animatedCardStyles}>
+            <Insight
+              insight={{...insight}}
+              onPressCard={this._onPressCard}/>
+          </Animated.View>
+        </View>
+
 
         <View style={[styles.wrapperAddCardControl]}>
           <Animated.View style={[{width : CONTROLS_WIDTH}, shareStyle]}>
             <View ref={SHARE_CARD_REF} style={{flex: 1}}>
               <ShareCard
-                currentInsights={insight}
+                currentInsights={{...insight}}
                 onShare={this._onShare}/>
             </View>
           </Animated.View>
@@ -269,7 +262,7 @@ class Advice extends Component {
           <Animated.View style={[{width : CONTROLS_WIDTH}, addStyle]}>
             <View ref={ADD_CARD_REF} style={{flex: 1}}>
               <AddCard
-                currentInsights={insight}
+                currentInsights={{...insight}}
                 onMarkGood={this._onMarkGood}/>
             </View>
           </Animated.View>

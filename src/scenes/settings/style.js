@@ -6,6 +6,7 @@ export default StyleSheet.create({
   container: {
     ...root_view,
     justifyContent: 'flex-end',
+    paddingTop: device.size(12),
     paddingBottom: device.size(30)
   },
   items: {

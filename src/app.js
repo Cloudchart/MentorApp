@@ -12,39 +12,14 @@ import React, {
   AsyncStorage,
   NetInfo
 } from "react-native";
-import {
-  Connect,
-  InsightsForMe,
-  Questionnaire,
-  Welcome,
-  Settings,
-  Subscription,
-  SystemThemesList,
-  UserCollections,
-  UserTopics,
-  SelectTopic,
-  ExploreTopics,
-  NotificationsScreen,
-  UserInsightsUseful,
-  UserInsightsUseless,
-  AllForNow,
-  Profile,
-  WebViewScreen,
-  ReturnInApp,
-  NetError
-} from "./scenes";
-
+import * as Scenes from './scenes';
 import Relay from 'react-relay';
 import styles from "./styles/base";
 import { CustomSceneConfig } from "./router-conf";
 import { renderScreen } from "./routes";
 import { navBarRouteMapper, UserNotifications } from "./components";
 import moment from "moment";
-import {
-  UPDATE_APP_START_TIME,
-  APP_BACKGROUND_TIME,
-  HIDE_NOTIFICATION
-} from "./actions/actions";
+import * as actions from './actions/actions';
 import DeviceInfo from "react-native-device-info";
 import { FBSDKAccessToken } from "react-native-fbsdkcore";
 import { EventManager } from './event-manager';
@@ -71,12 +46,12 @@ class Application extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      notifications : {
-        network : 'No Internet Connection'
+      notifications: {
+        network: 'No Internet Connection'
       },
       networkNone: false,
       userIsAuthorize: '',
-      returnInAppAfterOneMinute: false,
+      returnInAppAfter24: false,
       currentAppState: ''
     }
 
@@ -84,8 +59,8 @@ class Application extends Component {
     PushNotificationIOS.addEventListener('notification', this._notification.bind(this));
     AppState.addEventListener('change', this._appStateChange.bind(this))
     NetInfo.addEventListener('change', this._NetInfo.bind(this));
-    EventManager.on(HIDE_NOTIFICATION, ()=>{
-      this.setState({networkNone : false})
+    EventManager.on(actions.HIDE_NOTIFICATION, ()=> {
+      this.setState({ networkNone: false })
     });
 
     /**
@@ -121,13 +96,13 @@ class Application extends Component {
             this.notifyNetworkError()
           }
         })
-        checkPermissions();
+        //checkPermissions();
       }
     } catch ( e ) {
     }
   }
 
-  notifyNetworkError(){
+  notifyNetworkError () {
     this.setState({
       networkNone: this.state.notifications.network
     })
@@ -183,11 +158,11 @@ class Application extends Component {
       switch ( currentAppState ) {
         case 'active':
           const now = moment();
-          AsyncStorage.setItem(UPDATE_APP_START_TIME, now);
+          AsyncStorage.setItem(actions.UPDATE_APP_START_TIME, now);
           break;
         case 'background':
           const date = moment();
-          AsyncStorage.setItem(APP_BACKGROUND_TIME, date.toString());
+          AsyncStorage.setItem(actions.APP_BACKGROUND_TIME, date.toString());
           break;
         default:
       }
@@ -195,7 +170,7 @@ class Application extends Component {
       // add active
       if ( currentAppState == 'active' ) {
         const now = moment();
-        const background = await AsyncStorage.getItem(APP_BACKGROUND_TIME);
+        const background = await AsyncStorage.getItem(actions.APP_BACKGROUND_TIME);
         const backgroundDate = moment(new Date(background));
 
         if ( !backgroundDate.diff ) return;
@@ -204,9 +179,9 @@ class Application extends Component {
 
 
         // after one minute
-        if ( diffMinute > 24 ) {
+        if ( diffHour > 24 ) {
           this.setState({
-            returnInAppAfterOneMinute: true,
+            returnInAppAfter24: true,
             currentAppState
           })
         }
@@ -224,7 +199,7 @@ class Application extends Component {
    */
   _renderScene (route, navigator) {
     let props = route.props || {}
-    const { returnInAppAfterOneMinute } = this.state;
+    const { returnInAppAfter24 } = this.state;
     props.navigator = navigator;
 
     const screenParams = {
@@ -234,8 +209,9 @@ class Application extends Component {
       ...props
     }
 
-    if ( returnInAppAfterOneMinute ) {
-      this.state.returnInAppAfterOneMinute = false;
+    if ( returnInAppAfter24 ) {
+      this.state.returnInAppAfter24 = false;
+      route.title = '';
       route.scene = 'return_in_app_after_min';
     }
 
@@ -273,12 +249,17 @@ class Application extends Component {
           initialRoute={{ scene: init_scene, title : 'Virtual Mentor' }}
           navigationBar={<NavigationBar routeMapper={this._navBarRouteMapper()} />}
           renderScene={ this._renderScene.bind(this) }
-          configureScene={(route, routeStack)=>CustomSceneConfig}
+          configureScene={(route, routeStack)=>{
+            if(route.FloatFromBottom) {
+              return Navigator.SceneConfigs.FloatFromBottom;
+            }
+            return CustomSceneConfig;
+          }}
           sceneStyle={ styles.sceneStyle }
         />
 
         {!networkNone ? null :
-          <UserNotifications notification={networkNone} /> }
+          <UserNotifications notification={networkNone}/> }
       </View>
     )
   }
@@ -311,21 +292,22 @@ export default Relay.createContainer(Application, {
                 utcOffset
                 timesToSend
             }
-            ${Welcome.getFragment('viewer')}
-            ${Connect.getFragment('viewer')}
-            ${Questionnaire.getFragment('viewer')}
-            ${Settings.getFragment('viewer')}
-            ${Subscription.getFragment('viewer')}
-            ${UserCollections.getFragment('viewer')}
-            ${UserTopics.getFragment('viewer', 'user')}
-            ${SelectTopic.getFragment('viewer')}
-            ${ExploreTopics.getFragment('viewer')}
-            ${NotificationsScreen.getFragment('viewer')}
-            ${UserInsightsUseful.getFragment('viewer')}
-            ${UserInsightsUseless.getFragment('viewer')}
-            ${Profile.getFragment('viewer')}
-            ${WebViewScreen.getFragment('viewer')}
-            ${ReturnInApp.getFragment('viewer')}
+            ${Scenes.Welcome.getFragment('viewer')}
+            ${Scenes.Connect.getFragment('viewer')}
+            ${Scenes.Questionnaire.getFragment('viewer')}
+            ${Scenes.Settings.getFragment('viewer')}
+            ${Scenes.Subscription.getFragment('viewer')}
+            ${Scenes.UserCollections.getFragment('viewer')}
+            ${Scenes.UserTopics.getFragment('viewer', 'user')}
+            ${Scenes.SelectTopic.getFragment('viewer')}
+            ${Scenes.ExploreTopics.getFragment('viewer')}
+            ${Scenes.ReplaceTopic.getFragment('viewer')}
+            ${Scenes.NotificationsScreen.getFragment('viewer')}
+            ${Scenes.UserInsightsUseful.getFragment('viewer')}
+            ${Scenes.UserInsightsUseless.getFragment('viewer')}
+            ${Scenes.Profile.getFragment('viewer')}
+            ${Scenes.WebViewScreen.getFragment('viewer')}
+            ${Scenes.ReturnInApp.getFragment('viewer')}
         }
     `
   }

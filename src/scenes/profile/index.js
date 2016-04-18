@@ -17,12 +17,12 @@ import baseStyles from "../../styles/base";
 
 class Profile extends Component {
 
+  state = {
+    userEmail: ''
+  }
+
   constructor (props) {
     super(props)
-
-    this.state = {
-      userEmail: ''
-    }
 
     FBSDKLoginManager.setLoginBehavior('native');
 

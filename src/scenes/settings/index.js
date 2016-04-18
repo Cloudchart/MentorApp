@@ -1,16 +1,14 @@
 import React, {
-    Component,
-    StyleSheet,
-    Text,
-    ScrollView,
-    TouchableOpacity,
-    View,
-    ListView
+  Component,
+  StyleSheet,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  View,
+  ListView
 } from "react-native";
 import Relay from 'react-relay';
-import { connect } from "react-redux";
-
-import { Button, ScrollListView, FBLoginButton } from "../../components";
+import { Button, FBLoginButton } from "../../components";
 import styles from "./style";
 import { getGradient } from "../../utils/colors";
 
@@ -20,6 +18,32 @@ const dataSource = new ListView.DataSource({
 
 
 class Settings extends Component {
+
+
+  static defaultProps = {
+    menu: [
+      {
+        id: 0,
+        name: 'Profile',
+        screen: 'profile'
+      },
+      {
+        id: 1,
+        name: 'Explore',
+        screen: 'explore-topic'
+      },
+      {
+        id: 2,
+        name: 'Your topics',
+        screen: 'user-topics'
+      },
+      {
+        id: 3,
+        name: 'Subscription',
+        screen: 'subscription'
+      }
+    ]
+  }
 
   /**
    *
@@ -50,22 +74,22 @@ class Settings extends Component {
   }
 
   render () {
-    const { settings } = this.props;
+    const { menu } = this.props;
     return (
-        <View style={ styles.container }>
+      <View style={ styles.container }>
 
-          <ScrollListView
-              dataSource={dataSource.cloneWithRows(settings.list)}
-              renderRow={(props) => <ItemSettings {...props} handleItemPress={this._handleItemPress.bind(this)} />}
-              pageSize={14}
-              showsVerticalScrollIndicator={false}
-              style={ styles.items }/>
+        <ListView
+          dataSource={dataSource.cloneWithRows(menu)}
+          renderRow={(props) => <ItemSettings {...props} handleItemPress={this._handleItemPress.bind(this)} />}
+          pageSize={20}
+          showsVerticalScrollIndicator={true}
+          style={ styles.items }/>
 
-          <FBLoginButton
-              style={ styles.button }
-              onLogout={this._onLogout.bind(this)}
-          />
-        </View>
+        <FBLoginButton
+          style={ styles.button }
+          onLogout={this._onLogout.bind(this)}
+        />
+      </View>
     )
   }
 }
@@ -78,34 +102,30 @@ class ItemSettings extends Component {
 
   render () {
     return (
-        <TouchableOpacity
-            onPress={this.handleItemPress}
-            activeOpacity={ 0.75 }
-            style={ [ styles.item, { backgroundColor: getGradient('green', this.props.id) } ] }>
-          <Text style={ styles.itemText }>
-            { this.props.name }
-          </Text>
-        </TouchableOpacity>
+      <TouchableOpacity
+        onPress={this.handleItemPress}
+        activeOpacity={ 0.75 }
+        style={ [ styles.item, { backgroundColor: getGradient('green', this.props.id) } ] }>
+        <Text style={ styles.itemText }>
+          { this.props.name }
+        </Text>
+      </TouchableOpacity>
     )
   }
 }
 
-const ReduxComponent = connect(state=> ( {
-  settings: state.settings
-}))(Settings)
-
-export default Relay.createContainer(ReduxComponent, {
+export default Relay.createContainer(Settings, {
   fragments: {
     viewer: () => Relay.QL`
-      fragment on User {       
-        topics(first: 100, filter: DEFAULT) {
-          edges {
-            node {
-              name
+        fragment on User {
+            topics(first: 100, filter: DEFAULT) {
+                edges {
+                    node {
+                        name
+                    }
+                }
             }
-          }
         }
-      }
     `
   }
 });

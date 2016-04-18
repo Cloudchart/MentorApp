@@ -13,7 +13,7 @@ import {
   SHARE_CARD_REF,
   CONTROL_PIECE,
   DEVIATION
-} from "./const";
+} from "../../components/insight/const";
 
 /**
  * if a negative number
@@ -53,7 +53,7 @@ function onPanResponderMove (raw, gestureState) {
   this.refs[ SHARE_CARD_REF ].measure((x, y, width, height, px, py) => {
     _overControlShare({ x, y, width, height, px, py }, gestureState)
   });
-  if ( this.state.showCardTopicName ) return;
+  //if ( this.state.showCardTopicName ) return;
   this._showControlPiece()
   this.state.pan.setValue({ x: gestureState.dx, y: 0 });
 }
@@ -148,7 +148,7 @@ function onPanResponderRelease (e, { vx, vy }) {
       this._onShare();
       break;
     case 'add':
-      this._onAddToCollection('not_ignore');
+      this._onAddToCollection(false);
       break;
     default:
       DO_AN_ACT = '';

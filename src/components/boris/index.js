@@ -67,18 +67,20 @@ const Handles = {
 
 
 class Boris extends Component {
+
   static propTypes = {
     mood: React.PropTypes.oneOf([ 'positive', 'negative' ]).isRequired,
     size: React.PropTypes.oneOf([ 'big', 'small' ]).isRequired
-  };
+  }
+
+  state = {
+    noteOpacity: new Animated.Value(this.props.animate === true ? 0 : 1),
+    interval: null,
+    repeatCount: 1
+  }
 
   constructor (props) {
     super(props)
-    this.state = {
-      noteOpacity: new Animated.Value(this.props.animate === true ? 0 : 1),
-      interval: null,
-      repeatCount: 1
-    }
   }
 
 
@@ -125,7 +127,7 @@ class Boris extends Component {
   render () {
     const { mood, size, note, style, repeatCount, moodSequences } = this.props;
     const styleNote = [ styles.noteContainer, noteContainerStyle[ mood ], { opacity: this.state.noteOpacity } ]
-
+    
     return (
       <View style={ [styles.container, containerStyle[size], style] }>
         <View style={ [styles.faceContainer, faceContainerStyle[size]] }>

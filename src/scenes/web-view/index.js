@@ -17,13 +17,13 @@ const WEBVIEW_REF = 'webview';
 
 class WebViewScreen extends Component {
 
+  state = {
+    scalesPageToFit: true,
+    loading: true
+  }
+
   constructor (props) {
     super(props)
-
-    this.state = {
-      scalesPageToFit: true,
-      loading: true
-    }
   }
 
   onNavigationStateChange () {
@@ -57,7 +57,7 @@ class WebViewScreen extends Component {
 
   render () {
     const { url } = this.props;
-    
+
     return (
         <View style={ styles.container }>
           <WebView

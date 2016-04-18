@@ -11,21 +11,15 @@ import { Loader, ScrollListView } from "../../components";
 import { getGradient } from "../../utils/colors";
 import styles from "./style";
 
-import {
-  SubscribeOnTopicMutation,
-  UnsubscribeFromTopicMutation
-} from '../../mutations';
-
 class TopicEmpty extends Component {
 
   constructor (props) {
     super(props)
-
   }
 
   render () {
     const { topic, index, selectTopic } = this.props;
-    const paidColor = { backgroundColor: topic.isPaid ? 'blue' : getGradient('green', index ) }
+    const paidColor = { backgroundColor: topic.isPaid ? 'blue' : getGradient('green', index) }
     return (
       <TouchableOpacity
         activeOpacity={ 0.75 }
@@ -48,19 +42,17 @@ export default Relay.createContainer(TopicEmpty, {
 
   fragments: {
     user: () => Relay.QL`
-      fragment on User {
-        ${SubscribeOnTopicMutation.getFragment('user')}
-        ${UnsubscribeFromTopicMutation.getFragment('user')}
-      }
+        fragment on User {
+            id
+        }
     `,
 
     topic: () => Relay.QL`
-      fragment on Topic {
-        ${SubscribeOnTopicMutation.getFragment('topic')}
-        ${UnsubscribeFromTopicMutation.getFragment('topic')}
-        name
-        isPaid
-      }
+        fragment on Topic {
+            id
+            name
+            isPaid
+        }
     `
   }
 });

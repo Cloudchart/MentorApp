@@ -6,7 +6,8 @@ import React, {
   TouchableOpacity,
   View,
   ListView,
-  AlertIOS
+  AlertIOS,
+  PanResponder
 } from "react-native";
 import Relay from 'react-relay';
 import {
@@ -16,6 +17,9 @@ import {
   ScrollListView
 } from "../../components";
 import styles from "./style";
+import { EventManager } from '../../event-manager';
+import * as device from "../../utils/device";
+import { TOPICS_FORCE_FETCH } from '../../actions/actions';
 
 
 const BorisNoteForSubscription = "Don’t restrain yourself with 3 topics, meatb… Master. Subscribe and unlock the full power of your Virtual Mentor!";
@@ -26,15 +30,33 @@ const dataSource = new ListView.DataSource({
 
 class UserTopics extends Component {
 
+  state = {
+    isLoadingTail: false,
+    addControlShow: false,
+    closeAllItems: false
+  }
+
   constructor (props) {
     super(props)
 
-    this.state = {
-      isLoadingTail: false,
-      addControlShow: false
-    };
+    this.forceFetch = this.forceFetch.bind(this);
+    EventManager.on(TOPICS_FORCE_FETCH, this.forceFetch)
 
-    this._onEndReached = this._onEndReached.bind(this)
+    this._onEndReached = this._onEndReached.bind(this);
+    this._unsubscribeFromTopicCallback = this._unsubscribeFromTopicCallback.bind(this);
+    this._addTopic = this._addTopic.bind(this)
+
+
+    this._panResponder = PanResponder.create({
+      onStartShouldSetPanResponderCapture: (evt, gestureState) => {
+        this.setState({ closeAllItems: true })
+        return false;
+      }
+    });
+  }
+
+  componentWillUnmount () {
+    EventManager.removeListener(TOPICS_FORCE_FETCH, this.forceFetch);
   }
 
   /**
@@ -60,6 +82,14 @@ class UserTopics extends Component {
     }, 0)
   }
 
+  _unsubscribeFromTopicCallback () {
+    this.props.relay.forceFetch();
+  }
+
+  forceFetch () {
+    this.props.relay.forceFetch()
+  }
+
 
   _addTopic () {
     const { navigator } = this.props;
@@ -77,17 +107,17 @@ class UserTopics extends Component {
   _renderTopic (rowData, sectionID, rowID) {
     const { subscribedTopics } = this.props.viewer;
     const last = (parseInt(rowID) + 1) == subscribedTopics.edges.length;
-    const isShow = subscribedTopics.edges.length < 3 && last;
+    const isShow = last; //subscribedTopics.edges.length < 3 && last
 
     return (
       <View>
         <TopicSubscribed
           topic={ rowData.node }
+          closeAllItems={this.state.closeAllItems}
           user={ this.props.viewer }
           subscribedTopics={subscribedTopics}
+          unsubscribeFromTopicCallback={this._unsubscribeFromTopicCallback}
           index={ rowID }/>
-        {!isShow ? null :
-          <Add addTopic={this._addTopic.bind(this)}/> }
       </View>
     )
   }
@@ -102,26 +132,31 @@ class UserTopics extends Component {
     const { isLoadingTail } = this.state;
 
     return (
-      <View style={ styles.container }>
-        {!subscribedTopics.edges.length ? null :
-          <ScrollListView
-            dataSource={dataSource.cloneWithRows(subscribedTopics.edges)}
-            renderRow={(rowData, sectionID, rowID) => this._renderTopic(rowData, sectionID, rowID)}
-            pageSize={14}
-            isLoadingTail={isLoadingTail}
-            onEndReached={this._onEndReached}
-            onEndReachedThreshold={20}
-            showsVerticalScrollIndicator={false}/>}
-        {!subscribedTopics.edges.length ?
-          <Add addTopic={this._addTopic.bind(this)}/> : null}
-        <ButtonsBoris subscribeNow={this.subscribeNow.bind(this)}/>
+      <View style={ styles.container } {...this._panResponder.panHandlers}>
+        <ScrollView
+          showsVerticalScrollIndicator={true}>
+          {!subscribedTopics.edges.length ? null :
+            <ListView
+              dataSource={dataSource.cloneWithRows(subscribedTopics.edges)}
+              renderRow={(rowData, sectionID, rowID) => this._renderTopic(rowData, sectionID, rowID)}
+              pageSize={14}
+              isLoadingTail={isLoadingTail}
+              onEndReached={this._onEndReached}
+              onEndReachedThreshold={20}
+              showsVerticalScrollIndicator={false}/>}
+
+          {subscribedTopics.edges.length >= 3 ? null :
+            <Add addTopic={this._addTopic}/>}
+
+          <ButtonsBoris subscribeNow={this.subscribeNow.bind(this)}/>
+        </ScrollView>
       </View>
     )
   }
 }
 
 const ButtonsBoris = (props) => (
-  <View style={ {marginTop : 40 } }>
+  <View style={ {marginTop : device.size(40) } }>
     <View style={ styles.borisContainer }>
       <Boris mood="positive" size="small" note={ BorisNoteForSubscription }/>
     </View>
@@ -136,7 +171,7 @@ const ButtonsBoris = (props) => (
 )
 
 const Add = (props) => (
-  <View style={ {marginTop : 20 } }>
+  <View style={ {marginTop : device.size(20) } }>
     <Button
       onPress={props.addTopic}
       label=""
@@ -152,7 +187,7 @@ export default Relay.createContainer(UserTopics, {
     viewer: () => Relay.QL`
         fragment on User {
             ${TopicSubscribed.getFragment('user')}                                               
-            subscribedTopics: topics(first: 3, filter: SUBSCRIBED) {
+            subscribedTopics: topics(first: 100, filter: SUBSCRIBED) {
                 edges {
                     node {
                         ${TopicSubscribed.getFragment('topic')}

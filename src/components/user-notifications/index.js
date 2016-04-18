@@ -28,13 +28,21 @@ class UserNotifications extends Component {
       onMoveShouldSetPanResponderCapture: (evt, gestureState) => false
     });
 
-    setTimeout(()=> {
-      this._onHide()
-    }, 3000)
+    if ( !props.onPress ) {
+      setTimeout(()=> {
+        this._onHide()
+      }, 3000)
+    }
   }
 
   _onStartShouldSetResponder () {
-    this._onHide();
+    const { onPress } = this.props;
+    if ( onPress ) {
+      onPress();
+    } else {
+      this._onHide();
+    }
+
     return false;
   }
 
@@ -66,10 +74,11 @@ class UserNotifications extends Component {
   }
 
   render () {
+    const { style } = this.props;
     return (
       <Animated.View
         {...this._panResponder.panHandlers}
-        style={[styles.notifications, this.getStyle()]}>
+        style={[styles.notifications, this.getStyle(), style]}>
         <TouchableWithoutFeedback>
           <Text style={styles.notificationsText}>{this.props.notification}</Text>
         </TouchableWithoutFeedback>

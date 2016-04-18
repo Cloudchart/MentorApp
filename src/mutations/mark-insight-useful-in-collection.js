@@ -16,14 +16,10 @@ class MarkInsightUsefulInCollectionMutation extends Relay.Mutation {
 
   getFatQuery () {
     return Relay.QL`
-        fragment on MarkInsightUsefulInCollectionMutationPayload {
+        fragment on MarkInsightUsefulInCollectionMutationPayload @relay(pattern: true) {
+            collection
             insight
             insightID
-            collection {
-                id
-                name
-                insights
-            }
             insightEdge
         }
     `
@@ -31,24 +27,12 @@ class MarkInsightUsefulInCollectionMutation extends Relay.Mutation {
 
   getConfigs () {
     const { insight, collection } = this.props;
-    return [
-      {
-        type: 'FIELDS_CHANGE',
-        fieldIDs: {
-          insight: insight.id,
-          collection: collection.id
-        }
-      }, {
-        type: 'RANGE_ADD',
-        parentName: 'collection',
-        parentID: collection.id,
-        connectionName: 'collections',
-        edgeName: 'insightEdge',
-        rangeBehaviors: {
-          'filter(USELESS)': 'append'
-        }
+    return [ {
+      type: 'FIELDS_CHANGE',
+      fieldIDs: {
+        insight: insight.id
       }
-    ]
+    } ]
   }
 }
 

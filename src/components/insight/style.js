@@ -18,20 +18,18 @@ export default StyleSheet.create({
     paddingHorizontal: device.size(18),
     paddingVertical: device.size(18),
     backgroundColor: '#fff',
-    height: device.size(dimensions.height / 3)
+    //height: device.size(dimensions.height / 2)
   },
   itemText: {
     color: '#000',
     flex: 1,
-    alignSelf: 'center',
-    lineHeight: device.fontSize(45),
-    fontSize: device.fontSize(38),
+    lineHeight: device.fontSize(40),
+    fontSize: device.fontSize(34),
     fontWeight: '500',
     overflow: 'hidden'
   },
   itemMore: {
     flex: 1,
-    flexDirection: 'column',
     height: 0,
     overflow: 'hidden'
   },
@@ -59,6 +57,6 @@ export default StyleSheet.create({
   crumbIcon: {
     color: '#fff',
     fontSize: device.fontSize(20)
-  },
+  }
 });
 

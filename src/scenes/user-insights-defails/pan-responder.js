@@ -1,19 +1,19 @@
 import React, {
-    Animated,
-    Easing,
-    Dimensions,
-    PanResponder
+  Animated,
+  Easing,
+  Dimensions,
+  PanResponder
 } from "react-native";
 import clamp from "clamp";
 import {
-    SWIPE_THRESHOLD,
-    SWIPE_THRESHOLD_MINI,
-    ADD_CARD_REF,
-    CONTROLS_WIDTH,
-    SHARE_CARD_REF,
-    CONTROL_PIECE,
-    DEVIATION
-} from "./const";
+  SWIPE_THRESHOLD,
+  SWIPE_THRESHOLD_MINI,
+  ADD_CARD_REF,
+  CONTROLS_WIDTH,
+  SHARE_CARD_REF,
+  CONTROL_PIECE,
+  DEVIATION
+} from "../../components/insight/const";
 
 /**
  * if a negative number
@@ -55,16 +55,16 @@ function onPanResponderMove (raw, gestureState) {
     _overControlShare({ x, y, width, height, px, py }, gestureState)
   });
 
-  if ( this.state.showCardTopicName || this.state.controlShareIsShow ) return;
+
   this._showControlPiece()
 
   /**
    * if advices is negative then swipe right
    * otherwise swipe left
    */
-  if(!this.props.isBadAdviceList && negative(gestureState.dx)) {
+  if ( !this.props.isBadAdviceList && negative(gestureState.dx) ) {
     this.state.pan.setValue({ x: gestureState.dx, y: 0 });
-  } else if(this.props.isBadAdviceList && !negative(gestureState.dx)){
+  } else if ( this.props.isBadAdviceList && !negative(gestureState.dx) ) {
     this.state.pan.setValue({ x: gestureState.dx, y: 0 });
   }
 }
@@ -83,10 +83,15 @@ function overControlShare (measure, gestureState) {
     left: measure.px + measure.width
   }
   if ( (gestureState.moveY >= area.top && gestureState.moveY <= area.bottom) &&
-      (gestureState.moveX >= area.right && gestureState.moveX <= area.left) ) {
+    (gestureState.moveX >= area.right && gestureState.moveX <= area.left) ) {
     this.state.shareControl.setValue({ x: CONTROLS_WIDTH, y: 0 })
     this.state.addControl.setValue({ x: CONTROL_PIECE, y: 0 })
     DO_AN_ACT = 'share';
+  } else {
+    if ( DO_AN_ACT == 'share' ) {
+      DO_AN_ACT = '';
+      this.state.shareControl.setValue({ x: CONTROL_PIECE, y: 0 })
+    }
   }
   //console.log(measure.px, measure.py, 'gestureState', gestureState.moveX, gestureState.moveY);
 }
@@ -104,10 +109,15 @@ function overControlAdd (measure, gestureState) {
     left: measure.px + measure.width
   }
   if ( (gestureState.moveY >= area.top && gestureState.moveY <= area.bottom) &&
-      (gestureState.moveX >= area.right && gestureState.moveX <= area.left) ) {
+    (gestureState.moveX >= area.right && gestureState.moveX <= area.left) ) {
     this.state.addControl.setValue({ x: CONTROLS_WIDTH, y: 0 })
     this.state.shareControl.setValue({ x: CONTROL_PIECE, y: 0 })
     DO_AN_ACT = 'add';
+  } else {
+    if ( DO_AN_ACT == 'add' ) {
+      DO_AN_ACT = '';
+      this.state.addControl.setValue({ x: CONTROL_PIECE, y: 0 })
+    }
   }
 }
 
@@ -118,7 +128,6 @@ function overControlAdd (measure, gestureState) {
  * @param vy
  */
 function onPanResponderRelease (e, { vx, vy }) {
-  e.stopPropagation();
   this.state.pan.flattenOffset();
   var velocity;
 
@@ -149,15 +158,19 @@ function onPanResponderRelease (e, { vx, vy }) {
       break;
     default:
       DO_AN_ACT = '';
-      /*if (!negative(this.state.pan.x._value) && Math.abs(this.state.pan.x._value) > SWIPE_THRESHOLD_MINI) {
-        this._onMarkGood()
-      }*/
+    /*if (!negative(this.state.pan.x._value) && Math.abs(this.state.pan.x._value) > SWIPE_THRESHOLD_MINI) {
+     this._onMarkGood()
+     }*/
   }
 
   setTimeout(()=> {
-    DO_AN_ACT = '';
-    this._hideControlShare()
-    this._returnCardToStartingPosition()
+
+    this._hideControlShare();
+    if ( !DO_AN_ACT ) {
+      this._returnCardToStartingPosition()
+    } else {
+      DO_AN_ACT = '';
+    }
   }, 0)
 }
 

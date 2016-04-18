@@ -18,52 +18,86 @@ import { EventManager } from '../../event-manager';
 import { connect } from "react-redux";
 import { Boris, Button, ScrollListView, Insight } from "../../components";
 import Advice from "./advice";
-import { SET_CURRENT_COLLECTION, UPDATE_COLLECTIONS } from "../../actions/actions";
+import Empty from "./empty";
+import {
+  SET_CURRENT_COLLECTION,
+  UPDATE_COLLECTIONS,
+  UPDATE_ADVICES_COLLECTIONS,
+  setUselessAction,
+  setUsefulAction
+} from "../../actions/actions";
+import {
+  MarkInsightUsefulInCollectionMutation,
+  MarkInsightUselessInCollectionMutation
+} from "../../mutations";
 import styles from "./style";
 
 
 const BorisNoteForSubscription = `Grow your business like a bamboo. No, better than a bamboo!`;
-let dataSource = new ListView.DataSource({
-  rowHasChanged: (row1, row2) => row1 !== row2
-})
 
 class UserInsightsUseful extends Component {
 
+  state = {
+    listInsights: [],
+    is_empty: false,
+    scrollEnabled: true,
+    isLoadingTail: false,
+    addControlShow: false,
+    pan: new Animated.ValueXY(),
+    enter: new Animated.Value(0.9),
+    dataSource: new ListView.DataSource({
+      rowHasChanged: (row1, row2) => row1 !== row2
+    })
+  }
+
+
   constructor (props) {
     super(props)
-
-    this.state = {
-      allAdviceOpacityOn: false,
-      scrollEnabled: true,
-      isLoadingTail: false,
-      addControlShow: false,
-      pan: new Animated.ValueXY(),
-      enter: new Animated.Value(0.9)
-    };
-
     this.saveTimeout = null;
     this._onSwipeStart = this._onSwipeStart.bind(this)
     this._opacityOff = this._opacityOff.bind(this)
     this._forceFetch = this._forceFetch.bind(this);
+
+    EventManager.addListener(UPDATE_ADVICES_COLLECTIONS, this._forceFetch)
   }
 
   componentWillReceiveProps (nextProps) {
-    this._updateBasket()
+    const { insightsUseful } = nextProps.node;
+    const thisUseful = this.props.node.insightsUseful;
+
+    if ( insightsUseful.edges.length != thisUseful.edges.length ) {
+      this._updateBasket(nextProps)
+      this.state.listInsights = insightsUseful.edges;
+    }
+    if ( !insightsUseful.edges.length ) {
+      this.setState({ is_empty: true })
+    } else {
+      this.state.is_empty = false;
+    }
   }
 
   componentWillMount () {
-    this._updateBasket()
+    const { insightsUseful } = this.props.node;
+    this.state.listInsights = insightsUseful.edges;
+    this.state.dataSource = this.state.dataSource.cloneWithRows(this.state.listInsights);
+    this._updateBasket(this.props)
   }
+
+  componentWillUnmount () {
+    EventManager.removeListener(UPDATE_ADVICES_COLLECTIONS, this._forceFetch);
+    this.saveTimeout = null;
+  }
+
 
   /**
    * update the basket in navBar
    * @private
    */
-  _updateBasket () {
+  _updateBasket (nextProps) {
     clearTimeout(this.saveTimeout);
     this.saveTimeout = setTimeout(()=> {
-      const { node, dispatch } = this.props;
-      dispatch({ type: SET_CURRENT_COLLECTION, collection: node })
+      const { dispatch } = this.props;
+      dispatch({ type: SET_CURRENT_COLLECTION, collection: nextProps.node })
     }, 66)
   }
 
@@ -82,31 +116,38 @@ class UserInsightsUseful extends Component {
   }
 
   _opacityOff () {
-    this.setState({ allAdviceOpacityOn: false })
+
   }
 
 
   _onShare () {}
 
-  _renderInsight (rowData, sectionID, rowID) {
-    const insight = rowData.node;
-    return <Advice
-      collection={this.props.node}
-      navigator={this.props.navigator}
-      allAdviceOpacityOn={this.state.allAdviceOpacityOn}
-      opacityOff={this._opacityOff}
-      insight={insight}
-      isBadAdviceList={this.props.showBadAdvice}
-      onSwipeStart={this._onSwipeStart}
-      forceFetch={this._forceFetch}
-      onShare={this._onShare}/>
-  }
-
   _forceFetch () {
-    this.props.relay.forceFetch()
-
+    this.props.relay.forceFetch();
     // TODO : update prev screen { user collections }
     EventManager.emit(UPDATE_COLLECTIONS)
+  }
+
+  _renderInsight (rowData, sectionID, rowID) {
+    return (
+      <Advice
+        key={rowID}
+        collection={this.props.node}
+        opacityOff={this._opacityOff}
+        insight={rowData.node}
+        isBadAdviceList={this.props.showBadAdvice}
+        onSwipeStart={this._onSwipeStart}
+        forceFetch={this._forceFetch}
+        onShare={this._onShare}/>
+    )
+  }
+
+  _renderList () {
+    const { listInsights } = this.state;
+    if ( !listInsights.length ) return null;
+    return listInsights.map((collection, index)=> {
+      return this._renderInsight(collection, null, index)
+    })
   }
 
   /**
@@ -114,27 +155,21 @@ class UserInsightsUseful extends Component {
    * @returns {XML}
    */
   render () {
-    const { isLoadingTail, scrollEnabled } = this.state;
-    const { node } = this.props;
+    const { scrollEnabled, is_empty } = this.state;
+
+    if ( is_empty ) {
+      return <Empty />
+    }
+
     return (
       <View style={ styles.container }>
         <ScrollView
           scrollEnabled={scrollEnabled}
           showsVerticalScrollIndicator={true}>
           <ButtonsBoris />
-
-          {!node.insights.edges || !node.insights.edges.length ? null :
-            <ScrollListView
-              scrollEnabled={scrollEnabled}
-              dataSource={dataSource.cloneWithRows(node.insights.edges)}
-              renderRow={(rowData, sectionID, rowID) => this._renderInsight(rowData, sectionID, rowID)}
-              isLoadingTail={isLoadingTail}
-              onEndReached={this._onEndReached.bind(this)}
-              onEndReachedThreshold={20}
-              showsVerticalScrollIndicator={true}
-              style={styles.scroll}
-            />
-          }
+          <View style={styles.scroll}>
+            {this._renderList()}
+          </View>
         </ScrollView>
       </View>
     )
@@ -163,17 +198,30 @@ var insightFragment = Relay.QL`
 `;
 
 const ReduxComponent = connect()(UserInsightsUseful);
+
 export default Relay.createContainer(ReduxComponent, {
   initialVariables: {
-    countInsights: 100,
-    filter: 'USEFUL'
+    countInsights: 100
   },
   fragments: {
     node : () => Relay.QL`
         fragment on UserCollection {
             id
             name
-            insights(first : $countInsights, filter : $filter) {
+            insights(first : 1, filter : ALL) {
+                usefulCount
+                uselessCount
+            }
+            insightsUseless: insights(first : $countInsights, filter : USELESS) {
+                usefulCount
+                uselessCount
+                edges {
+                    node {
+                        ${insightFragment}
+                    }
+                }
+            }
+            insightsUseful: insights(first : $countInsights, filter : USEFUL) {
                 usefulCount
                 uselessCount
                 edges {

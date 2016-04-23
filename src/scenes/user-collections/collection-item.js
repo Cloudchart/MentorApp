@@ -25,17 +25,10 @@ import {
 
 class UserCollectionItem extends Component {
 
-  state = {
-    isLoadingTail: false,
-    visibility: 0,
-    isOpen: false
-  }
+  constructor (props, context) {
+    super(props, context)
 
-  constructor (props) {
-    super(props)
-    this.deleteNote = this.deleteNote.bind(this);
-
-    this._swipeBtns = [ {
+    this._swipeButtons = [{
       text: 'Delete',
       close: true,
       styleButton: {
@@ -44,32 +37,42 @@ class UserCollectionItem extends Component {
       styleText: {
         color: '#fff'
       },
-      component: <View style={styles.iconBasketView}>
-        <Icon name="trash" style={[baseStyles.crumbIconAngle, styles.iconBasket]}/>
-      </View>,
-      onPress: this.deleteNote,
-    } ];
-  }
+      component: (
+        <View style={styles.iconBasketView}>
+          <Icon name="trash" style={[baseStyles.crumbIconAngle, styles.iconBasket]}/>
+        </View>
+      ),
+      onPress: () => this.handleDeletePress(),
+    }];
 
-  componentWillReceiveProps (nextProps) {
-    if ( nextProps.closeAllItems ) {
-      this.state.closeAllItems = nextProps.closeAllItems;
+    this.state = {
+      isLoadingTail: false,
+      visibility: 0,
+      isOpen: false,
     }
   }
 
-  deleteNote () {
-    setTimeout(()=> {
-      this.props.deleteRow(this.props.collection)
-    }, 0)
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.closeAllItems) {
+      this.setState({
+        closeAllItems: nextProps.closeAllItems
+      });
+    }
   }
 
+  handleDeletePress() {
+    setTimeout(
+      () => this.props.deleteRow(this.props.collection),
+      0
+    );
+  }
 
-  _openedRightCallback () {
+  openedRightCallback() {
     this.openedRight = true;
   }
 
-  _closeSwipeoutCallback () {
-    if ( this.openedRight ) {
+  closeSwipeoutCallback() {
+    if (this.openedRight) {
       this.openedRight = false;
     }
     this.state.closeAllItems = false;
@@ -89,48 +92,54 @@ class UserCollectionItem extends Component {
   render () {
     const { collection, pressRow } = this.props;
     const { insights } = collection;
-    let rowHeight = insights.count > 3 ? (3 * 30 + 30) : insights.edges.length * 30 + 13;
-    rowHeight = device.size(rowHeight);
-
+    const basicRowHeight =
+      insights.count > 3 ?
+        (3 * 30 + 30) :
+        insights.edges.length * 30 + 13;
+    const finalRowHeight = device.size(basicRowHeight);
+    console.log('Collection');
     return (
       <TouchableOpacity
-        style={ styles.collectionItem }
+        style={styles.collectionItem}
         activeOpacity={ 0.75 }
         onPress={pressRow}>
 
         <Swipeout
-          right={this._swipeBtns}
-          autoClose='true'
+          right={this._swipeButtons}
+          autoClose={true}
           close={this.state.closeAllItems}
-          autoCloseAfterPressButton='false'
-          openedRightCallback={this._openedRightCallback.bind(this)}
-          closeSwipeoutCallback={this._closeSwipeoutCallback.bind(this)}
+          autoCloseAfterPressButton={false}
+          openedRightCallback={() => this.openedRightCallback()}
+          closeSwipeoutCallback={() => (console.log('close swpitout') || this.closeSwipeoutCallback())}
           backgroundColor='transparent'>
-
-          <View style={ styles.collectionItemInner }>
-            <Icon name="folder-open-o" style={[baseStyles.crumbIcon, {color : '#00af58'}]}/>
-            <Text style={ styles.collectionText } numberOfLines={ 1 }>
-              { collection.name }
-            </Text>
-            <Text style={ styles.collectionCounterText }>
-              { !insights.count ? 0 : insights.count }
-            </Text>
-          </View>
+          <TouchableHighlight onPress={() => console.log('qwe')}>
+            <View style={styles.collectionItemInner}>
+              <Icon name='folder-open-o' style={[baseStyles.crumbIcon, { color: '#00af58' }]}/>
+              <Text style={styles.collectionText} numberOfLines={ 1 }>
+                {collection.name}
+              </Text>
+              <Text style={styles.collectionCounterText}>
+                {!insights.count ? 0 : insights.count}
+              </Text>
+            </View>
+          </TouchableHighlight>
         </Swipeout>
 
-        {!insights.edges || !insights.edges.length ? null :
-          <View style={[styles.collectionItemMore, {height : rowHeight}]}>
-            <View style={{flex : 1}}>
+        {insights.edges && insights.edges.length && (
+          <View style={[styles.collectionItemMore, { height: finalRowHeight }]}>
+            <View style={{ flex: 1 }}>
               {insights.edges.map(this._adviceItem)}
             </View>
-            <View style={{flex : 1}}>
-              {insights.count <= 3 ? null :
-                <Text style={ styles.textMore }>and {insights.count - insights.edges.length} more</Text>
-              }
+            <View style={{ flex: 1}}>
+              {insights.count > 3 && (
+                <Text style={styles.textMore}>
+                  and {insights.count - insights.edges.length} more
+                </Text>
+              )}
             </View>
-          </View>}
+          </View>
+        )}
       </TouchableOpacity>
-
     )
   }
 }

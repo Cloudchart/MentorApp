@@ -12,20 +12,20 @@ import { Loader } from "./components";
  */
 export function renderScreen (params) {
   const { scene, screenParams } = params;
-
   switch ( scene ) {
     case 'connect':
       return container(Scenes.Connect, screenParams);
     case 'advice_for_me':
+      const InsightsForMeFilter = screenParams.filter || 'UNRATED';
       return container(
         Scenes.InsightsForMe,
         screenParams,
         new QueryNodeId({
           nodeID: screenParams.topicId,
-          filter: screenParams.filter || 'UNRATED'
+          filter: InsightsForMeFilter
         }),
         null,
-        true
+        InsightsForMeFilter == 'PREVIEW' ? false : true
       );
     case 'questionnaire':
       return container(Scenes.Questionnaire, screenParams);
@@ -95,16 +95,17 @@ export function container (Component, screenParams, opt_router, renderFailure, f
   const router = opt_router ? opt_router : new ViewerRoute();
   const params = screenParams ? screenParams : {};
   const failure = renderFailure ? renderFailure : ()=> {};
+  const forceF = forceFetch ? forceFetch : false;
   const renderFetched = _.throttle((data, readyState)=> {
     return <Component {...params} {...data} />
-  }, 300)
+  }, 300);
 
   return (
     <RootContainer
       store={store}
       Component={Component}
       route={router}
-      forceFetch={forceFetch || false}
+      forceFetch={forceF}
       renderLoading={() => <Loader />}
       renderFailure={failure}
       renderFetched={renderFetched}

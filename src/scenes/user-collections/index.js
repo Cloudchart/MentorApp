@@ -232,7 +232,6 @@ class UserCollections extends Component {
    */
   _addInsightToCollection (collection) {
     const { navigator } = this.props;
-
     addToCollection({ insight: this.state.advice, collection })
       .then((transaction)=> {
         navigator.pop();

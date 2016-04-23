@@ -6,13 +6,11 @@ import React, {
   View
 } from "react-native";
 import Relay from 'react-relay';
-import { connect } from "react-redux";
 import _ from 'lodash';
 import { Boris, Button, TransparentButton } from "../index";
 import Icon from "react-native-vector-icons/FontAwesome";
 import styles from "../../styles/base";
 import { commentStyle, allForNowStyle, topicFinished } from "./style";
-import { ACTION_SHOW_RANDOM_ADVICE } from "../../actions/actions";
 
 const BorisNote = "That's all for now! Want more advice more often? Human up and subscribe!";
 const BorisNoteAllEnded = "Achievement unlocked! You have mastered all the topics, thus achieving supreme knowledge. I bow to you, Master";

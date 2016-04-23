@@ -61,12 +61,11 @@ class Advice extends Component {
     this._onShare = this._onShare.bind(this);
   }
 
-
   componentWillMount () {
     const responder = _panResponder.bind(this)
     this._panResponder = responder();
   }
-  
+
   /**
    *
    * Mark Bad card
@@ -81,25 +80,23 @@ class Advice extends Component {
 
   /**
    *
-   * TODO - forceFetch :(
-   * @param params
-   * @param evt
+   * @param opt_param
    * @private
    */
-  _onMarkGood (params, evt) {
+  _onMarkGood (opt_param) {
     const { insight, collection, forceFetch, navigator } = this.props;
     animationCardRight(this.state.pan, this._resetState.bind(this))
     markInsightUsefulInCollection({ insight, collection })
       .then((transaction)=> {
-        navigator.push({
-          scene: 'user-collections',
-          title: 'Add to collection',
-          advice: { ...transaction.markInsightUsefulInCollection.insight }
-        });
-
-        /*setTimeout(()=> {
-         forceFetch && forceFetch()
-         }, 0);*/
+        if ( !opt_param ) {
+          navigator.push({
+            scene: 'user-collections',
+            title: 'Add to collection',
+            advice: { ...transaction.markInsightUsefulInCollection.insight }
+          });
+        } else {
+          forceFetch && forceFetch()
+        }
       })
   }
 
@@ -210,7 +207,8 @@ class Advice extends Component {
     /*
      this.state.enter.setValue(1);
      this._hideControlShare();
-     //animateEntrance(this.state.enter)*/
+     animateEntrance(this.state.enter)
+     */
   }
 
   /**
@@ -266,17 +264,13 @@ class Advice extends Component {
         <View style={styles.wrapperAddCardControl}>
           <Animated.View style={[{width : constant.CONTROLS_WIDTH}, shareStyle]}>
             <View ref={constant.SHARE_CARD_REF} style={{flex: 1}}>
-              <ShareCard
-                currentInsights={{...insight}}
-                onShare={this._onShare}/>
+              <ShareCard currentInsights={{...insight}}/>
             </View>
           </Animated.View>
 
           <Animated.View style={[{width : constant.CONTROLS_WIDTH}, addStyle]}>
             <View ref={constant.ADD_CARD_REF} style={{flex: 1}}>
-              <AddCard
-                currentInsights={{...insight}}
-                onMarkGood={this._onMarkGood}/>
+              <AddCard currentInsights={{...insight}}/>
             </View>
           </Animated.View>
         </View>

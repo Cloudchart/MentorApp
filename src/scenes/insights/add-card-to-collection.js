@@ -17,14 +17,12 @@ import styles from "./style";
 export const AddCard = (props) => {
   return (
     <LinearGradient colors={['#00aced', '#1cb8f6']} style={ {flex : 1} }>
-      <TouchableOpacity
-        activeOpacity={ 0.75 }
-        style={styles.controlShare}>
+      <View style={styles.controlShare}>
         <Icon name="folder-open-o" style={[baseStyle.crumbIcon, {color : '#fff'}]}/>
         <Text style={ styles.controlShareText } numberOfLines={ 1 }>
           Add to collection
         </Text>
-      </TouchableOpacity>
+      </View>
     </LinearGradient>
   )
 }
@@ -36,14 +34,11 @@ export const AddCard = (props) => {
  */
 export const ShareCard = (props) => (
   <LinearGradient colors={['#00aced', '#1cb8f6']} style={ {flex : 1} }>
-    <TouchableOpacity
-      activeOpacity={ 0.75 }
-      style={[styles.controlShare]}
-      onPress={props.onShare}>
+    <View style={[styles.controlShare]}>
       <Icon name="share" style={[baseStyle.crumbIcon, {color : '#fff'}]}/>
       <Text style={ styles.controlShareText } numberOfLines={ 1 }>
         Share
       </Text>
-    </TouchableOpacity>
+    </View>
   </LinearGradient>
 )

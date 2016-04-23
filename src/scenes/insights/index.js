@@ -69,10 +69,6 @@ class InsightsForMe extends Component {
     this._commentBadUndo = this._commentBadUndo.bind(this);
   }
 
-  componentWillReceiveProps (nextProps) {
-    //console.log(nextProps.viewer.insights.edges.length, 'nextProps.insights.edges');
-  }
-
   /**
    * write in redux state amount
    * added to the collection of insight
@@ -352,9 +348,9 @@ class InsightsForMe extends Component {
     this._saveToLocalStack(saveCurrentInsights);
     InsightAnimations.animationCardLeft(params, this.state.pan, this._resetState)
 
-    /*if ( filter && filter == 'PREVIEW' ) {
+    if ( filter && filter == 'PREVIEW' ) {
       return;
-    }*/
+    }
 
     dislikeInsightInTopic(currentInsights)
       .then((tran)=> {
@@ -377,9 +373,9 @@ class InsightsForMe extends Component {
     this._saveToLocalStack(saveCurrentInsights);
     InsightAnimations.animationCardRight(this.state.pan, this._resetState)
 
-    /*if ( filter && filter == 'PREVIEW' ) {
+    if ( filter && filter == 'PREVIEW' ) {
       return;
-    }*/
+    }
 
     likeInsightInTopic(currentInsights, shouldAddToUserCollectionWithTopicName)
       .then((tran)=> {
@@ -397,6 +393,12 @@ class InsightsForMe extends Component {
    */
   _showControlPiece () {
     const { pan } = this.state;
+    const { filter } = this.props;
+
+    if ( filter && filter == 'PREVIEW' ) {
+      return;
+    }
+
     if ( pan.__getValue().x > 50 ) {
       if ( !this.state.showPiece ) {
         this.state.showPiece = true;
@@ -575,7 +577,7 @@ class InsightsForMe extends Component {
       conditionConfirmation,
       confirmationScreensShow
     } = this.state;
-    const { node, reactions, viewer, navigator } = this.props;
+    const { node, reactions, viewer, navigator, filter } = this.props;
 
     const [translateX, translateY] = [ pan.x, pan.y ];
 
@@ -595,9 +597,9 @@ class InsightsForMe extends Component {
       extrapolate: 'clamp'
     }
     const share = shareControl.x.interpolate(interpolateControls);
-    const shareStyle = { transform: [ { translateX: share } ]}
+    const shareStyle = { transform: [ { translateX: share } ] }
     const add = addControl.x.interpolate(interpolateControls);
-    const addStyle = { transform: [ { translateX: add } ]}
+    const addStyle = { transform: [ { translateX: add } ] }
 
     if ( reactions.show || confirmationScreensShow ) {
       return (
@@ -630,11 +632,10 @@ class InsightsForMe extends Component {
 
 
         {/* controls share */}
-
         <View style={[styles.wrapperAddCardControl, {top}]}>
           <Animated.View style={[{width : constant.CONTROLS_WIDTH}, shareStyle]}>
             <View ref={constant.SHARE_CARD_REF} style={{flex: 1}}>
-              <ShareCard onShare={this._onShare}/>
+              <ShareCard />
             </View>
           </Animated.View>
 

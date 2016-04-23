@@ -77,7 +77,7 @@ function overControlShare (measure, gestureState) {
     this.state.addControl.setValue({ x: CONTROL_PIECE, y: 0 })
     DO_AN_ACT = 'share';
   } else {
-    if(DO_AN_ACT == 'share') {
+    if ( DO_AN_ACT == 'share' ) {
       DO_AN_ACT = '';
       this.state.shareControl.setValue({ x: CONTROL_PIECE, y: 0 })
     }
@@ -103,7 +103,7 @@ function overControlAdd (measure, gestureState) {
     this.state.shareControl.setValue({ x: CONTROL_PIECE, y: 0 })
     DO_AN_ACT = 'add';
   } else {
-    if(DO_AN_ACT == 'add') {
+    if ( DO_AN_ACT == 'add' ) {
       DO_AN_ACT = '';
       this.state.addControl.setValue({ x: CONTROL_PIECE, y: 0 })
     }
@@ -153,14 +153,14 @@ function onPanResponderRelease (e, { vx, vy }) {
     default:
       DO_AN_ACT = '';
       if ( !negative(this.state.pan.x._value) && Math.abs(this.state.pan.x._value) > SWIPE_THRESHOLD_MINI ) {
-        this._onLikeInsight()
+        this._onLikeInsight();
       }
   }
 
   setTimeout(()=> {
     DO_AN_ACT = '';
-    this._hideControlShare()
-    this._returnCardToStartingPosition()
+    this._hideControlShare();
+    this._returnCardToStartingPosition();
   }, 0)
 
   //}

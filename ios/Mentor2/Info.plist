@@ -23,16 +23,16 @@
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>fb1729949853883978</string>
+				<string>fb1740756806161127</string>
 			</array>
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>FacebookAppID</key>
-	<string>1729949853883978</string>
+	<string>1740756806161127</string>
 	<key>FacebookDisplayName</key>
-	<string>mentor</string>
+	<string>MentorBot</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>fb</string>

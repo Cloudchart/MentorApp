@@ -29,14 +29,7 @@ export default StyleSheet.create({
   button: {
     marginTop: device.size(10)
   },
-
-  wrapperAddCardControl: {
-    flex: 1,
-    position: 'absolute',
-    top : 5,
-    right: -CONTROLS_WIDTH
-  },
-
+  
   card: {
     flex: 1,
     alignSelf: 'center',
@@ -52,21 +45,6 @@ export default StyleSheet.create({
     backgroundColor: 'transparent'
   },
 
-  controlShare: {
-    flex: 1,
-    flexDirection: 'row',
-    paddingHorizontal: device.size(16),
-    paddingVertical: device.size(20),
-    borderBottomColor: '#00aced'
-  },
-  controlShareText: {
-    alignSelf: 'flex-start',
-    fontSize: device.fontSize(22),
-    backgroundColor: 'transparent',
-    color: '#fff',
-    fontWeight: '500',
-    marginLeft: device.size(15)
-  },
   borisContainerCenter: {
     flex: 1,
     justifyContent: 'center',

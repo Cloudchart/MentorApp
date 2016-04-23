@@ -148,6 +148,14 @@ export default StyleSheet.create({
     bottom: 2
   },
 
+  navBarText : {
+    fontSize: device.fontSize(18),
+    lineHeight: device.fontSize(27),
+    color: '#fff',
+    textAlign: 'center',
+    fontWeight: '500'
+  },
+
   folderIcon: {
     color: '#00af58'
   }

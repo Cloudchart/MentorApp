@@ -34,6 +34,17 @@ class SubscribeOnTopicMutation extends Relay.Mutation {
           topic: this.props.topic.id,
           user: this.props.user.id
         }
+      }, {
+        type: 'RANGE_ADD',
+        parentName: 'user',
+        parentID: this.props.user.id,
+        connectionName: 'topics',
+        edgeName: 'topicEdge',
+        rangeBehaviors: {
+          '' : 'append',
+          'filter(DEFAULT)' : 'remove',
+          'filter(SUBSCRIBED)': 'append'
+        }
       }
     ]
   }

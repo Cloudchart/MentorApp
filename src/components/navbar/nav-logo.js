@@ -20,9 +20,7 @@ class NavLogo extends Component {
 
   showRandomAdvice () {
     const { dispatch, reactions } = this.props;
-    if ( !reactions.show ) {
-      dispatch({ type: ACTION_SHOW_RANDOM_ADVICE, show: true })
-    }
+    dispatch({ type: ACTION_SHOW_RANDOM_ADVICE, show: true });
   }
 
 

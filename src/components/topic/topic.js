@@ -34,7 +34,9 @@ class Topic extends Component {
    * @private
    */
   _subscribeOnTopic () {
-    const { onPressUserAddedTopic, topic, user } = this.props;
+    const { onPressUserAddedTopic, topic, user, onPressBefore } = this.props;
+
+    onPressBefore && onPressBefore();
 
     if ( onPressUserAddedTopic ) {
       onPressUserAddedTopic(topic, user);
@@ -42,13 +44,13 @@ class Topic extends Component {
     }
 
     if ( topic.isSubscribedByViewer ) {
-      this._unsubscribeFromTopic()
+      this._unsubscribeFromTopic();
       return false;
     }
 
     subscribeOnTopic({ topic, user })
       .then(()=> {
-        this.props.relay.forceFetch()
+        this.props.onPress && this.props.onPress(topic, user);
       })
   }
 

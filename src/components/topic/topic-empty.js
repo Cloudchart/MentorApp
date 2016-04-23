@@ -52,6 +52,7 @@ export default Relay.createContainer(TopicEmpty, {
             id
             name
             isPaid
+            isSubscribedByViewer
         }
     `
   }

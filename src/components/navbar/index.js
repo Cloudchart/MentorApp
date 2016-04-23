@@ -24,17 +24,15 @@ const backRouterIcon = [
   'insights_useful',
   'user-collections',
   'subscription',
-  //'select_topics',
   'replace-topic',
-  'connect',
   'questionnaire',
-  'notifications',
   'profile',
   'user-topics',
   'explore-topic',
   'settings',
   'web_view'
-]
+];
+
 const settings = [
   'advice_for_me',
   'all_for_now'
@@ -83,6 +81,8 @@ export const navBarRouteMapper = {
         return <Trash navigator={navigator} route={route}/>
       case 'insights_useful':
         return <Trash navigator={navigator} route={route}/>
+      case 'follow-up':
+        return <Skip navigator={navigator} route={route}/>
       case 'advice_for_me':
         if ( route.filter != 'PREVIEW' ) {
           return <CounterAdvice navigator={navigator}/>
@@ -104,13 +104,35 @@ const Add = (props) => {
   )
 }
 
+const Skip = (props) => {
+
+  function goSkip(){
+    props.navigator.replace({
+      scene: props.route.buttonSkip,
+      title: props.title || ''
+    })
+  }
+
+  return (
+    <TouchableOpacity
+      activeOpacity={ 0.75 }
+      style={styles.crumbIconPlaceholder}
+      onPress={goSkip}>
+      <Text style={[styles.navBarText, {color : '#2a9ce0'}]}>Skip</Text>
+    </TouchableOpacity>
+  )
+}
+
 const AngleLeftReplace = (props) => {
 
   function replace () {
     if ( props.back ) {
       props.back()
     } else {
-      props.navigator.replace({ scene: props.scene, title: props.title || '' })
+      props.navigator.replace({
+        scene: props.scene,
+        title: props.title || ''
+      })
     }
 
   }

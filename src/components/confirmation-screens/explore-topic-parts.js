@@ -28,10 +28,12 @@ class ExploreTopicSubscribe extends Component {
   }
 
   replaceTopic () {
-    const { navigator } = this.props;
+    const { navigator, topic, popToTop } = this.props;
     navigator.replace({
       scene: 'replace-topic',
-      title: 'Replace one of yours topics:'
+      title: 'Replace one of yours topics:',
+      topic : topic,
+      popToTop : popToTop
     })
   }
 
@@ -73,12 +75,13 @@ class ExploreTopicSubscribeFull extends Component {
   }
 
   replaceTopic () {
-    const { navigator } = this.props;
+    const { navigator, topic, popToTop } = this.props;
 
     navigator.replace({
       scene: 'replace-topic',
       title: 'Replace one of yours topics:',
-      FloatFromBottom: true
+      topic : topic,
+      popToTop : popToTop
     })
   }
 

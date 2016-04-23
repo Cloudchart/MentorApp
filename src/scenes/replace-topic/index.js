@@ -14,6 +14,12 @@ import { Boris, Button, Loader, ScrollListView, TopicEmpty } from "../../compone
 import styles from "./style";
 import { _flex } from "../../styles/base";
 
+
+import {
+  unsubscribeFromTopic,
+  subscribeOnTopic
+} from '../../actions/topic';
+
 const dataSource = new ListView.DataSource({
   rowHasChanged: (row1, row2) => row1 !== row2
 })
@@ -21,7 +27,7 @@ const dataSource = new ListView.DataSource({
 class ReplaceTopic extends Component {
 
   static defaultProps = {
-    newTopic : null
+    newTopic: null
   }
 
   state = {
@@ -47,24 +53,32 @@ class ReplaceTopic extends Component {
    * @param topic
    * @private
    */
-  _replaceTopic (topic) {
-    const { navigator } = this.props;
+  _replaceTopic (topicReplace) {
+    const { viewer, navigator, topic, popToTop } = this.props;
 
-
-    /*setTimeout(()=> {
-      navigator.push({
-        scene: 'advice_for_me',
-        title: topic.name,
-        topicId: topic.id,
-        filter : 'PREVIEW'
-      })
-    }, 0)*/
+    if ( topicReplace.isSubscribedByViewer ) {
+      unsubscribeFromTopic({ topic: topicReplace, user: viewer })
+        .then(()=> {
+          if ( !topic.isSubscribedByViewer ) {
+            subscribeOnTopic({ topic, user: viewer })
+              .then(()=> {
+                setTimeout(()=> {
+                  if(popToTop == 'pop'){
+                    navigator.pop();
+                  } else {
+                    navigator.popToTop();
+                  }
+                }, 400)
+              })
+          }
+        })
+    }
   }
 
 
   _onEndReached () {
     const { relay, viewer } = this.props;
-    let pageNext = viewer.topics.pageInfo;
+    let pageNext = viewer.subscribedTopics.pageInfo;
     let count = relay.variables.count;
 
     if ( !pageNext || !pageNext.hasNextPage ) {
@@ -104,7 +118,7 @@ class ReplaceTopic extends Component {
     return (
       <View style={styles.container}>
         <ScrollListView
-          dataSource={dataSource.cloneWithRows(viewer.topics.edges)}
+          dataSource={dataSource.cloneWithRows(viewer.subscribedTopics.edges)}
           renderRow={(rowData, sectionID, rowID) => this._renderTopic(rowData, sectionID, rowID)}
           pageSize={30}
           isLoadingTail={isLoadingTail}
@@ -127,12 +141,14 @@ export default Relay.createContainer(ReplaceTopic, {
   fragments: {
     viewer: () => Relay.QL`
         fragment on User {
+            id
             ${TopicEmpty.getFragment('user')}      
-            topics(first: $count) {
+            subscribedTopics: topics(first: $count, filter: SUBSCRIBED) {
+                availableSlotsCount
                 edges {
                     node {
                         id
-                        name
+                        isSubscribedByViewer
                         ${TopicEmpty.getFragment('topic')}
                     }
                 }

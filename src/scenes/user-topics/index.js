@@ -19,6 +19,7 @@ import {
 import styles from "./style";
 import { EventManager } from '../../event-manager';
 import * as device from "../../utils/device";
+import { getGradient } from "../../utils/colors";
 import { TOPICS_FORCE_FETCH } from '../../actions/actions';
 
 
@@ -40,11 +41,11 @@ class UserTopics extends Component {
     super(props)
 
     this.forceFetch = this.forceFetch.bind(this);
-    EventManager.on(TOPICS_FORCE_FETCH, this.forceFetch)
+    EventManager.on(TOPICS_FORCE_FETCH, this.forceFetch);
 
     this._onEndReached = this._onEndReached.bind(this);
     this._unsubscribeFromTopicCallback = this._unsubscribeFromTopicCallback.bind(this);
-    this._addTopic = this._addTopic.bind(this)
+    this._addTopic = this._addTopic.bind(this);
 
 
     this._panResponder = PanResponder.create({
@@ -55,8 +56,9 @@ class UserTopics extends Component {
     });
   }
 
+  // TODO not evading from the event
   componentWillUnmount () {
-    EventManager.removeListener(TOPICS_FORCE_FETCH, this.forceFetch);
+    //EventManager.removeListener(TOPICS_FORCE_FETCH, this.forceFetch);
   }
 
   /**
@@ -87,7 +89,7 @@ class UserTopics extends Component {
   }
 
   forceFetch () {
-    this.props.relay.forceFetch()
+    this.props.relay.forceFetch();
   }
 
 
@@ -107,7 +109,7 @@ class UserTopics extends Component {
   _renderTopic (rowData, sectionID, rowID) {
     const { subscribedTopics } = this.props.viewer;
     const last = (parseInt(rowID) + 1) == subscribedTopics.edges.length;
-    const isShow = last; //subscribedTopics.edges.length < 3 && last
+    const isShow = subscribedTopics.availableSlotsCount && last;
 
     return (
       <View>
@@ -118,6 +120,8 @@ class UserTopics extends Component {
           subscribedTopics={subscribedTopics}
           unsubscribeFromTopicCallback={this._unsubscribeFromTopicCallback}
           index={ rowID }/>
+        {!isShow ? null :
+          <Add addTopic={this._addTopic} index={ rowID + 2 }/> }
       </View>
     )
   }
@@ -145,8 +149,8 @@ class UserTopics extends Component {
               onEndReachedThreshold={20}
               showsVerticalScrollIndicator={false}/>}
 
-          {subscribedTopics.edges.length >= 3 ? null :
-            <Add addTopic={this._addTopic}/>}
+          {subscribedTopics.edges.length ? null :
+            <Add addTopic={this._addTopic} index={ 0 }/>}
 
           <ButtonsBoris subscribeNow={this.subscribeNow.bind(this)}/>
         </ScrollView>
@@ -171,15 +175,16 @@ const ButtonsBoris = (props) => (
 )
 
 const Add = (props) => (
-  <View style={ {marginTop : device.size(20) } }>
-    <Button
-      onPress={props.addTopic}
-      label=""
-      color="green"
-      style={styles.button}>
-      <Text style={ [styles.buttonText, {color : '#fff'} ]}>Add Topic</Text>
-    </Button>
-  </View>
+  <TouchableOpacity
+    activeOpacity={ 0.75 }
+    onPress={props.addTopic}
+    style={[styles.item, { backgroundColor: getGradient('green', props.index ) } ]}>
+    <View style={ styles.itemInner }>
+      <Text style={ styles.itemText } numberOfLines={ 1 }>
+        Add Topic
+      </Text>
+    </View>
+  </TouchableOpacity>
 )
 
 export default Relay.createContainer(UserTopics, {
@@ -188,6 +193,7 @@ export default Relay.createContainer(UserTopics, {
         fragment on User {
             ${TopicSubscribed.getFragment('user')}                                               
             subscribedTopics: topics(first: 100, filter: SUBSCRIBED) {
+                availableSlotsCount
                 edges {
                     node {
                         ${TopicSubscribed.getFragment('topic')}

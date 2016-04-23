@@ -32,12 +32,20 @@ class SubscribeTopicAdd extends Component {
     this.props.undo && this.props.undo('add');
   }
 
-  render () {
+  findTopic () {
     const { subscribedTopics, topic } = this.props;
+    return subscribedTopics.edges.find(item => item.id == topic.id);
+  }
 
-    // TODO
-    //return <ExploreTopicSubscribe {...this.props} />
-    //return <ExploreTopicSubscribeFull {...this.props} />
+  render () {
+    const { subscribedTopics } = this.props;
+
+    if ( !this.findTopic() && !subscribedTopics.availableSlotsCount ) {
+      return <ExploreTopicSubscribe {...this.props} />
+    } else if ( this.findTopic() && !subscribedTopics.availableSlotsCount ) {
+      return <ExploreTopicSubscribeFull {...this.props} />
+    }
+
 
     return (
       <View style={ commentStyle.container }>

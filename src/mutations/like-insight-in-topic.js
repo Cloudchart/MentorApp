@@ -42,7 +42,9 @@ class LikeInsightInTopicMutation extends Relay.Mutation {
         connectionName: 'topics',
         edgeName: 'insightEdge',
         rangeBehaviors: {
-          'filter(RATED)': 'append'
+          '': 'append',
+          'filter(RATED)': 'append',
+          'filter(UNRATED)': 'remove'
         }
       }
     ]

@@ -6,11 +6,14 @@ import React, {
   View
 } from "react-native";
 import Relay from 'react-relay';
+import { connect } from "react-redux";
 import _ from 'lodash';
 import { Boris, Button, TransparentButton } from "../index";
 import Icon from "react-native-vector-icons/FontAwesome";
 import styles from "../../styles/base";
 import { commentStyle, allForNowStyle, topicFinished } from "./style";
+import { ACTION_SHOW_RANDOM_ADVICE } from "../../actions/actions";
+
 const BorisNote = "That's all for now! Want more advice more often? Human up and subscribe!";
 const BorisNoteAllEnded = "Achievement unlocked! You have mastered all the topics, thus achieving supreme knowledge. I bow to you, Master";
 const BorisNoteTopicFinished = "Congratulations, apprentice! You're not as hopeless as I thought. But no time to celebrate, let the learning go on!";
@@ -238,8 +241,16 @@ class TopicFinished extends Component {
 
 class RandomAdvice extends Component {
 
+  state = {
+    reactions: {
+      mood: 'positive',
+      content: ''
+    }
+  }
+
   constructor (props) {
-    super(props)
+    super(props);
+
     this.gotIt = this.gotIt.bind(this);
   }
 
@@ -247,24 +258,44 @@ class RandomAdvice extends Component {
     this.props.undo && this.props.undo('hide');
   }
 
+  shouldComponentUpdate (nextProps, nextState) {
+    return nextProps.viewer.reactions.edges.length;
+  }
+
+  /**
+   *
+   * @param reactions
+   */
+  getRandomReaction (reactions) {
+    const sample = _.chain(reactions)
+                    .map(n => n.node)
+                    .shuffle()
+                    .filter(n => n.content != this.state.reactions.content)
+                    .sample()
+                    .value();
+
+    return sample;
+  }
+
   render () {
     const { viewer } = this.props;
-    let mood = 'positive';
-    let note = '';
+    const { reactions } = this.state;
+    let mood = reactions.mood;
+    let note = reactions.content;
 
     if ( !viewer.reactions.edges.length ) {
       mood = 'negative';
       note = 'error';
     } else {
-      const reactions = _.sample(_.shuffle(_.map(viewer.reactions.edges, 'node')));
-      mood = reactions.mood;
-      note = reactions.content;
+      this.state.reactions = this.getRandomReaction(viewer.reactions.edges);
+      mood = this.state.reactions.mood;
+      note = this.state.reactions.content;
     }
 
     return (
       <View style={ commentStyle.container }>
         <View style={ commentStyle.borisContainer }>
-          <Boris mood={mood} size="small" note={note}/>
+          <Boris mood={mood} size="small" note={note} randomId={(Math.random(1000) * 100).toString(16)}/>
         </View>
 
         <Button
@@ -278,6 +309,7 @@ class RandomAdvice extends Component {
     )
   }
 }
+
 
 RandomAdvice = Relay.createContainer(RandomAdvice, {
   fragments: {

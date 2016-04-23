@@ -25,10 +25,7 @@ import {
   UPDATE_COLLECTIONS,
   UPDATE_ADVICES_COLLECTIONS,
 } from "../../actions/actions";
-import {
-  MarkInsightUsefulInCollectionMutation,
-  MarkInsightUselessInCollectionMutation
-} from "../../mutations";
+
 import styles from "./style";
 
 
@@ -131,9 +128,10 @@ class UserInsightsUseless extends Component {
         collection={this.props.node}
         opacityOff={this._opacityOff}
         insight={rowData.node}
+        navigator={this.props.navigator}
         isBadAdviceList={this.props.showBadAdvice}
         onSwipeStart={this._onSwipeStart}
-        forceFetch={this._forceFetch} />
+        forceFetch={this._forceFetch}/>
     )
   }
 

@@ -31,9 +31,7 @@ class TopicSubscribed extends Component {
       text: 'Delete',
       close: true,
       styleButton: {
-        backgroundColor: 'red',
-        //borderBottomColor: 'hsl(137, 59%, 43%)',
-        //borderBottomWidth: 2
+        backgroundColor: '#fa3d39'
       },
       styleText: {
         color: '#fff'

@@ -53,31 +53,6 @@ export function notificationMessages (notification) {
   );
 }
 
-/**
- *
- * @param viewer
- */
-export function recordNotifications (viewer) {
-  let { notificationsSettings } = viewer;
-
-  if ( !notificationsSettings ) notificationsSettings = {};
-
-  let newNotificationsSettings = Object.assign(notificationsSettings, {
-    startAt: 'test startAt',
-    finishAt: 'test finishAt',
-    utcOffset: 23434532453,
-    timesToSend: 234234234
-  })
-
-  Relay.Store.commitUpdate(
-    new UserNotificationsSettingsMutation({ notification: newNotificationsSettings }), {
-      onSuccess: (transaction) => {
-        console.log('UserNotificationsSettingsMutation', transaction);
-      }
-    }
-  );
-}
-
 export function checkNET (showAlert) {
   return new Promise((resolve, reject) => {
     NetInfo.fetch().done((reach) => {

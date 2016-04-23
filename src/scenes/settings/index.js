@@ -45,6 +45,12 @@ class Settings extends Component {
     ]
   }
 
+  constructor (props) {
+    super(props)
+
+    this._onLogout = this._onLogout.bind(this);
+  }
+
   /**
    *
    * @param settingData
@@ -66,7 +72,7 @@ class Settings extends Component {
   _onLogout (data) {
     const { navigator } = this.props;
     setTimeout(()=> {
-      navigator.replace({
+      navigator.resetTo({
         scene: 'welcome',
         title: 'Virtual Mentor'
       })
@@ -86,8 +92,9 @@ class Settings extends Component {
           style={ styles.items }/>
 
         <FBLoginButton
+          viewer={this.props.viewer}
           style={ styles.button }
-          onLogout={this._onLogout.bind(this)}
+          onLogout={this._onLogout}
         />
       </View>
     )
@@ -118,13 +125,9 @@ export default Relay.createContainer(Settings, {
   fragments: {
     viewer: () => Relay.QL`
         fragment on User {
-            topics(first: 100, filter: DEFAULT) {
-                edges {
-                    node {
-                        name
-                    }
-                }
-            }
+            id
+            email
+            name
         }
     `
   }

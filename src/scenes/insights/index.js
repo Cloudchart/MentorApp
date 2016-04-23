@@ -69,11 +69,9 @@ class InsightsForMe extends Component {
     this._commentBadUndo = this._commentBadUndo.bind(this);
   }
 
-
-  componentDidMount () {
-
+  componentWillReceiveProps (nextProps) {
+    //console.log(nextProps.viewer.insights.edges.length, 'nextProps.insights.edges');
   }
-
 
   /**
    * write in redux state amount
@@ -95,7 +93,7 @@ class InsightsForMe extends Component {
     if ( node && node.insights ) {
       insights = this._getInsightsFromNode()
     } else {
-      insights = this._getInsightsFromTopics()
+      insights = this._getInsights();
     }
 
     this._setCurrentAdvice(insights);
@@ -132,7 +130,7 @@ class InsightsForMe extends Component {
    * @returns {*|Array}
    * @private
    */
-  _getInsightsFromTopics () {
+  _getInsights () {
     const { viewer } = this.props
     const { insights } = viewer;
     this._topicsCompletion(insights.edges)
@@ -240,7 +238,7 @@ class InsightsForMe extends Component {
       currentInsights: allInsights.length ? allInsights[ 0 ] : null
     });
 
-    setTimeout(()=> {this._animateEntrance()}, 200)
+    //setTimeout(()=> {this._animateEntrance()}, 200)
   }
 
   /**
@@ -255,6 +253,8 @@ class InsightsForMe extends Component {
     let deleted = [];
     let localAllInsights = allInsights;
     let index = 0;
+
+    //this.props.relay.forceFetch();
 
     const foundIns = allRatedInsights.find((insight, i)=> {
       index = i;
@@ -352,9 +352,9 @@ class InsightsForMe extends Component {
     this._saveToLocalStack(saveCurrentInsights);
     InsightAnimations.animationCardLeft(params, this.state.pan, this._resetState)
 
-    if ( filter && filter == 'PREVIEW' ) {
+    /*if ( filter && filter == 'PREVIEW' ) {
       return;
-    }
+    }*/
 
     dislikeInsightInTopic(currentInsights)
       .then((tran)=> {
@@ -377,9 +377,9 @@ class InsightsForMe extends Component {
     this._saveToLocalStack(saveCurrentInsights);
     InsightAnimations.animationCardRight(this.state.pan, this._resetState)
 
-    if ( filter && filter == 'PREVIEW' ) {
+    /*if ( filter && filter == 'PREVIEW' ) {
       return;
-    }
+    }*/
 
     likeInsightInTopic(currentInsights, shouldAddToUserCollectionWithTopicName)
       .then((tran)=> {
@@ -438,15 +438,27 @@ class InsightsForMe extends Component {
     this._isShowControlShare()
   }
 
+  _parallelHideControl () {
+    const param = {
+      toValue: 0,
+      duration: 100,
+      friction: 8
+    }
+    setTimeout(()=> {
+      Animated.spring(this.state.addControl, param).start()
+      Animated.spring(this.state.shareControl, param).start()
+    }, 0);
+    this.state.showPiece = false;
+    this._isHideControlShare()
+  }
+
+
   /**
    * hide full control
    * @private
    */
   _hideControlShare () {
-    this.state.shareControl.setValue({ x: 0, y: 0 })
-    this.state.addControl.setValue({ x: 0, y: 0 })
-    this.state.showPiece = false;
-    this._isHideControlShare()
+    this._parallelHideControl();
   }
 
 
@@ -472,7 +484,7 @@ class InsightsForMe extends Component {
 
     this._onLikeInsight()
     if ( !param ) {
-      this._navigatorPush('user-collections', 'Saved advices', currentInsights.node)
+      this._navigatorPush('user-collections', 'Add to collection', currentInsights.node)
     }
   }
 
@@ -583,9 +595,9 @@ class InsightsForMe extends Component {
       extrapolate: 'clamp'
     }
     const share = shareControl.x.interpolate(interpolateControls);
-    const shareStyle = { transform: [ { translateX: share } ] }
+    const shareStyle = { transform: [ { translateX: share } ]}
     const add = addControl.x.interpolate(interpolateControls);
-    const addStyle = { transform: [ { translateX: add } ] }
+    const addStyle = { transform: [ { translateX: add } ]}
 
     if ( reactions.show || confirmationScreensShow ) {
       return (
@@ -610,6 +622,7 @@ class InsightsForMe extends Component {
           <Animated.View style={[styles.card, animatedCardStyles]}
             {...this._panResponder.panHandlers}>
             <Insight
+              style={{alignSelf: 'center'}}
               navigator={this.props.navigator}
               insight={currentInsights.node}
               onPressCard={this._onPressCard}/>
@@ -632,26 +645,27 @@ class InsightsForMe extends Component {
           </Animated.View>
         </View>
 
+        {showCardTopicName ? null :
+          <View style={styles.controlWrapper }>
+            <Animated.View style={[styles.controlLeft, animatedNopeStyles]}>
+              <TouchableOpacity
+                activeOpacity={ 0.95 }
+                style={[styles.controlInner, {paddingTop: 0, left : -1}]}
+                onPress={this._onDelete}>
+                <Icon name="times" style={[baseStyle.crumbIcon, styles.icons]}/>
+              </TouchableOpacity>
+            </Animated.View>
 
-        <View style={styles.controlWrapper }>
-          <Animated.View style={[styles.controlLeft, animatedNopeStyles]}>
-            <TouchableOpacity
-              activeOpacity={ 0.95 }
-              style={[styles.controlInner, {paddingTop: 0, left : -1}]}
-              onPress={this._onDelete}>
-              <Icon name="times" style={[baseStyle.crumbIcon, styles.icons]}/>
-            </TouchableOpacity>
-          </Animated.View>
-
-          <Animated.View style={[styles.controlRight, animatedYupStyles]}>
-            <TouchableOpacity
-              activeOpacity={ 0.95 }
-              style={styles.controlInner}
-              onPress={()=>{this._onAddToCollection()}}>
-              <Icon name="plus" style={[baseStyle.crumbIcon, styles.icons]}/>
-            </TouchableOpacity>
-          </Animated.View>
-        </View>
+            <Animated.View style={[styles.controlRight, animatedYupStyles]}>
+              <TouchableOpacity
+                activeOpacity={ 0.95 }
+                style={styles.controlInner}
+                onPress={()=>{this._onAddToCollection()}}>
+                <Icon name="plus" style={[baseStyle.crumbIcon, styles.icons]}/>
+              </TouchableOpacity>
+            </Animated.View>
+          </View>
+        }
       </View>
     )
   }
@@ -688,6 +702,7 @@ export default Relay.createContainer(ReduxComponent, {
             ${RandomAdvice.getFragment('viewer')}
             ${collectionInsightFragment}
             subscribedTopics: topics(first: 100, filter: SUBSCRIBED) {
+                availableSlotsCount
                 edges {
                     node {
                         id

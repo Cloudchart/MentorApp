@@ -78,6 +78,14 @@ class ConfirmationScreens extends Component {
   render () {
     const { condition, reactions } = this.props;
 
+    if ( reactions.show ) {
+      return (
+        <RandomAdvice
+          {...this.props}
+          undo={this._randomAdviceUndo}/>
+      )
+    }
+
     switch ( condition ) {
       case 'comment_bad':
         return this.commentBad();
@@ -94,18 +102,8 @@ class ConfirmationScreens extends Component {
       default:
     }
 
-    if ( reactions.show ) {
-      return (
-        <RandomAdvice
-          {...this.props}
-          undo={this._randomAdviceUndo}/>
-      )
-    }
-
     return null;
   }
 }
 
-export default connect(state => ({
-  reactions: state.reactions
-}))(ConfirmationScreens)
+export default connect()(ConfirmationScreens)

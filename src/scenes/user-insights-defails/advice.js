@@ -20,11 +20,10 @@ import { Button, Loader, ScrollListView } from "../../components";
 import Insight, {
   animationCardLeft,
   animationCardRight,
-  returnCardToStartingPosition,
-  animateEntrance
+  returnCardToStartingPosition
 } from "../../components/insight";
 
-import { ADD_CARD_REF, CONTROLS_WIDTH, SHARE_CARD_REF, CONTROL_PIECE } from "../../components/insight/const";
+import * as constant from '../../components/insight/const';
 
 import * as device from "../../utils/device";
 import clamp from "clamp";
@@ -46,6 +45,8 @@ class Advice extends Component {
   state = {
     removeView: false,
     opacityOn: false,
+    cardHeight: 0,
+    calculateTopControl: 0,
     shareControl: new Animated.ValueXY({ x: 0, y: 0 }),
     addControl: new Animated.ValueXY({ x: 0, y: 0 }),
     pan: new Animated.ValueXY(),
@@ -65,15 +66,7 @@ class Advice extends Component {
     const responder = _panResponder.bind(this)
     this._panResponder = responder();
   }
-
-  componentDidMount () {
-
-  }
-
-  componentWillUnmount () {
-
-  }
-
+  
   /**
    *
    * Mark Bad card
@@ -94,14 +87,19 @@ class Advice extends Component {
    * @private
    */
   _onMarkGood (params, evt) {
-    const { insight, collection, forceFetch } = this.props;
+    const { insight, collection, forceFetch, navigator } = this.props;
     animationCardRight(this.state.pan, this._resetState.bind(this))
     markInsightUsefulInCollection({ insight, collection })
       .then((transaction)=> {
-        forceFetch && forceFetch()
-      })
-      .catch((error)=> {
-        forceFetch && forceFetch()
+        navigator.push({
+          scene: 'user-collections',
+          title: 'Add to collection',
+          advice: { ...transaction.markInsightUsefulInCollection.insight }
+        });
+
+        /*setTimeout(()=> {
+         forceFetch && forceFetch()
+         }, 0);*/
       })
   }
 
@@ -123,16 +121,26 @@ class Advice extends Component {
       })
   }
 
+  _parallelHideControl () {
+    const param = {
+      toValue: 0,
+      duration: 100,
+      friction: 8
+    }
+    setTimeout(()=> {
+      Animated.spring(this.state.addControl, param).start()
+      Animated.spring(this.state.shareControl, param).start()
+    }, 0);
+    this.state.showPiece = false;
+    this._isHideControlShare()
+  }
 
   /**
    * hide full control
    * @private
    */
   _hideControlShare () {
-    this.state.shareControl.setValue({ x: 0, y: 0 })
-    this.state.addControl.setValue({ x: 0, y: 0 })
-    this.state.showPiece = false;
-    this._isHideControlShare()
+    this._parallelHideControl()
   }
 
   _onShare () {
@@ -176,7 +184,7 @@ class Advice extends Component {
       if ( !this.state.showPiece ) {
         this.state.showPiece = true;
         const param = {
-          toValue: CONTROL_PIECE,
+          toValue: constant.CONTROL_PIECE,
           duration: 200,
           friction: device.size(9 * 1.2)
         }
@@ -215,6 +223,7 @@ class Advice extends Component {
       enter,
       shareControl,
       addControl,
+      calculateTopControl
     } = this.state;
 
     const { insight } = this.props;
@@ -228,8 +237,8 @@ class Advice extends Component {
     const animatedCardStyles = { transform: [ { translateX }, { translateY }, { rotate }, { scale } ], opacity }
 
     const interpolateControls = {
-      inputRange: [ 0, CONTROL_PIECE, CONTROLS_WIDTH ],
-      outputRange: [ 0, -CONTROL_PIECE, -CONTROLS_WIDTH ],
+      inputRange: [ 0, constant.CONTROL_PIECE, constant.CONTROLS_WIDTH ],
+      outputRange: [ 0, -constant.CONTROL_PIECE, -constant.CONTROLS_WIDTH ],
       extrapolate: 'clamp'
     }
     const share = shareControl.x.interpolate(interpolateControls);
@@ -241,26 +250,30 @@ class Advice extends Component {
       <View style={ {flex: 1, flexDirection: 'row'} }>
 
 
-        <View style={styles.card} {...this._panResponder.panHandlers}>
+        <View
+          ref={constant.CARD_REF}
+          style={styles.card}
+          {...this._panResponder.panHandlers}>
           <Animated.View style={animatedCardStyles}>
             <Insight
               insight={{...insight}}
+              fontSize={20}
               onPressCard={this._onPressCard}/>
           </Animated.View>
         </View>
 
 
-        <View style={[styles.wrapperAddCardControl]}>
-          <Animated.View style={[{width : CONTROLS_WIDTH}, shareStyle]}>
-            <View ref={SHARE_CARD_REF} style={{flex: 1}}>
+        <View style={styles.wrapperAddCardControl}>
+          <Animated.View style={[{width : constant.CONTROLS_WIDTH}, shareStyle]}>
+            <View ref={constant.SHARE_CARD_REF} style={{flex: 1}}>
               <ShareCard
                 currentInsights={{...insight}}
                 onShare={this._onShare}/>
             </View>
           </Animated.View>
 
-          <Animated.View style={[{width : CONTROLS_WIDTH}, addStyle]}>
-            <View ref={ADD_CARD_REF} style={{flex: 1}}>
+          <Animated.View style={[{width : constant.CONTROLS_WIDTH}, addStyle]}>
+            <View ref={constant.ADD_CARD_REF} style={{flex: 1}}>
               <AddCard
                 currentInsights={{...insight}}
                 onMarkGood={this._onMarkGood}/>

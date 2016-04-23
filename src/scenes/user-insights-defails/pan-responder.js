@@ -62,7 +62,7 @@ function onPanResponderMove (raw, gestureState) {
    * if advices is negative then swipe right
    * otherwise swipe left
    */
-  if ( !this.props.isBadAdviceList && negative(gestureState.dx) ) {
+  if ( !this.props.isBadAdviceList ) {
     this.state.pan.setValue({ x: gestureState.dx, y: 0 });
   } else if ( this.props.isBadAdviceList && !negative(gestureState.dx) ) {
     this.state.pan.setValue({ x: gestureState.dx, y: 0 });

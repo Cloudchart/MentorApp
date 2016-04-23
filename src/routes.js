@@ -1,9 +1,9 @@
 import * as Scenes from './scenes';
 import React, { View } from "react-native";
 import Relay, { RootContainer } from 'react-relay';
+import store from '../src/store';
+import _ from 'lodash';
 import { Loader } from "./components";
-import styles from "./styles/base";
-import Application from './app';
 
 /**
  *
@@ -11,70 +11,72 @@ import Application from './app';
  * @returns {*}
  */
 export function renderScreen (params) {
-  const { scene, screenParams, currentAppState } = params;
+  const { scene, screenParams } = params;
 
   switch ( scene ) {
     case 'connect':
-      return <Scenes.Connect {...screenParams} />
+      return container(Scenes.Connect, screenParams);
     case 'advice_for_me':
-      return prepareComponentQueryNode(
+      return container(
         Scenes.InsightsForMe,
         screenParams,
-        {
-          id: screenParams.topicId,
+        new QueryNodeId({
+          nodeID: screenParams.topicId,
           filter: screenParams.filter || 'UNRATED'
-        },
-        (data)=> {
-          return <Scenes.InsightsForMe {...screenParams} {...data} />
-        }
-      )
+        }),
+        null,
+        true
+      );
     case 'questionnaire':
-      return <Scenes.Questionnaire {...screenParams} />
+      return container(Scenes.Questionnaire, screenParams);
     case 'select_topics':
-      return <Scenes.SelectTopic {...screenParams}  />
+      return container(Scenes.SelectTopic, screenParams);
     case 'welcome':
-      return <Scenes.Welcome {...screenParams}  />
+      return container(Scenes.Welcome, screenParams);
     case 'settings':
-      return <Scenes.Settings {...screenParams} />
+      return container(Scenes.Settings, screenParams);
     case 'subscription':
-      return <Scenes.Subscription {...screenParams} />
+      return container(Scenes.Subscription, screenParams);
     case 'user-collections':
-      return <Scenes.UserCollections {...screenParams} />
+      return container(Scenes.UserCollections, screenParams, null, null, true);
     case 'user-topics':
-      return <Scenes.UserTopics {...screenParams} />
+      return container(Scenes.UserTopics, screenParams, null, null, true);
     case 'explore-topic':
-      return <Scenes.ExploreTopics {...screenParams} />
+      return container(Scenes.ExploreTopics, screenParams);
     case 'replace-topic':
-      return <Scenes.ReplaceTopic {...screenParams} />
+      return container(Scenes.ReplaceTopic, screenParams);
+    case 'follow-up':
+      return container(Scenes.FollowUp, screenParams);
     case 'insights_useful':
-      return prepareComponentQueryNode(Scenes.UserInsightsUseful, screenParams, {
-          id: screenParams.collectionId,
+      return container(
+        Scenes.UserInsightsUseful,
+        screenParams,
+        new QueryNodeId({
+          nodeID: screenParams.collectionId,
           filter: 'USEFUL'
-        },
-        (data, readyState)=> {
-          return <Scenes.UserInsightsUseful {...screenParams} {...data} />
-        }
-      )
+        }),
+        null,
+        true
+      );
     case 'insights_useless':
-      return prepareComponentQueryNode(Scenes.UserInsightsUseless, screenParams, {
-          id: screenParams.collectionId,
+      return container(
+        Scenes.UserInsightsUseless,
+        screenParams,
+        new QueryNodeId({
+          nodeID: screenParams.collectionId,
           filter: 'USELESS'
-        },
-        (data, readyState)=> {
-          return <Scenes.UserInsightsUseless
-            {...screenParams}
-            {...data}
-            readyState={readyState}/>
-        }
-      )
+        }),
+        null,
+        true
+      );
     case 'notifications':
-      return <Scenes.NotificationsScreen {...screenParams} />
+      return container(Scenes.NotificationsScreen, screenParams);
     case 'profile':
-      return <Scenes.Profile {...screenParams}  />
+      return container(Scenes.Profile, screenParams);
     case 'web-view':
-      return <Scenes.WebViewScreen {...screenParams}  />
-    case 'return_in_app_after_min':
-      return <Scenes.ReturnInApp {...screenParams} />
+      return container(Scenes.WebViewScreen, screenParams);
+    case 'return_in_app':
+      return container(Scenes.ReturnInApp, screenParams);
     default:
       return null
   }
@@ -82,45 +84,30 @@ export function renderScreen (params) {
 
 /**
  *
- * @param component
- * @param params
- * @param id
+ * @param Component
+ * @param screenParams
+ * @param opt_router
+ * @param renderFailure
+ * @param forceFetch
  * @returns {XML}
  */
-function prepareComponentQueryNode (component, params, route, callback) {
-  return (
-    <RootContainer
-      Component={component}
-      route={new QueryNodeId({nodeID : route.id, filter : route.filter })}
-      forceFetch={true}
-      renderLoading={(error, retry) => {
-         <View style={styles.scene} />
-      }}
-      renderFetched={callback}/>
-  )
-}
+export function container (Component, screenParams, opt_router, renderFailure, forceFetch) {
+  const router = opt_router ? opt_router : new ViewerRoute();
+  const params = screenParams ? screenParams : {};
+  const failure = renderFailure ? renderFailure : ()=> {};
+  const renderFetched = _.throttle((data, readyState)=> {
+    return <Component {...params} {...data} />
+  }, 300)
 
-/**
- *
- * @param store
- * @returns {XML}
- */
-export function prepareRootRouter (store) {
   return (
     <RootContainer
       store={store}
-      Component={Application}
-      route={new ViewerRoute()}
-      renderLoading={(error, retry) => {
-         <View style={styles.scene} />
-      }}
-      renderFailure={(error, retry) => {
-        if(error &&  (error == 'TypeError: Network request failed')) {
-            return (
-              <NetError />
-            );
-        }
-      }}
+      Component={Component}
+      route={router}
+      forceFetch={forceFetch || false}
+      renderLoading={() => <Loader />}
+      renderFailure={failure}
+      renderFetched={renderFetched}
     />
   )
 }
@@ -131,11 +118,7 @@ export function prepareRootRouter (store) {
 export class ViewerRoute extends Relay.Route {
   static routeName = 'ViewerRoute';
   static queries = {
-    viewer: () => Relay.QL`
-        query {
-            viewer
-        }
-    `
+    viewer: () => Relay.QL` query { viewer }`
   };
 }
 
@@ -144,6 +127,10 @@ export class ViewerRoute extends Relay.Route {
  */
 class QueryNodeId extends Relay.Route {
   static routeName = 'QueryNodeId';
+  static paramDefinitions = {
+    nodeID: { required: true },
+    filter: { required: true }
+  }
   static queries = {
     node: () => Relay.QL`
         query {
@@ -156,10 +143,6 @@ class QueryNodeId extends Relay.Route {
         }
     `
   }
-  static paramDefinitions = {
-    nodeID: { required: true },
-    filter: { required: true }
-  };
 }
 
 

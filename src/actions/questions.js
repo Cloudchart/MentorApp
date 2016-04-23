@@ -11,11 +11,11 @@ export function answerTheQuestion (data) {
   return new Promise((resolve, reject)=> {
     const transaction = Relay.Store.applyUpdate(
       new AnswerTheQuestionMutation(data), {
-        onSuccess: (transaction) => {
-          resolve(transaction)
+        onSuccess: (transact) => {
+          resolve(transact)
         },
-        onFailure: (transaction) => {
-          reject(getErrors(transaction))
+        onFailure: (transact) => {
+          reject(getErrors(transact))
         }
       }
     )

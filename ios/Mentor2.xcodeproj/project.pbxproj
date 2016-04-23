@@ -1154,6 +1154,7 @@
 					"-ObjC",
 					"$(inherited)",
 				);
+				PRESERVE_DEAD_CODE_INITS_AND_TERMS = NO;
 				PRODUCT_NAME = Mentor2;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -1182,6 +1183,7 @@
 					"-ObjC",
 					"$(inherited)",
 				);
+				PRESERVE_DEAD_CODE_INITS_AND_TERMS = NO;
 				PRODUCT_NAME = Mentor2;
 				TARGETED_DEVICE_FAMILY = 1;
 			};

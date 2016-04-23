@@ -48,7 +48,7 @@ class Trash extends Component {
           style={styles.crumbIconWrapper}
           activeOpacity={ 0.75 }
           onPress={this._showBadAdvice}>
-          <Icon name="trash" style={styles.crumbIconBasket}/>
+          <Icon name="trash-o" style={styles.crumbIconBasket}/>
           <Text>&nbsp;</Text>
           <Text style={styles.crumbIconBasketText}>{uselessCount}</Text>
         </TouchableOpacity>

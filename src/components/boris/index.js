@@ -42,7 +42,6 @@ const handleImageStyle = {
   small: styles.handleImageSmall
 }
 
-
 const Faces = {
   negative: {
     big: require('image!big-negative'),
@@ -52,7 +51,7 @@ const Faces = {
     big: require('image!big-positive'),
     small: require('image!small-positive')
   }
-}
+};
 
 const Handles = {
   negative: {
@@ -81,6 +80,8 @@ class Boris extends Component {
 
   constructor (props) {
     super(props)
+
+    this.getMoodSequences = this.getMoodSequences.bind(this);
   }
 
 
@@ -125,21 +126,18 @@ class Boris extends Component {
 
 
   render () {
-    const { mood, size, note, style, repeatCount, moodSequences } = this.props;
+    const { mood, size, note, style, repeatCount, moodSequences, randomId } = this.props;
     const styleNote = [ styles.noteContainer, noteContainerStyle[ mood ], { opacity: this.state.noteOpacity } ]
-    
+
     return (
       <View style={ [styles.container, containerStyle[size], style] }>
         <View style={ [styles.faceContainer, faceContainerStyle[size]] }>
-          {!moodSequences ?
-            <Image source={ Faces[mood][size] }/> :
-            <AnimateSequences
-              style={AnimateImagesStyle[size]}
-              resizeMode='stretch'
-              animationRepeatCount={repeatCount || this.state.repeatCount}
-              animationDuration={32}
-              moodSequences={moodSequences}
-              animationImages={this.getMoodSequences(moodSequences)}/>}
+          <BorisImage
+            {...this.props}
+            randomId={randomId || 1}
+            getMoodSequences={this.getMoodSequences}
+            repeatCount={repeatCount || this.state.repeatCount}
+          />
         </View>
         {!note ? null :
           <Animated.View style={ styleNote }>
@@ -154,5 +152,18 @@ class Boris extends Component {
   }
 }
 
+const BorisImage = (props) => {
+  const { moodSequences, mood, size, repeatCount, getMoodSequences, randomId } = props;
+  return (!moodSequences ?
+      <Image source={ Faces[mood][size] } key={randomId}/> :
+      <AnimateSequences
+        style={AnimateImagesStyle[size]}
+        resizeMode='stretch'
+        animationRepeatCount={repeatCount}
+        animationDuration={32}
+        moodSequences={moodSequences}
+        animationImages={getMoodSequences(moodSequences)}/>
+  )
+}
 
 export default Boris

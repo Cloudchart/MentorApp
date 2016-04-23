@@ -57,7 +57,7 @@ class Welcome extends Component {
 
   render () {
     const { buttonOpacity } = this.state;
-    const styleButton = [ styles.continue, { opacity: buttonOpacity } ]
+    const styleButton = [ styles.continue, { opacity: buttonOpacity } ];
     return (
       <View style={ styles.container }>
         <Boris
@@ -84,12 +84,12 @@ export default Relay.createContainer(Welcome, {
   fragments: {
     viewer: () => Relay.QL`
         fragment on User {
-            id
-            name
-            topics(first: 100, filter: DEFAULT) {
+            reactions(first: 1, scope: "greetings") {
                 edges {
                     node {
-                        name
+                        mood
+                        content
+                        weight
                     }
                 }
             }

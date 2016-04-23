@@ -12,7 +12,6 @@ import React, {
   AsyncStorage,
   NetInfo
 } from "react-native";
-import * as Scenes from './scenes';
 import Relay from 'react-relay';
 import styles from "./styles/base";
 import { CustomSceneConfig } from "./router-conf";
@@ -20,19 +19,23 @@ import { renderScreen } from "./routes";
 import { navBarRouteMapper, UserNotifications } from "./components";
 import moment from "moment";
 import * as actions from './actions/actions';
-import DeviceInfo from "react-native-device-info";
-import { FBSDKAccessToken } from "react-native-fbsdkcore";
 import { EventManager } from './event-manager';
 import {
   setUserPushToken,
   activateUser,
-  resetUser
+  resetUser,
+  updateUserNotifications
 } from "./actions/user";
 import {
   checkPermissions,
   NETAlert,
   checkNET
 } from './system';
+
+
+moment.createFromInputFallback = function (config) {
+  config._d = new Date(config._i);
+};
 
 /**
  * repaint white StatusBar
@@ -43,17 +46,16 @@ StatusBar.setBarStyle(1);
 
 class Application extends Component {
 
+  state = {
+    notifications: {
+      network: 'No Internet Connection'
+    },
+    networkNone: false,
+    currentAppState: ''
+  }
+
   constructor (props) {
     super(props)
-    this.state = {
-      notifications: {
-        network: 'No Internet Connection'
-      },
-      networkNone: false,
-      userIsAuthorize: '',
-      returnInAppAfter24: false,
-      currentAppState: ''
-    }
 
     PushNotificationIOS.addEventListener('register', this._register.bind(this));
     PushNotificationIOS.addEventListener('notification', this._notification.bind(this));
@@ -63,22 +65,11 @@ class Application extends Component {
       this.setState({ networkNone: false })
     });
 
-    /**
-     * if user is authorized show him screen advice_for_me
-     */
-    FBSDKAccessToken.getCurrentAccessToken((token)=> {
-      if ( token ) {
-        this.setState({ userIsAuthorize: token })
-      } else {
-        this.setState({ userIsAuthorize: false })
-      }
-    })
-
     checkNET().then((reach)=> {
       if ( reach == 'none' ) {
         this.notifyNetworkError();
       }
-    })
+    });
   }
 
   /**
@@ -86,19 +77,20 @@ class Application extends Component {
    * @param currentAppState
    * @private
    */
-  async _appStateChange (currentAppState) {
+  _appStateChange (currentAppState) {
     this.state.currentAppState = currentAppState;
-    try {
-      //this._diffTimeStartApp(currentAppState)
-      if ( currentAppState == 'active' ) {
-        checkNET().then((reach)=> {
-          if ( reach == 'none' ) {
-            this.notifyNetworkError()
-          }
-        })
-        //checkPermissions();
-      }
-    } catch ( e ) {
+
+    if ( !this.state.networkNone ) {
+      this._diffTimeStartApp(currentAppState);
+    }
+
+    if ( currentAppState == 'active' ) {
+      checkNET().then((reach)=> {
+        if ( reach == 'none' ) {
+          this.notifyNetworkError()
+        }
+      })
+      //checkPermissions();
     }
   }
 
@@ -145,49 +137,71 @@ class Application extends Component {
 
   _resetUser () {
     resetUser({ user: this.props.viewer })
+      .then((tran)=> {
+        this._activateUser()
+      })
+      .catch(()=> {
+        this._activateUser()
+      })
   }
+
+  /**
+   *
+   * @param item
+   * @returns {*}
+   */
+  prepareData (item) {
+    if ( _.isDate(item) ) {
+      item = item.toString();
+    } else if ( _.isObject(item) ) {
+      item = JSON.stringify(item);
+    } else {
+      item = String(item);
+    }
+    return item;
+  };
 
   /**
    * comparing the time re-entry application
    * @param currentAppState
    * @private
    */
-  async _diffTimeStartApp (currentAppState) {
-    try {
+  _diffTimeStartApp (currentAppState) {
+    switch ( currentAppState ) {
+      case 'active':
+        AsyncStorage.setItem(actions.UPDATE_APP_START_TIME, this.prepareData(new Date));
+        break;
+      case 'background':
+        AsyncStorage.setItem(actions.APP_BACKGROUND_TIME, this.prepareData(new Date));
+        break;
+      default:
+    }
 
-      switch ( currentAppState ) {
-        case 'active':
-          const now = moment();
-          AsyncStorage.setItem(actions.UPDATE_APP_START_TIME, now);
-          break;
-        case 'background':
-          const date = moment();
-          AsyncStorage.setItem(actions.APP_BACKGROUND_TIME, date.toString());
-          break;
-        default:
-      }
+    if ( currentAppState == 'background' ) {
+      updateUserNotifications(true);
+    } else if ( currentAppState == 'active' ) {
+      updateUserNotifications();
+    }
 
-      // add active
-      if ( currentAppState == 'active' ) {
-        const now = moment();
-        const background = await AsyncStorage.getItem(actions.APP_BACKGROUND_TIME);
-        const backgroundDate = moment(new Date(background));
+    // add active
+    if ( currentAppState == 'active' ) {
+      const now = moment();
 
+      AsyncStorage.getItem(actions.APP_BACKGROUND_TIME, (err, result)=> {
+        if ( err || !result ) return;
+        const backgroundDate = moment(result);
         if ( !backgroundDate.diff ) return;
-        const diffMinute = Math.abs(backgroundDate.diff(now, 'minute'));
         const diffHour = Math.abs(backgroundDate.diff(now, 'hour'));
 
-
-        // after one minute
-        if ( diffHour > 24 ) {
-          this.setState({
-            returnInAppAfter24: true,
-            currentAppState
+        if ( diffHour >= 24 ) {
+          this._navigator.resetTo({
+            scene: 'return_in_app',
+            title: ''
           })
         }
-      }
-    } catch ( e ) {
+      });
     }
+
   }
 
   /**
@@ -199,26 +213,15 @@ class Application extends Component {
    */
   _renderScene (route, navigator) {
     let props = route.props || {}
-    const { returnInAppAfter24 } = this.state;
     props.navigator = navigator;
-
-    const screenParams = {
-      viewer: this.props.viewer,
-      navigator,
-      ...route,
-      ...props
-    }
-
-    if ( returnInAppAfter24 ) {
-      this.state.returnInAppAfter24 = false;
-      route.title = '';
-      route.scene = 'return_in_app_after_min';
-    }
 
     return renderScreen({
       scene: route.scene,
-      screenParams,
-      currentAppState: this.state.currentAppState
+      screenParams: {
+        navigator,
+        ...route,
+        ...props
+      }
     })
   }
 
@@ -233,20 +236,17 @@ class Application extends Component {
   }
 
   render () {
-    const { isActive } = this.props.viewer;
-    const { userIsAuthorize, networkNone } = this.state;
-    let init_scene = (userIsAuthorize !== false) ? 'advice_for_me' : 'welcome';
-    // || isActive
+    const { isActive, subscribedTopics } = this.props.viewer;
+    const { networkNone } = this.state;
+    let init_scene = subscribedTopics.edges.length ? 'advice_for_me' : 'welcome';
+    let title = 'Virtual Mentor';
 
-    if ( typeof userIsAuthorize == 'string' ) {
-      return <View />
-    }
 
     return (
       <View style={styles.scene}>
         <Navigator
           ref={ (navigator) => this._navigator = navigator }
-          initialRoute={{ scene: init_scene, title : 'Virtual Mentor' }}
+          initialRoute={{ scene: init_scene, title }}
           navigationBar={<NavigationBar routeMapper={this._navBarRouteMapper()} />}
           renderScene={ this._renderScene.bind(this) }
           configureScene={(route, routeStack)=>{
@@ -285,30 +285,29 @@ export default Relay.createContainer(Application, {
     viewer: () => Relay.QL`
         fragment on User {
             isActive
-            pushToken
+            email
             notificationsSettings {
                 startAt
                 finishAt
                 utcOffset
                 timesToSend
             }
-            ${Scenes.Welcome.getFragment('viewer')}
-            ${Scenes.Connect.getFragment('viewer')}
-            ${Scenes.Questionnaire.getFragment('viewer')}
-            ${Scenes.Settings.getFragment('viewer')}
-            ${Scenes.Subscription.getFragment('viewer')}
-            ${Scenes.UserCollections.getFragment('viewer')}
-            ${Scenes.UserTopics.getFragment('viewer', 'user')}
-            ${Scenes.SelectTopic.getFragment('viewer')}
-            ${Scenes.ExploreTopics.getFragment('viewer')}
-            ${Scenes.ReplaceTopic.getFragment('viewer')}
-            ${Scenes.NotificationsScreen.getFragment('viewer')}
-            ${Scenes.UserInsightsUseful.getFragment('viewer')}
-            ${Scenes.UserInsightsUseless.getFragment('viewer')}
-            ${Scenes.Profile.getFragment('viewer')}
-            ${Scenes.WebViewScreen.getFragment('viewer')}
-            ${Scenes.ReturnInApp.getFragment('viewer')}
+            subscribedTopics: topics(first: 1, filter: SUBSCRIBED) {
+                availableSlotsCount
+                edges {
+                    node {
+                        id
+                    }
+                }
+            }
         }
     `
   }
 });
+
+global.LOG = (...args) => {
+  console.log('/------------------------------\\');
+  console.log(...args);
+  console.log('\\------------------------------/');
+  return args[ args.length - 1 ];
+};

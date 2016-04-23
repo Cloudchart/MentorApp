@@ -7,19 +7,24 @@ import React, {
 } from 'react-native';
 
 import Relay, { DefaultNetworkLayer } from 'react-relay';
-import { prepareRootRouter } from './src/routes';
-import { graphqlURL } from './src/relay-conf';
+import { container } from './src/routes';
+import { graphqlURL } from './config';
 import moment from "moment";
 import { Provider } from 'react-redux';
 import store from './src/store';
+import Application from './src/app';
+import { NetError } from './src/scenes';
 import DeviceInfo from "react-native-device-info";
 import { SAVE_UNIQUE_ID_AND_DATE } from "./src/actions/actions";
 import { EventManager } from './src/event-manager';
 
+
 Relay.injectNetworkLayer(
   new DefaultNetworkLayer(graphqlURL, {
+    fetchTimeout: 30000,
+    retryDelays: [ 5000, 10000 ],
     headers: {
-      'X-Device-Id': 'startup-makers'
+      'X-Device-Id': DeviceInfo.getUniqueID()
     }
   })
 );
@@ -48,7 +53,11 @@ class Mentor extends Component {
   render () {
     return (
       <Provider store={store}>
-        {prepareRootRouter(store)}
+        {container(Application, null, null, (error, retry)=> {
+          if ( error && (error == 'TypeError: Network request failed') ) {
+            return <NetError />
+          }
+        })}
       </Provider>
     )
   }

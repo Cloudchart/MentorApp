@@ -6,7 +6,8 @@ import ActivateUserMutation from "./activate-user";
 import AnswerTheQuestionMutation from "./answer-the-question";
 import ResetUserMutation from "./reset-user";
 import SetUserPushTokenMutation from "./set-user-push-token";
-import UserNotificationsSettingsMutation from "./user-notifications-settings";
+import UpdateUserNotificationsSettingsMutation from "./update-user-notifications-settings";
+import UpdateUserMutation from "./update-user";
 import LikeInsightInTopicMutation from "./like-insight-in-topic";
 import DislikeInsightInTopicMutation from "./dislike-insight-in-topic";
 import AddInsightToCollectionMutation from "./add-insight-to-collection";
@@ -20,7 +21,8 @@ export {
   LikeInsightInTopicMutation,
   AddInsightToCollectionMutation,
   AnswerTheQuestionMutation,
-  UserNotificationsSettingsMutation,
+  UpdateUserNotificationsSettingsMutation,
+  UpdateUserMutation,
   SetUserPushTokenMutation,
   ActivateUserMutation,
   ResetUserMutation,

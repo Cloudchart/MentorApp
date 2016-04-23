@@ -2,14 +2,6 @@ import Relay from 'react-relay'
 
 class AddInsightToCollectionMutation extends Relay.Mutation {
 
-  static fragments = {
-    collection: () => Relay.QL`
-        fragment on UserCollection {
-            id
-        }
-    `
-  };
-
   getVariables () {
     const { insight, collection } = this.props;
     return {

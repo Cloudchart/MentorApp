@@ -29,12 +29,14 @@ export default StyleSheet.create({
   },
   card: {
     flex: 1,
-    alignSelf: 'center',
-    top: device.size(-60),
-    position: 'relative',
+    position: 'absolute',
+    top: device.size(-20),
+    bottom : 0,
+    left : 0,
+    right : 0,
+    flexDirection: 'row',
     paddingHorizontal: device.size(10),
-    paddingVertical: device.size(10),
-    backgroundColor: 'transparent'
+    paddingVertical: device.size(10)
   },
   controlWrapper: {
     flex: 1,

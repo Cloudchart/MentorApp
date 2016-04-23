@@ -10,12 +10,10 @@ import React, {
   PanResponder,
   Animated
 } from "react-native";
-import Relay from 'react-relay';
 import Icon from "react-native-vector-icons/FontAwesome";
 import Filters from "../../utils/filters";
 import { Presets } from "../../utils/animation";
 import Url from 'url';
-import moment from "moment";
 import styles from "./style";
 import clamp from "clamp";
 import * as device from "../../utils/device";
@@ -154,6 +152,8 @@ class Insight extends Component {
 
   _toggle (opt_param) {
     this._isLayoutAnimationRun = true;
+    const { origin } = this.props.insight;
+
     LayoutAnimation.configureNext(Presets.Linear, ()=> {
       this.setState({
         visibility: this.state.visibility ? 1 : 0,
@@ -162,12 +162,11 @@ class Insight extends Component {
     })
 
     this.setState({
-      rowHeight: this.state.rowHeight > 0 ? 0 : 120,
+      rowHeight: this.state.rowHeight > 0 ? 0 : !origin.duration ? 70 : 100,
       visibility: 1,
       update: Math.random(1000) * 1000
     })
   }
-
 
   _openWebView () {
     const { insight } = this.props;
@@ -192,7 +191,12 @@ class Insight extends Component {
     const minFontSize = 14;
     let conf = {};
 
-    if ( content.length > baseContentSize ) {
+    if(this.props.fontSize){
+      conf.fontSize = device.fontSize(this.props.fontSize);
+      conf.lineHeight = device.fontSize(this.props.fontSize * 1.2);
+    }
+
+    if (!this.props.fontSize && content.length > baseContentSize ) {
       let ratio = content.length / baseContentSize;
       let percentFontSize = Math.ceil(baseFontSize / ratio);
       percentFontSize = percentFontSize < minFontSize ? minFontSize : percentFontSize;
@@ -218,7 +222,11 @@ class Insight extends Component {
       }
 
       if ( content.length >= 350 && content.length < 400 ) {
-        percentFontSize += 9;
+        percentFontSize += 8;
+      }
+
+      if ( content.length > 400 ) {
+        percentFontSize += 7;
       }
 
       conf.fontSize = device.fontSize(percentFontSize);
@@ -243,25 +251,27 @@ class Insight extends Component {
     }
 
     if ( origin.duration ) {
-      const now = moment();
-      const durationDate = moment().add(origin.duration, 'seconds');
-      const diffSeconds = Math.abs(durationDate.diff(now, 'seconds'));
-      const diffMinute = Math.abs(durationDate.diff(now, 'minute'));
-      const diffHour = Math.abs(durationDate.diff(now, 'hour'));
+      const dtn = origin.duration;
+      const dm = Math.floor(dtn / 60);
+      const dh = Math.floor(dtn / 3600);
+      const diffMinute = dm ? dm : null;
+      const diffHour = dh ? dh : null;
+      const lessMinute = dtn < 60 ? 1 : null;
 
-      if ( diffHour ) {
-        duration = `less than a ${diffHour} ${Filters.filterPlural(diffHour, [ 'hour', 'hours', 'hours' ])}`
+
+      if ( lessMinute ) {
+        duration = `less than a ${lessMinute} minute`;
+      } else if ( diffHour ) {
+        duration = `${diffHour} ${Filters.filterPlural(diffHour, [ 'hour', 'hours', 'hours' ])}`;
       } else if ( diffMinute ) {
-        duration = `less than a ${diffMinute} ${Filters.filterPlural(diffMinute, [ 'minute', 'minutes', 'minutes' ])}`
-      } else if ( diffSeconds ) {
-        duration = `less than a ${diffSeconds} ${Filters.filterPlural(diffSeconds, [ 'second', 'seconds', 'seconds' ])}`
+        duration = `${diffMinute} ${Filters.filterPlural(diffMinute, [ 'minute', 'minutes', 'minutes' ])}`;
       }
     }
 
     return (
       <TouchableOpacity
         activeOpacity={ 0.75 }
-        style={styles.item}
+        style={[styles.item, this.props.style]}
         onPress={this._onPressCard}>
         <View style={ styles.itemInner }>
           <Text style={[styles.itemText, this.calculateContentFontSize(content)]}>
@@ -288,7 +298,7 @@ class Insight extends Component {
                     <Text style={ styles.itemMoreTextTime }>
                       <Icon name="clock-o" style={styles.crumbIcon}/>
                       <Text>&nbsp;</Text>
-                      <Text numberOfLines={1} style={ styles.itemTime }>{duration}</Text>
+                      <Text numberOfLines={1} style={ styles.itemTime }>{duration.trim()}</Text>
                     </Text>
                   </View>}
               </View>}

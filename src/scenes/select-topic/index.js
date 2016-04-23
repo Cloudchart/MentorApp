@@ -1,12 +1,12 @@
 import React, {
   Component,
   Image,
-  Animated,
   ScrollView,
   LayoutAnimation,
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   TouchableHighlight,
   View,
   ListView,
@@ -15,13 +15,9 @@ import React, {
   AsyncStorage
 } from "react-native";
 import Relay from 'react-relay';
-import { connect } from "react-redux";
 import { checkPermissionsNotification } from "../../system";
 import { Boris, Button, Loader, Topic, ScrollListView, SubscribeTopicAdd } from "../../components";
 import { STORAGE_KEY } from "../../actions/actions";
-
-import { subscribeOnTopic } from "../../actions/topic";
-
 import * as device from "../../utils/device";
 import styles from "./style";
 import { _flex } from "../../styles/base";
@@ -34,7 +30,6 @@ const dataSource = new ListView.DataSource({
 class SelectTopic extends Component {
 
   state = {
-    buttonOpacity: new Animated.Value(0),
     isLoadingTail: false,
     showConfirmation: false,
     topicConfirmationSave: null
@@ -43,9 +38,6 @@ class SelectTopic extends Component {
   constructor (props) {
     super(props)
     this.PAGE_SIZE = 30;
-
-    this._tryToAddTopic = this._tryToAddTopic.bind(this);
-    this._onPress = this._onPress.bind(this);
     this._onEndReached = this._onEndReached.bind(this);
     this._undoConfirmation = this._undoConfirmation.bind(this);
     this._onEndReached = this._onEndReached.bind(this);
@@ -70,42 +62,12 @@ class SelectTopic extends Component {
 
   /**
    *
-   * @param topic
-   * @private
-   */
-  _tryToAddTopic (topic, user) {
-    this.setState({
-      showConfirmation: true,
-      topicConfirmationSave: { topic, user }
-    });
-  }
-
-  /**
-   *
-   * if the number is 3 topics
-   * back to the settings
-   * @private
-   */
-  _addTopicAndBack () {
-    const { viewer, filterUserAddedTopic, navigator } = this.props;
-    const { subscribedTopics } = viewer;
-    if ( filterUserAddedTopic && (subscribedTopics.edges.length + 1) == 3 ) {
-      setTimeout(()=> {
-        navigator.pop()
-      }, 500)
-    }
-  }
-
-  /**
-   *
    * @param params
    * @param evt
    * @private
    */
   _undoConfirmation (params, evt) {
     switch ( params ) {
-      case 'add':
-      //this._addTopicAndBack()
       case 'not_now':
         this.setState({ showConfirmation: false })
       default:
@@ -131,8 +93,23 @@ class SelectTopic extends Component {
     });
   }
 
-  _onPress () {
-    this.props.relay.forceFetch()
+  _onPress (topic) {
+    this.props.relay.forceFetch();
+  }
+
+  _checkPress (topic) {
+    const { filterUserAddedTopic, viewer, navigator } = this.props;
+    const { availableSlotsCount } = viewer.subscribedTopics;
+
+    if ( filterUserAddedTopic && !availableSlotsCount ) {
+      this.setState({
+        topicConfirmationSave: {
+          topic,
+          user: viewer
+        },
+        showConfirmation: true
+      })
+    }
   }
 
   /**
@@ -145,14 +122,14 @@ class SelectTopic extends Component {
       let isConfirm = await AsyncStorage.getItem(STORAGE_KEY);
 
       if ( isConfirm || isConfirm == 'already_request_permissions' ) {
-        navigator.push({ scene: 'advice_for_me', title: '' })
+        navigator.resetTo({ scene: 'advice_for_me', title: '' });
         return;
       }
 
       checkPermissionsNotification()
         .then((data)=> {
           if ( data == 'off' ) {
-            navigator.push({ scene: 'notifications', title: 'Notifications' })
+            navigator.push({ scene: 'notifications', title: 'Notifications' });
           }
         })
     } catch ( error ) {
@@ -195,28 +172,36 @@ class SelectTopic extends Component {
 
   _renderTopic (rowData, sectionID, rowID) {
     const { subscribedTopics } = this.props.viewer;
-    const _onPressUserAddedTopic = this.props.filterUserAddedTopic ? this._tryToAddTopic : null;
+    const topic = rowData.node;
 
     return (
       <Topic
-        topic={ rowData.node }
+        topic={ topic }
         user={ this.props.viewer }
         subscribedTopics={subscribedTopics}
         index={ rowID }
-        onPressUserAddedTopic={_onPressUserAddedTopic}
-        onPress={this._onPress}
+        onPressBefore={this._checkPress.bind(this, topic)}
+        onPress={this._onPress.bind(this, topic)}
       />
     )
   }
 
   render () {
-    const { isLoadingTail, showConfirmation, topicConfirmationSave } = this.state;
-    const { filterUserAddedTopic, viewer } = this.props;
+    const { isLoadingTail, topicConfirmationSave, showConfirmation } = this.state;
+    const { filterUserAddedTopic, viewer, navigator } = this.props;
     const topicCount = viewer.subscribedTopics.edges.length;
+    const { availableSlotsCount } = viewer.subscribedTopics;
     const styleScroll = { marginBottom: !topicCount ? device.size(120) : device.size(80) };
 
-    if ( showConfirmation ) {
-      return <SubscribeTopicAdd undo={this._undoConfirmation} {...topicConfirmationSave}  />
+    if ( !availableSlotsCount && filterUserAddedTopic && showConfirmation ) {
+      return (
+        <SubscribeTopicAdd
+          navigator={navigator}
+          popToTop='pop'
+          undo={this._undoConfirmation}
+          subscribedTopics={viewer.subscribedTopics}
+          {...topicConfirmationSave}  />
+      )
     }
 
     return (
@@ -238,20 +223,22 @@ class SelectTopic extends Component {
   }
 }
 
-
-export default Relay.createContainer(connect()(SelectTopic), {
+export default Relay.createContainer(SelectTopic, {
   initialVariables: {
     count: 30
   },
   fragments: {
     viewer: () => Relay.QL`
         fragment on User {
+            id
             ${Topic.getFragment('user')}
             topics(first: $count, filter: DEFAULT) {
+                availableSlotsCount
                 edges {
                     node {
-                        ${Topic.getFragment('topic')}
+                        id
                         isSubscribedByViewer
+                        ${Topic.getFragment('topic')}
                     }
                 }
                 pageInfo {
@@ -260,8 +247,11 @@ export default Relay.createContainer(connect()(SelectTopic), {
             }
 
             subscribedTopics: topics(first: 3, filter: SUBSCRIBED) {
+                availableSlotsCount
                 edges {
                     node {
+                        id
+                        isSubscribedByViewer
                         ${Topic.getFragment('topic')}
                     }
                 }

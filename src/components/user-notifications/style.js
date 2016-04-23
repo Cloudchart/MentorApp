@@ -9,12 +9,13 @@ export default StyleSheet.create({
     right : 0,
     paddingVertical : 20,
     opacity : 0.90,
-    backgroundColor: '#F23558',
+    backgroundColor: '#fa3d39',
     alignItems: 'center'
   },
   notificationsText : {
     color : '#fff',
     alignSelf: 'center',
+    paddingTop : 10,
     fontSize: device.fontSize(18)
   }
 });

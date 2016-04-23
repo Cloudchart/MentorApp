@@ -56,7 +56,8 @@ class Connect extends Component {
 
   _skip () {
     const { navigator, viewer } = this.props;
-    if ( !viewer.questions.edges.length ) {
+    const {questions} = viewer;
+    if ( !questions || !questions.edges.length ) {
       navigator.push({
         scene: 'select_topics',
         title: 'Select up to 3 topics to start:'
@@ -67,7 +68,7 @@ class Connect extends Component {
   }
 
   render () {
-    const { navigator } = this.props;
+    const { viewer } = this.props;
     const { errorRegister } = this.state;
 
 
@@ -90,6 +91,7 @@ class Connect extends Component {
 
         <View style={ styles.containerButtons }>
           <FBLoginButton
+            viewer={viewer}
             onLogin={this._onLogin}
             onError={this._onError}
             onCancel={this._onCancel}
@@ -111,7 +113,9 @@ export default Relay.createContainer(Connect, {
   fragments: {
     viewer: () => Relay.QL`
         fragment on User {
-            questions(first: 3) {
+            id
+            email
+            questions(first: 1) {
                 edges {
                     node {
                         id

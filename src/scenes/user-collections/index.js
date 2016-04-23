@@ -14,8 +14,6 @@ import { connect } from "react-redux";
 import { ScrollHandler } from "../../utils/animation";
 import { createCollection, removeCollection, addToCollection } from "../../actions/collections";
 import * as actions from '../../actions/actions';
-import { AddInsightToCollectionMutation } from "../../mutations";
-import { ScrollListView } from "../../components";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { EventManager } from "../../event-manager";
 import UserCollectionItem from "./collection-item";
@@ -41,7 +39,8 @@ class UserCollections extends Component {
   constructor (props) {
     super(props)
     this.PAGE_SIZE = 20;
-
+    this._textInput = null;
+    this._goBack = false;
     // subscribe to an event to create a new collection
     this._showControlAddNewItem = this._showControlAddNewItem.bind(this);
     this._forceFetch = this._forceFetch.bind(this);
@@ -71,6 +70,10 @@ class UserCollections extends Component {
   componentWillReceiveProps (nextProps) {
     this.state.collections = _.map(nextProps.viewer.collections.edges, 'node');
     this._updateCounterAdvice(nextProps.viewer.collections);
+    if ( !this.state.collections || !this.state.collections.length && !this._goBack ) {
+      this._goBack = true;
+      this.props.navigator.popToTop();
+    }
   }
 
   componentDidMount () {
@@ -86,15 +89,16 @@ class UserCollections extends Component {
   componentDidUpdate (prevProps) {
     const { dispatch, viewer } = this.props;
     if ( this.state.collections < viewer.collections.edges.length ) {
-      this._updateCounterAdvice(viewer.collections)
+      this._updateCounterAdvice(viewer.collections);
     }
   }
 
   componentWillUnmount () {
+    this._goBack = false;
     EventManager.removeListener(actions.ACTION_ADD_USER_COLLECTION, this._showControlAddNewItem);
     EventManager.removeListener(actions.UPDATE_COLLECTIONS, this._forceFetch);
-    this.keyboardDidShowSubscription.remove()
-    this.keyboardWillHideSubscription.remove()
+    this.keyboardDidShowSubscription.remove();
+    this.keyboardWillHideSubscription.remove();
   }
 
 
@@ -154,7 +158,7 @@ class UserCollections extends Component {
    */
   _showControlAddNewItem () {
     if ( this.state.addControlShow ) return false;
-    this.setState({ addControlShow: true })
+    this.setState({ addControlShow: true });
   }
 
   /**
@@ -164,7 +168,7 @@ class UserCollections extends Component {
    */
   _createNewUserCollection () {
     const { viewer, relay } = this.props;
-    const { collectionName } = this.state;
+    const { collectionName, advice } = this.state;
 
     let collectionData = {
       id: (Math.random(100) * 1000).toString(16),
@@ -179,7 +183,13 @@ class UserCollections extends Component {
           this.setState({
             collections: [ ...this.state.collections ],
             collectionName: ''
-          })
+          });
+
+          if ( advice ) {
+            this._addInsightToCollection(
+              tran.addCollectionToUser.collection
+            )
+          }
         }
       })
       .catch((transaction)=> {
@@ -212,16 +222,7 @@ class UserCollections extends Component {
    */
   _deleteRow (collection) {
     const viewer = this.props.viewer;
-    removeCollection({ collection: collection, user: viewer })
-      .then((tran)=> {
-        if ( tran.removeCollectionFromUser && tran.removeCollectionFromUser.collection ) {
-          const collections = this.state.collections.filter((coll)=> {
-            return coll.id != tran.removeCollectionFromUser.collection.id
-          })
-          this.setState({ collections, collectionName: '' })
-          this._forceFetch()
-        }
-      })
+    removeCollection({ collection: collection, user: viewer });
   }
 
   /**
@@ -230,18 +231,20 @@ class UserCollections extends Component {
    * @private
    */
   _addInsightToCollection (collection) {
-    const { dispatch, relay, navigator } = this.props;
-    navigator.pop();
+    const { navigator } = this.props;
 
     addToCollection({ insight: this.state.advice, collection })
       .then((transaction)=> {
-        this._forceFetch();
-        dispatch({ type: actions.COUNT_INSIGHTS_PLUS })
+        navigator.pop();
       })
   }
 
   _handleCollectionNameChange (name) {
-    this.setState({ collectionName: name })
+    this.state.collectionName = name;
+  }
+
+  clearText () {
+    this._textInput.setNativeProps({ text: '' });
   }
 
   _handleCollectionNameBlur () {
@@ -310,7 +313,7 @@ class UserCollections extends Component {
         <View style={ styles.collectionItemInner }>
           <Icon name="folder-open-o" style={[baseStyles.crumbIcon, baseStyles.folderIcon]}/>
           <TextInput
-            value={ collectionName }
+            ref={component => this._textInput = component}
             style={ styles.collectionText }
             placeholder="Enter new collection name"
             placeholderTextColor="hsl(137, 100%, 83%)"
@@ -331,34 +334,31 @@ class UserCollections extends Component {
    */
   _renderCollectionItem (rowData, sectionID, rowID) {
     const collection = rowData;
+
     const { viewer } = this.props;
+    const { addControlShow, advice, closeAllItems } = this.state;
 
     const last = (parseInt(rowID) + 1) == this.state.collections.length;
-    const { addControlShow, advice } = this.state;
     const isShow = addControlShow && last;
 
     if ( advice ) {
       return (
-        <View key={rowID}>
-          <OnlyAdd
-            collection={collection}
-            user={viewer}
-            pressRow={this._addInsightToCollection.bind(this, collection)}/>
-          {!isShow ? null : this._addNewItem()}
-        </View>
+        <OnlyAdd
+          key={rowID}
+          collection={collection}
+          user={viewer}
+          pressRow={this._addInsightToCollection.bind(this, collection)}/>
       )
     } else {
       return (
-        <View key={rowID}>
-          <UserCollectionItem
-            collection={collection}
-            user={viewer}
-            closeAllItems={this.state.closeAllItems}
-            deleteRow={ this._deleteRow }
-            pressRow={ this._onPressRow.bind(this, collection) }
-          />
-          {!isShow ? null : this._addNewItem()}
-        </View>
+        <UserCollectionItem
+          key={rowID}
+          collection={collection}
+          user={viewer}
+          closeAllItems={closeAllItems}
+          deleteRow={ this._deleteRow }
+          pressRow={ this._onPressRow.bind(this, collection) }
+        />
       )
     }
   }
@@ -371,15 +371,14 @@ class UserCollections extends Component {
 
   render () {
     const { viewer } = this.props;
-    const { isLoadingTail, addControlShow } = this.state;
+    const { isLoadingTail, addControlShow, collections } = this.state;
 
-    const _scroll = ()=> {
-      ScrollHandler.bind(this, {
-        isLoadingTail,
-        callback: !addControlShow ? this._onEndReached : () => {},
-        onEndReachedThreshold: 20
-      });
-    }
+    const _scroll = ScrollHandler.bind(this, {
+      isLoadingTail,
+      callback: !addControlShow ? this._onEndReached : () => {},
+      onEndReachedThreshold: 20
+    });
+
 
     return (
       <View style={ styles.container } {...this._panResponder.panHandlers}>
@@ -393,14 +392,15 @@ class UserCollections extends Component {
           showsVerticalScrollIndicator={true}>
           <ListView
             enableEmptySections={true}
-            dataSource={dataSource.cloneWithRows(this.state.collections)}
+            dataSource={dataSource.cloneWithRows(collections)}
             renderRow={(rowData, sectionID, rowID) => this._renderCollectionItem(rowData, sectionID, rowID)}
             pageSize={20}
             isLoadingTail={isLoadingTail}
             renderHeader={this.renderHeader}/>
 
 
-          {!this.state.collections.length ? this._addNewItem() : null  }
+          {addControlShow || (!collections.length && !this._goBack) ?
+            this._addNewItem() : null  }
           <View ref="newItemInput"></View>
         </ScrollView>
       </View>
@@ -410,24 +410,6 @@ class UserCollections extends Component {
 
 
 const ReduxComponent = connect()(UserCollections)
-var collectionFragment = Relay.QL`
-    fragment on UserCollection {
-        id
-        name
-        insights(first : 3, filter : $filter) {
-            count
-            usefulCount
-            uselessCount
-            edges {
-                node {
-                    id
-                    content
-                }
-            }
-        }
-    }
-`;
-
 export default Relay.createContainer(ReduxComponent, {
   initialVariables: {
     count: 20,
@@ -441,8 +423,19 @@ export default Relay.createContainer(ReduxComponent, {
             collections(first: $count) {
                 edges {
                     node {
-                        ${collectionFragment}
-                        ${AddInsightToCollectionMutation.getFragment('collection')}
+                        id
+                        name
+                        insights(first : 3, filter : $filter) {
+                            count
+                            usefulCount
+                            uselessCount
+                            edges {
+                                node {
+                                    id
+                                    content
+                                }
+                            }
+                        }
                     }
                 }
                 pageInfo {

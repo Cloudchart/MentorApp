@@ -18,11 +18,11 @@ export function likeInsightInTopic (insight, shouldAddToUserCollectionWithTopicN
         topic: insight.topic,
         shouldAddToUserCollectionWithTopicName
       }), {
-        onSuccess: (transaction) => {
-          resolve(transaction)
+        onSuccess: (transact) => {
+          resolve(transact)
         },
-        onFailure: (transaction) => {
-          reject(getErrors(transaction))
+        onFailure: (transact) => {
+          reject(getErrors(transact))
         }
       }
     );
@@ -40,11 +40,11 @@ export function dislikeInsightInTopic (insight) {
   return new Promise((resolve, reject)=> {
     const transaction = Relay.Store.applyUpdate(
       new DislikeInsightInTopicMutation({ insight : insight.node, topic: insight.topic }), {
-        onSuccess: (transaction) => {
-          resolve(transaction)
+        onSuccess: (transact) => {
+          resolve(transact)
         },
-        onFailure: (transaction) => {
-          reject(getErrors(transaction))
+        onFailure: (transact) => {
+          reject(getErrors(transact))
         }
       }
     );

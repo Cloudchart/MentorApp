@@ -9,6 +9,7 @@ import React, {
 import Relay from 'react-relay';
 import { Button, Boris, TransparentButton } from "../../components";
 import { STORAGE_KEY } from "../../actions/actions";
+import { updateUserNotifications } from "../../actions/user";
 import styles from "./style";
 
 const NOTIFICATION_TEXT = 'I will send you advices during the day. Does it suit you?';
@@ -73,7 +74,8 @@ class NotificationsScreen extends Component {
 
   _navigatorReplace (scene, title = "") {
     const { navigator } = this.props;
-    navigator.replace({ scene, title: title || scene })
+    updateUserNotifications();
+    navigator.resetTo({ scene, title: title || scene })
   }
 
   render () {

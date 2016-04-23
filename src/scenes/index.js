@@ -16,6 +16,7 @@ import ReturnInApp from './return-in-app';
 import NetError from './network-error';
 import UserInsightsUseful from './user-insights-defails/user-insights-useful';
 import UserInsightsUseless from './user-insights-defails/user-insights-useless';
+import FollowUp from './follow-up/index';
 
 export {
   Profile,
@@ -33,6 +34,7 @@ export {
   NotificationsScreen,
   UserInsightsUseful,
   UserInsightsUseless,
+  FollowUp,
   WebViewScreen,
   ReturnInApp,
   NetError

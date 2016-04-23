@@ -39,17 +39,16 @@ class Questionnaire extends Component {
   }
 
   _onSelect (questionID, answerID) {
-    const { navigator } = this.props;
+    const { navigator, goAfterFinish } = this.props;
 
     answerTheQuestion({ questionID, answerID })
       .then((transaction)=> {
-        navigator.push({
-          scene: 'select_topics',
-          title: 'Select up to 3 topics to start:'
-        })
+        const scene = goAfterFinish ? goAfterFinish : 'select_topics';
+        const title = goAfterFinish ? '' : 'Select up to 3 topics to start:';
+        navigator.push({ scene, title });
       })
   }
-
+  
   _onEndReached () {
     const { relay, viewer, questions } = this.props;
     let pageNext = questions.pageInfo;

@@ -17,11 +17,11 @@ export function createCollection (data) {
   return new Promise((resolve, reject)=> {
     const transaction = Relay.Store.applyUpdate(
       new AddCollectionToUserMutation(data), {
-        onSuccess: (transaction) => {
-          resolve(transaction)
+        onSuccess: (transact) => {
+          resolve(transact)
         },
-        onFailure: (transaction) => {
-          reject(getErrors(transaction))
+        onFailure: (transact) => {
+          reject(getErrors(transact))
         }
       }
     );
@@ -40,11 +40,11 @@ export function removeCollection (data) {
   return new Promise((resolve, reject)=> {
     const transaction = Relay.Store.applyUpdate(
       new RemoveCollectionFromUserMutation(data), {
-        onSuccess: (transaction) => {
-          resolve(transaction)
+        onSuccess: (transact) => {
+          resolve(transact)
         },
-        onFailure: (transaction) => {
-          reject(getErrors(transaction))
+        onFailure: (transact) => {
+          reject(getErrors(transact))
         }
       }
     );
@@ -63,11 +63,11 @@ export function addToCollection (data) {
   return new Promise((resolve, reject)=> {
     const transaction = Relay.Store.applyUpdate(
       new AddInsightToCollectionMutation(data), {
-        onSuccess: (transaction) => {
-          resolve(transaction)
+        onSuccess: (transact) => {
+          resolve(transact)
         },
-        onFailure: (transaction) => {
-          reject(getErrors(transaction))
+        onFailure: (transact) => {
+          reject(getErrors(transact))
         }
       }
     );
@@ -85,11 +85,11 @@ export function markInsightUsefulInCollection (data) {
   return new Promise((resolve, reject)=> {
     const transaction = Relay.Store.applyUpdate(
       new MarkInsightUsefulInCollectionMutation(data), {
-        onSuccess: (transaction) => {
-          resolve(transaction)
+        onSuccess: (transact) => {
+          resolve(transact)
         },
-        onFailure: (transaction) => {
-          reject(getErrors(transaction))
+        onFailure: (transact) => {
+          reject(getErrors(transact))
         }
       }
     );
@@ -107,11 +107,11 @@ export function markInsightUselessInCollection (data) {
   return new Promise((resolve, reject)=> {
     const transaction = Relay.Store.applyUpdate(
       new MarkInsightUselessInCollectionMutation(data), {
-        onSuccess: (transaction) => {
-          resolve(transaction)
+        onSuccess: (transact) => {
+          resolve(transact)
         },
-        onFailure: (transaction) => {
-          reject(getErrors(transaction))
+        onFailure: (transact) => {
+          reject(getErrors(transact))
         }
       }
     );

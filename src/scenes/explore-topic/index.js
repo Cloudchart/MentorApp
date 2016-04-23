@@ -129,6 +129,7 @@ export default Relay.createContainer(ExploreTopics, {
         fragment on User {
             ${TopicEmpty.getFragment('user')}      
             topics(first: $count) {
+                availableSlotsCount
                 edges {
                     node {
                         id

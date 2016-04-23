@@ -14,11 +14,11 @@ export function subscribeOnTopic (data) {
   return new Promise((resolve, reject)=> {
     const transaction = Relay.Store.applyUpdate(
       new SubscribeOnTopicMutation(data), {
-        onSuccess: (transaction) => {
-          resolve(transaction)
+        onSuccess: (transact) => {
+          resolve(transact)
         },
-        onFailure: (transaction) => {
-          reject(getErrors(transaction))
+        onFailure: (transact) => {
+          reject(getErrors(transact))
         }
       }
     )
@@ -37,11 +37,11 @@ export function unsubscribeFromTopic (data) {
   return new Promise((resolve, reject)=> {
     const transaction = Relay.Store.applyUpdate(
       new UnsubscribeFromTopicMutation(data), {
-        onSuccess: (transaction) => {
-          resolve(transaction)
+        onSuccess: (transact) => {
+          resolve(transact)
         },
-        onFailure: (transaction) => {
-          reject(getErrors(transaction))
+        onFailure: (transact) => {
+          reject(getErrors(transact))
         }
       }
     )

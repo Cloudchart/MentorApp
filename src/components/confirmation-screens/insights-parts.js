@@ -54,7 +54,7 @@ class CommentBad extends Component {
 
         <TransparentButton
           style={{paddingVertical: 10}}
-          label="I know what a'm doing"
+          label="I know what I am doing"
           onPress={this._delete}
           color="red"
         />

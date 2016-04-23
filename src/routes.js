@@ -25,7 +25,7 @@ export function renderScreen (params) {
           filter: InsightsForMeFilter
         }),
         null,
-        InsightsForMeFilter == 'PREVIEW' ? false : true
+        false //InsightsForMeFilter == 'PREVIEW' ? false : true
       );
     case 'questionnaire':
       return container(Scenes.Questionnaire, screenParams);

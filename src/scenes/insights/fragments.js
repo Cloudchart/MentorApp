@@ -81,7 +81,7 @@ export const collectionInsightFragment = Relay.QL`
         collections(first: $countInsights) {
             edges {
                 node {
-                    insights(first : $countInsights, filter : $filterInsightsInCollection) {
+                    insights(first : $countInsights, filter : ALL) {
                         count
                         edges {
                             node {

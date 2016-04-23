@@ -18,6 +18,11 @@ class CounterAdvice extends Component {
     super(props)
   }
 
+  shouldComponentUpdate (nextProps) {
+    return nextProps.collections.count_insight != this.props.collections.count_insight;
+  }
+
+
   _goUserCollection () {
     const { navigator, dispatch } = this.props;
     navigator.push({

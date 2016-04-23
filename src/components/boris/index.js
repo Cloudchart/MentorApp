@@ -153,8 +153,8 @@ class Boris extends Component {
 }
 
 const BorisImage = (props) => {
-  const { moodSequences, mood, size, repeatCount, getMoodSequences, randomId } = props;
-  return (!moodSequences ?
+  const { notAnimate, moodSequences, mood, size, repeatCount, getMoodSequences, randomId } = props;
+  return (notAnimate ?
       <Image source={ Faces[mood][size] } key={randomId}/> :
       <AnimateSequences
         style={AnimateImagesStyle[size]}

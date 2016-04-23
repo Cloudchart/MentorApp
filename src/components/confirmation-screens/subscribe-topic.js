@@ -5,7 +5,6 @@ import React, {
   TouchableOpacity,
   View
 } from "react-native";
-import Relay from 'react-relay';
 import { Boris, Button, TransparentButton } from "../../components";
 import { commentStyle } from "./style";
 import { EventManager } from '../../event-manager';
@@ -32,21 +31,13 @@ class SubscribeTopicAdd extends Component {
     this.props.undo && this.props.undo('add');
   }
 
-  findTopic () {
-    const { subscribedTopics, topic } = this.props;
-    return subscribedTopics.edges.find(item => item.id == topic.id);
-  }
-
   render () {
     const { subscribedTopics } = this.props;
-
-    if ( !this.findTopic() && !subscribedTopics.availableSlotsCount ) {
+    if ( !subscribedTopics.availableSlotsCount ) {
       return <ExploreTopicSubscribe {...this.props} />
-    } else if ( this.findTopic() && !subscribedTopics.availableSlotsCount ) {
-      return <ExploreTopicSubscribeFull {...this.props} />
     }
 
-
+    //return <ExploreTopicSubscribeFull {...this.props} />
     return (
       <View style={ commentStyle.container }>
         <View style={ commentStyle.borisContainer }>

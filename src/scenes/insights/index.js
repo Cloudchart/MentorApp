@@ -74,9 +74,19 @@ class InsightsForMe extends Component {
    * added to the collection of insight
    */
   componentWillMount () {
+    const { dispatch, viewer } = this.props;
     const responder = _panResponder.bind(this);
     this._panResponder = responder();
     this.collectInsights();
+
+    dispatch({
+      type: actions.COUNT_INSIGHTS_COLLECTIONS,
+      collections: viewer.collections
+    })
+  }
+
+  componentWillUnmount(){
+    
   }
 
 
@@ -84,19 +94,14 @@ class InsightsForMe extends Component {
    * from viewer or from node
    */
   collectInsights () {
-    const { dispatch, viewer, node } = this.props;
+    const { node } = this.props;
     let insights = [];
     if ( node && node.insights ) {
       insights = this._getInsightsFromNode()
     } else {
       insights = this._getInsights();
     }
-
     this._setCurrentAdvice(insights);
-    dispatch({
-      type: actions.COUNT_INSIGHTS_COLLECTIONS,
-      collections: viewer.collections
-    })
   }
 
 
@@ -371,7 +376,7 @@ class InsightsForMe extends Component {
     const { dispatch, filter } = this.props;
     const saveCurrentInsights = { ...currentInsights };
     this._saveToLocalStack(saveCurrentInsights);
-    InsightAnimations.animationCardRight(this.state.pan, this._resetState)
+    InsightAnimations.animationCardRight(this.state.pan, this._resetState);
 
     if ( filter && filter == 'PREVIEW' ) {
       return;
@@ -379,7 +384,7 @@ class InsightsForMe extends Component {
 
     likeInsightInTopic(currentInsights, shouldAddToUserCollectionWithTopicName)
       .then((tran)=> {
-        dispatch({ type: actions.COUNT_INSIGHTS_PLUS })
+        dispatch({ type: actions.COUNT_INSIGHTS_PLUS });
         this._removeFromLocalStack(saveCurrentInsights)
       })
       .catch((error)=> {
@@ -472,7 +477,7 @@ class InsightsForMe extends Component {
    * @private
    */
   _onAddToCollection (param = true, reaction_ignore) {
-    const { currentInsights, shouldAddToUserCollectionWithTopicName } = this.state;
+    const { currentInsights } = this.state;
     if ( !currentInsights ) return;
     this.state.shouldAddToUserCollectionWithTopicName = param;
     if ( currentInsights.node.likeReaction && !reaction_ignore ) {
@@ -689,8 +694,7 @@ export default Relay.createContainer(ReduxComponent, {
   initialVariables: {
     countInsights: 100,
     filter: 'UNRATED',
-    filterInsights: 'UNRATED',
-    filterInsightsInCollection: 'ALL'
+    filterInsights: 'UNRATED'
   },
   fragments: {
     node : () => Relay.QL`
@@ -702,12 +706,11 @@ export default Relay.createContainer(ReduxComponent, {
         fragment on User {
             ${RandomAdvice.getFragment('viewer')}
             ${collectionInsightFragment}
-            subscribedTopics: topics(first: 100, filter: SUBSCRIBED) {
+            subscribedTopics: topics(first: 1, filter: SUBSCRIBED) {
                 availableSlotsCount
                 edges {
                     node {
                         id
-                        name
                     }
                 }
             }

@@ -12,6 +12,8 @@ import { Button, FBLoginButton } from "../../components";
 import styles from "./style";
 import { getGradient } from "../../utils/colors";
 
+import { resetUser } from "../../actions/user";
+
 const dataSource = new ListView.DataSource({
   rowHasChanged: (row1, row2) => row1 !== row2
 })
@@ -41,13 +43,17 @@ class Settings extends Component {
         id: 3,
         name: 'Subscription',
         screen: 'subscription'
+      },
+      {
+        id: 3,
+        name: 'resetUser',
+        screen: ''
       }
     ]
   }
 
   constructor (props) {
     super(props)
-
     this._onLogout = this._onLogout.bind(this);
   }
 
@@ -57,7 +63,19 @@ class Settings extends Component {
    * @private
    */
   _handleItemPress (settingData) {
-    const { navigator } = this.props;
+    const { navigator, viewer } = this.props;
+
+    if ( settingData.name == 'resetUser' ) {
+      resetUser({ user: viewer })
+        .then(()=> {
+          navigator.replace({
+            scene: 'welcome',
+            title: 'Virtual Mentor'
+          })
+        });
+      return;
+    }
+
     navigator.push({
       scene: settingData.screen,
       title: settingData.name
@@ -79,6 +97,15 @@ class Settings extends Component {
     }, 0)
   }
 
+  _renderButtons (rowData, sectionID, rowID) {
+    return (
+      <ItemSettings
+        {...rowData}
+        rowID={rowID}
+        handleItemPress={this._handleItemPress.bind(this, rowData)}/>
+    )
+  }
+
   render () {
     const { menu } = this.props;
     return (
@@ -86,7 +113,7 @@ class Settings extends Component {
 
         <ListView
           dataSource={dataSource.cloneWithRows(menu)}
-          renderRow={(props) => <ItemSettings {...props} handleItemPress={this._handleItemPress.bind(this)} />}
+          renderRow={(rowData, sectionID, rowID) => this._renderButtons(rowData, sectionID, rowID)}
           pageSize={20}
           showsVerticalScrollIndicator={true}
           style={ styles.items }/>
@@ -102,17 +129,12 @@ class Settings extends Component {
 }
 
 class ItemSettings extends Component {
-  constructor (props) {
-    super(props)
-    this.handleItemPress = this.props.handleItemPress.bind(null, this.props)
-  }
-
   render () {
     return (
       <TouchableOpacity
-        onPress={this.handleItemPress}
+        onPress={this.props.handleItemPress}
         activeOpacity={ 0.75 }
-        style={ [ styles.item, { backgroundColor: getGradient('green', this.props.id) } ] }>
+        style={ [ styles.item, { backgroundColor: getGradient('green', this.props.rowID) } ] }>
         <Text style={ styles.itemText }>
           { this.props.name }
         </Text>

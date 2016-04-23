@@ -293,7 +293,12 @@ class RandomAdvice extends Component {
     return (
       <View style={ commentStyle.container }>
         <View style={ commentStyle.borisContainer }>
-          <Boris mood={mood} size="small" note={note} randomId={(Math.random(1000) * 100).toString(16)}/>
+          <Boris
+            mood={mood}
+            notAnimate={true}
+            size="small"
+            note={note}
+            randomId={(Math.random(1000) * 100).toString(16)}/>
         </View>
 
         <Button

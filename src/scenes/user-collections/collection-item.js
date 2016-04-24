@@ -75,7 +75,9 @@ class UserCollectionItem extends Component {
     if (this.openedRight) {
       this.openedRight = false;
     }
-    this.state.closeAllItems = false;
+    this.setState({
+      closeAllItems: false,
+    })
   }
 
   renderAdvicePreview(props, index) {

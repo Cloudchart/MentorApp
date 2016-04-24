@@ -78,12 +78,11 @@ class UserCollectionItem extends Component {
     this.state.closeAllItems = false;
   }
 
-  _adviceItem (props, i) {
-    const node = props.node;
+  renderAdvicePreview(props, index) {
     return (
-      <View style={styles.collectionItemMoreInner} key={i}>
-        <Text style={ styles.collectionItemMoreText } numberOfLines={ 1 }>
-          {node.content}
+      <View style={styles.collectionItemMoreInner} key={index}>
+        <Text style={styles.collectionItemMoreText} numberOfLines={1}>
+          {props.node.content}
         </Text>
       </View>
     )
@@ -125,17 +124,17 @@ class UserCollectionItem extends Component {
           </TouchableHighlight>
         </Swipeout>
 
-        {insights.edges && insights.edges.length && (
+        {insights.edges && insights.edges.length > 0 && (
           <View style={[styles.collectionItemMore, { height: finalRowHeight }]}>
             <View style={{ flex: 1 }}>
-              {insights.edges.map(this._adviceItem)}
+              {insights.edges.map(this.renderAdvicePreview)}
             </View>
             <View style={{ flex: 1}}>
-              {insights.count > 3 && (
+              {(insights.count > 3) ? (
                 <Text style={styles.textMore}>
-                  and {insights.count - insights.edges.length} more
+                  {'and ' + (insights.count - insights.edges.length) + ' more'}
                 </Text>
-              )}
+              ) : null}
             </View>
           </View>
         )}

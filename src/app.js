@@ -305,6 +305,7 @@ export default Relay.createContainer(Application, {
   }
 });
 
+// @todo remove it and all usages
 global.LOG = (...args) => {
   console.log('/------------------------------\\');
   console.log(...args);

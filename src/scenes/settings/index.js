@@ -46,8 +46,8 @@ class Settings extends Component {
       },
       {
         id: 3,
-        name: 'resetUser',
-        screen: ''
+        name: 'Reset settings',
+        screen: 'welcome'
       }
     ]
   }

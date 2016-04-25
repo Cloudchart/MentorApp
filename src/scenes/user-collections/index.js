@@ -412,7 +412,7 @@ const ReduxComponent = connect()(UserCollections)
 export default Relay.createContainer(ReduxComponent, {
   initialVariables: {
     count: 20,
-    filter: 'ALL'
+    filter: 'USEFUL'
   },
   fragments: {
     viewer: () => Relay.QL`

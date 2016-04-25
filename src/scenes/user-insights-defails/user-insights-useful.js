@@ -162,7 +162,7 @@ class UserInsightsUseful extends Component {
         <ScrollView
           scrollEnabled={scrollEnabled}
           showsVerticalScrollIndicator={true}>
-          <ButtonsBoris />
+          <ButtonsBoris name={this.props.node.name} />
           <View style={styles.scroll}>
             {this._renderList()}
           </View>
@@ -174,7 +174,10 @@ class UserInsightsUseful extends Component {
 
 const ButtonsBoris = (props) => (
   <View style={ styles.borisContainer }>
-    <Boris mood="positive" size="small" note={ BorisNoteForSubscription }/>
+    <Boris
+      mood="positive"
+      size="small"
+      note={ props.name.trim() }/>
   </View>
 )
 

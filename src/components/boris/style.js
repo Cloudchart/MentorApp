@@ -32,7 +32,8 @@ export default StyleSheet.create({
   noteContainer: {
     flex: 1,
     borderRadius: 5,
-    padding: device.size(18)
+    paddingVertical: device.size(18),
+    paddingHorizontal: device.size(18)
   },
   noteContainerPositive: {
     backgroundColor: 'hsl(137, 54%, 50%)'

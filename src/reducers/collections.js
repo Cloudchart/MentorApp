@@ -27,8 +27,6 @@ const collections = (state = {
   currentCollection: {
     insights: null
   },
-  USEFUL: [],
-  USELESS: [],
   count_insight: 0
 }, action) => {
   switch ( action.type ) {

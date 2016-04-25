@@ -10,6 +10,7 @@ import { Loader } from "./components";
  * @param params
  * @returns {*}
  */
+let firstEnter = false;
 export function renderScreen (params) {
   const { scene, screenParams } = params;
   switch ( scene ) {
@@ -25,7 +26,7 @@ export function renderScreen (params) {
           filter: InsightsForMeFilter
         }),
         null,
-        false //InsightsForMeFilter == 'PREVIEW' ? false : true
+        !firstEnter
       );
     case 'questionnaire':
       return container(Scenes.Questionnaire, screenParams);
@@ -96,6 +97,7 @@ export function container (Component, screenParams, opt_router, renderFailure, f
   const params = screenParams ? screenParams : {};
   const failure = renderFailure ? renderFailure : ()=> {};
   const forceF = forceFetch ? forceFetch : false;
+  firstEnter = true;
   const renderFetched = _.throttle((data, readyState)=> {
     return <Component {...params} {...data} />
   }, 300);

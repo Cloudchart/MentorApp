@@ -30,7 +30,6 @@ import clamp from "clamp";
 import { likeInsightInTopic, dislikeInsightInTopic } from "../../actions/insight";
 import { ShareCard, AddCard } from "./add-card-to-collection";
 import { _panResponder } from "./pan-responder";
-import { nodeQueryTopic, collectionInsightFragment } from "./fragments";
 
 import styles from "./style";
 const dimensions = Dimensions.get('window');
@@ -42,6 +41,8 @@ class InsightsForMe extends Component {
     shouldAddToUserCollectionWithTopicName: true,
     allRatedInsights: [],
     allInsights: [],
+    queueSaveInsights: [],
+    loader: true,
     currentInsights: null,
     controlShareIsShow: false,
     confirmationScreensShow: false,
@@ -56,6 +57,9 @@ class InsightsForMe extends Component {
   constructor (props) {
     super(props)
     this._stopAlert = false;
+    this._lastTransaction = null;
+    this._callOne = false;
+    this._saveTimeOut = null;
     this._onPressCard = this._onPressCard.bind(this);
     this._onLikeInsight = _.throttle(this._onLikeInsight.bind(this), 700);
     this._onDelete = _.throttle(this._onDelete.bind(this, {}), 700);
@@ -69,39 +73,34 @@ class InsightsForMe extends Component {
     this._commentBadUndo = this._commentBadUndo.bind(this);
   }
 
+  componentWillReceiveProps (nextProps) {
+    if ( nextProps.viewer.insights.edges.length && !this.state.allInsights.length && !this._callOne ) {
+      this._callOne = true;
+      this.collectInsights(nextProps.viewer.insights.edges, nextProps.node);
+    }
+  }
+
   /**
    * write in redux state amount
    * added to the collection of insight
    */
   componentWillMount () {
-    const { dispatch, viewer } = this.props;
+    const { viewer, node } = this.props;
     const responder = _panResponder.bind(this);
     this._panResponder = responder();
-    this.collectInsights();
 
-    dispatch({
-      type: actions.COUNT_INSIGHTS_COLLECTIONS,
-      collections: viewer.collections
-    })
-  }
-
-  componentWillUnmount(){
-    
+    this.collectInsights(viewer.insights.edges, node);
   }
 
 
   /**
    * from viewer or from node
    */
-  collectInsights () {
-    const { node } = this.props;
-    let insights = [];
-    if ( node && node.insights ) {
-      insights = this._getInsightsFromNode()
-    } else {
-      insights = this._getInsights();
-    }
-    this._setCurrentAdvice(insights);
+  collectInsights (insights, node) {
+    let insightsCollection = node && node.insights ?
+      this._getInsightsFromNode(node) :
+      this._getInsights(insights);
+    this._setCurrentAdvice(insightsCollection);
   }
 
 
@@ -110,19 +109,16 @@ class InsightsForMe extends Component {
    * @returns {Array}
    * @private
    */
-  _getInsightsFromNode () {
-    const { node } = this.props;
+  _getInsightsFromNode (node) {
     let insightCollection = [];
-    const insights = node.insights;
+    if ( !node.insights ) return;
 
-    if ( !insights ) return;
-
-    insights.edges.map((inst)=> {
+    node.insights.edges.map((inst)=> {
       inst.topic = { ...node };
       insightCollection.push({ ...inst })
     });
 
-    this._topicsCompletion(insightCollection)
+    this._topicsCompletion(insightCollection);
     return insightCollection;
   }
 
@@ -131,13 +127,39 @@ class InsightsForMe extends Component {
    * @returns {*|Array}
    * @private
    */
-  _getInsights () {
-    const { viewer } = this.props
-    const { insights } = viewer;
-    this._topicsCompletion(insights.edges)
-    return insights.edges;
+  _getInsights (insights) {
+    this._topicsCompletion(insights);
+    return insights;
   }
 
+
+  /**
+   *
+   */
+  filterAllInsightsFinishedByViewer () {
+    const { queueSaveInsights } = this.state;
+    const countFinishedByViewer = queueSaveInsights.filter(item => item.isFinishedByViewer);
+    const allFinished = countFinishedByViewer && (countFinishedByViewer.length == queueSaveInsights.length);
+    return allFinished;
+  }
+
+  /**
+   *
+   */
+  findAndUpdateAdviceInQueue () {
+    const { queueSaveInsights } = this.state;
+    const newQueueSaveInsights = [ ...queueSaveInsights ];
+    const topic = this._lastTransaction.topic;
+    newQueueSaveInsights.forEach((item)=> {
+      if ( item.topic.id == topic.id ) {
+        item.topic.isFinishedByViewer = topic.isFinishedByViewer;
+      }
+    })
+
+    this.setState({
+      queueSaveInsights: newQueueSaveInsights
+    })
+  }
 
   /**
    *
@@ -146,12 +168,15 @@ class InsightsForMe extends Component {
   _topicsCompletion (edges) {
     const { filter } = this.props;
     const { currentInsights } = this.state;
+    const lastTopic = this._lastTransaction ? this._lastTransaction.topic : null;
+
     let conf = {
       conditionConfirmation: '',
       confirmationScreensShow: false
     }
 
     if ( !edges.length ) {
+
       if ( filter && filter == 'PREVIEW' ) {
         conf = {
           allInsights: [],
@@ -159,19 +184,27 @@ class InsightsForMe extends Component {
           confirmationScreensShow: true
         }
       } else {
-        conf = {
-          conditionConfirmation: 'all_ended',
-          confirmationScreensShow: true,
-          allInsights: [],
-          currentInsights: null
+
+        if ( !this.filterAllInsightsFinishedByViewer() ) {
+          conf = {
+            conditionConfirmation: 'allfor_now',
+            confirmationScreensShow: true,
+            allInsights: [],
+            currentInsights: null
+          }
+        } else {
+          conf = {
+            conditionConfirmation: 'all_ended',
+            confirmationScreensShow: true,
+            allInsights: [],
+            currentInsights: null
+          }
         }
       }
-
-
     }
 
     // TODO : TopicFinished
-    if ( currentInsights && (edges.length && currentInsights.topic.isFinishedByViewer) ) {
+    if ( currentInsights && (edges.length && lastTopic && lastTopic.isFinishedByViewer) ) {
       conf = {
         conditionConfirmation: 'topic_finished',
         confirmationScreensShow: true
@@ -233,20 +266,26 @@ class InsightsForMe extends Component {
    * @private
    */
   _setCurrentAdvice (insights) {
+    const { dispatch, viewer } = this.props;
     const allInsights = insights && insights.length ? insights : [];
+
     this.setState({
-      allInsights,
+      allInsights: allInsights,
+      queueSaveInsights: allInsights,
+      loader: false,
       currentInsights: allInsights.length ? allInsights[ 0 ] : null
     });
 
-    //setTimeout(()=> {this._animateEntrance()}, 200)
+    dispatch({
+      type: actions.COUNT_INSIGHTS_COLLECTIONS,
+      collections: viewer.collections
+    });
   }
 
   /**
    * if the operation was successful or not,
    * to remove from the array the last insight
    *
-   * forceFetch
    * @private
    */
   _removeFromLocalStack (saveCurrentInsights, setCurrent) {
@@ -254,8 +293,6 @@ class InsightsForMe extends Component {
     let deleted = [];
     let localAllInsights = allInsights;
     let index = 0;
-
-    //this.props.relay.forceFetch();
 
     const foundIns = allRatedInsights.find((insight, i)=> {
       index = i;
@@ -359,7 +396,12 @@ class InsightsForMe extends Component {
 
     dislikeInsightInTopic(currentInsights)
       .then((tran)=> {
-        this._removeFromLocalStack(saveCurrentInsights)
+        this._lastTransaction = tran.dislikeInsightInTopic;
+        this.findAndUpdateAdviceInQueue();
+        setTimeout(() => {
+          this._removeFromLocalStack(saveCurrentInsights)
+        }, 0)
+
       })
       .catch((error)=> {
         this._removeFromLocalStack(saveCurrentInsights, true)
@@ -384,8 +426,12 @@ class InsightsForMe extends Component {
 
     likeInsightInTopic(currentInsights, shouldAddToUserCollectionWithTopicName)
       .then((tran)=> {
-        dispatch({ type: actions.COUNT_INSIGHTS_PLUS });
-        this._removeFromLocalStack(saveCurrentInsights)
+        this._lastTransaction = tran.likeInsightInTopic;
+        this.findAndUpdateAdviceInQueue();
+        setTimeout(() => {
+          dispatch({ type: actions.COUNT_INSIGHTS_PLUS });
+          this._removeFromLocalStack(saveCurrentInsights)
+        }, 0)
       })
       .catch((error)=> {
         this._removeFromLocalStack(saveCurrentInsights, true)
@@ -479,7 +525,8 @@ class InsightsForMe extends Component {
   _onAddToCollection (param = true, reaction_ignore) {
     const { currentInsights } = this.state;
     if ( !currentInsights ) return;
-    this.state.shouldAddToUserCollectionWithTopicName = param;
+    this.setState({ shouldAddToUserCollectionWithTopicName: param });
+
     if ( currentInsights.node.likeReaction && !reaction_ignore ) {
       this.setState({
         confirmationScreensShow: true,
@@ -573,8 +620,10 @@ class InsightsForMe extends Component {
    */
   render () {
     const {
-      top, pan,
+      top,
+      pan,
       enter,
+      loader,
       currentInsights,
       showCardTopicName,
       shareControl,
@@ -600,13 +649,14 @@ class InsightsForMe extends Component {
       inputRange: [ 0, constant.CONTROL_PIECE, constant.CONTROLS_WIDTH ],
       outputRange: [ 0, -constant.CONTROL_PIECE, -constant.CONTROLS_WIDTH ],
       extrapolate: 'clamp'
-    }
+    };
+
     const share = shareControl.x.interpolate(interpolateControls);
     const shareStyle = { transform: [ { translateX: share } ] }
     const add = addControl.x.interpolate(interpolateControls);
     const addStyle = { transform: [ { translateX: add } ] }
 
-    if ( reactions.show || confirmationScreensShow ) {
+    if ( reactions && reactions.show || confirmationScreensShow ) {
       return (
         <ConfirmationScreens
           condition={conditionConfirmation}
@@ -618,6 +668,10 @@ class InsightsForMe extends Component {
           commentGoodContinue={this._commentGoodContinue}
           commentBadUndo={this._commentBadUndo}/>
       )
+    }
+
+    if ( loader ) {
+      return <Loader />
     }
 
     return (
@@ -688,24 +742,91 @@ const TitleAdvice = (props) => {
 
 const ReduxComponent = connect(state => ({
   reactions: state.reactions
-}))(InsightsForMe)
+}))(InsightsForMe);
+
+
+
+const insightFragment = Relay.QL`
+    fragment on Insight {
+        id
+        content
+        origin {
+            author
+            url
+            title
+            duration
+        }
+        likeReaction {
+            id
+            mood
+            content
+        }
+        dislikeReaction {
+            id
+            mood
+            content
+        }
+    }
+`;
 
 export default Relay.createContainer(ReduxComponent, {
   initialVariables: {
-    countInsights: 100,
+    count: 100,
     filter: 'UNRATED',
     filterInsights: 'UNRATED'
   },
   fragments: {
     node : () => Relay.QL`
         fragment on Topic {
-            ${nodeQueryTopic}
+            id
+            name
+            isSubscribedByViewer
+            isPaid
+            insights (first: $count, filter : $filter) {
+                edges {
+                    node {
+                        ${insightFragment}
+                    }
+                }
+            }
         }
     `,
     viewer: () => Relay.QL`
         fragment on User {
             ${RandomAdvice.getFragment('viewer')}
-            ${collectionInsightFragment}
+            insights(first: $count, filter: $filterInsights )  {
+                edges {
+                    node {
+                        ${insightFragment}
+                    }
+                    topic {
+                        id
+                        name
+                        isDefault
+                        isPaid
+                        isSubscribedByViewer
+                        isFinishedByViewer
+                        insights (first: 1) {
+                            ratedCount
+                            unratedCount
+                        }
+                    }
+                }
+            }
+            collections(first: $count) {
+                edges {
+                    node {
+                        insights(first : 1, filter : USEFUL) {
+                            count
+                            edges {
+                                node {
+                                    id
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             subscribedTopics: topics(first: 1, filter: SUBSCRIBED) {
                 availableSlotsCount
                 edges {

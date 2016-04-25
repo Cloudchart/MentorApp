@@ -101,15 +101,19 @@ class SelectTopic extends Component {
     const { filterUserAddedTopic, viewer, navigator } = this.props;
     const { availableSlotsCount } = viewer.subscribedTopics;
 
-    if ( filterUserAddedTopic && !availableSlotsCount ) {
-      this.setState({
-        topicConfirmationSave: {
-          topic,
-          user: viewer
-        },
-        showConfirmation: true
-      })
+    if ( filterUserAddedTopic ) {
+      this.props.navigator.pop();
     }
+
+    /*if ( filterUserAddedTopic && !availableSlotsCount ) {
+     this.setState({
+     topicConfirmationSave: {
+     topic,
+     user: viewer
+     },
+     showConfirmation: true
+     })
+     }*/
   }
 
   /**

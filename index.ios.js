@@ -21,8 +21,8 @@ import { EventManager } from './src/event-manager';
 
 Relay.injectNetworkLayer(
   new DefaultNetworkLayer(graphqlURL, {
-    fetchTimeout: 30000,
-    retryDelays: [ 5000, 10000 ],
+    /*fetchTimeout: 30000,
+    retryDelays: [ 3000, 6000 ],*/
     headers: {
       'X-Device-Id': DeviceInfo.getUniqueID()
     }

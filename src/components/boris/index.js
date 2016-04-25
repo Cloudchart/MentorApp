@@ -135,13 +135,16 @@ class Boris extends Component {
           <BorisImage
             {...this.props}
             randomId={randomId || 1}
+            moodSequences={moodSequences}
             getMoodSequences={this.getMoodSequences}
             repeatCount={repeatCount || this.state.repeatCount}
           />
         </View>
         {!note ? null :
           <Animated.View style={ styleNote }>
-            <Text style={ [styles.noteText, noteTextStyle[mood]] }>{note}</Text>
+            <Text style={ [styles.noteText, noteTextStyle[mood]] }>
+              {note}
+            </Text>
             <Image
               source={ Handles[mood][size] }
               style={ [styles.handleImage, handleImageStyle[size]] }/>

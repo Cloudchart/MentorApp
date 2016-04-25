@@ -78,7 +78,7 @@ class ConfirmationScreens extends Component {
   render () {
     const { condition, reactions } = this.props;
 
-    if ( reactions.show ) {
+    if ( reactions && reactions.show ) {
       return (
         <RandomAdvice
           {...this.props}

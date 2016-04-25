@@ -148,7 +148,7 @@ function onPanResponderRelease (e, { vx, vy }) {
       this._onShare();
       break;
     case 'add':
-      this._onAddToCollection(false);
+      this._onAddToCollection(false, true);
       break;
     default:
       DO_AN_ACT = '';

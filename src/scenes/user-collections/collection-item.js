@@ -98,7 +98,7 @@ class UserCollectionItem extends Component {
         (3 * 30 + 30) :
         insights.edges.length * 30 + 13;
     const finalRowHeight = device.size(basicRowHeight);
-    console.log('Collection');
+
     return (
       <TouchableOpacity
         style={styles.collectionItem}
@@ -111,9 +111,9 @@ class UserCollectionItem extends Component {
           close={this.state.closeAllItems}
           autoCloseAfterPressButton={false}
           openedRightCallback={() => this.openedRightCallback()}
-          closeSwipeoutCallback={() => (console.log('close swpitout') || this.closeSwipeoutCallback())}
+          closeSwipeoutCallback={() => this.closeSwipeoutCallback()}
           backgroundColor='transparent'>
-          <TouchableHighlight onPress={() => console.log('qwe')}>
+          <TouchableHighlight onPress={pressRow}>
             <View style={styles.collectionItemInner}>
               <Icon name='folder-open-o' style={[baseStyles.crumbIcon, { color: '#00af58' }]}/>
               <Text style={styles.collectionText} numberOfLines={ 1 }>
@@ -126,7 +126,7 @@ class UserCollectionItem extends Component {
           </TouchableHighlight>
         </Swipeout>
 
-        {insights.edges && insights.edges.length > 0 && (
+        {insights.edges && (insights.edges.length > 0) && (
           <View style={[styles.collectionItemMore, { height: finalRowHeight }]}>
             <View style={{ flex: 1 }}>
               {insights.edges.map(this.renderAdvicePreview)}

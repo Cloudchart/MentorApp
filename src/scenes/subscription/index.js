@@ -9,18 +9,18 @@ import React, {
   ScrollView,
   AlertIOS,
 } from 'react-native'
-import { Loader } from '../../components';
+import { Loader } from '../../components'
 import styles from './styles'
 import Relay from 'react-relay'
 import PurchaseProductMutation from '../../mutations/purchase-product'
 
-const PRODUCT_3_PREMIUM_TOPICS = 'PRODUCT_3_PREMIUM_TOPICS';
-const PRODUCT_FULL_ACCESS_MONTHLY = 'PRODUCT_FULL_ACCESS_MONTHLY';
-const PRODUCT_FULL_ACCESS_YEARLY = 'PRODUCT_FULL_ACCESS_YEARLY';
+const PRODUCT_3_PREMIUM_TOPICS = 'PRODUCT_3_PREMIUM_TOPICS'
+const PRODUCT_FULL_ACCESS_MONTHLY = 'PRODUCT_FULL_ACCESS_MONTHLY'
+const PRODUCT_FULL_ACCESS_YEARLY = 'PRODUCT_FULL_ACCESS_YEARLY'
 
 const ActiveOpacity = {
-  activeOpacity: 0.75
-};
+  activeOpacity: 0.75,
+}
 
 export default class Subscription extends Component {
 
@@ -39,16 +39,16 @@ export default class Subscription extends Component {
       PRODUCT_3_PREMIUM_TOPICS,
       PRODUCT_FULL_ACCESS_MONTHLY,
       PRODUCT_FULL_ACCESS_YEARLY,
-    ];
+    ]
     InAppUtils.loadProducts(products, (error, products) => {
-      const loadedProducts = {};
+      const loadedProducts = {}
       if (error !== null) {
         AlertIOS.alert(
           'iTunes error',
           'Failed to load products. It\'s OK if you run the app in Simulator. ' +
           'Mock data will be used to display products list.'
-        );
-        const prices = [0.99, 7.99, 5.60];
+        )
+        const prices = [0.99, 7.99, 5.60]
         products.forEach((value, index) => {
           loadedProducts[value] = {
             identifier: value,
@@ -60,11 +60,11 @@ export default class Subscription extends Component {
             description: 'Description for ' + value,
             title: 'Title for ' + value
           }
-        });
+        })
       } else {
         products.forEach(value => {
-          loadedProducts[value.identifier] = value;
-        });
+          loadedProducts[value.identifier] = value
+        })
       }
       this.setState({
         loadedProducts,
@@ -76,7 +76,7 @@ export default class Subscription extends Component {
           AlertIOS.alert(
             'In-App Purchases',
             'Could not connect to iTunes store to restore your purchases.'
-          );
+          )
           this.setState({
             isRestoring: false,
           })
@@ -86,12 +86,12 @@ export default class Subscription extends Component {
             isRestoring: false,
           })
         }
-      });
-    });
+      })
+    })
   }
 
   _onHandlePurchase(productID) {
-    const { loadedProducts, purchasedProducts } = this.state;
+    const { loadedProducts, purchasedProducts } = this.state
     if (Object.keys(loadedProducts).length > 0) {
       this.setState({
         isPurchasing: true,
@@ -113,13 +113,13 @@ export default class Subscription extends Component {
         if (response && response.productIdentifier) {
           loadedProducts.forEach(product => {
             if (product.identifier === response.productIdentifier) {
-              const purchasedProducts = purchasedProducts || [];
-              const newPurchasedProducts = purchasedProducts.concat([ product ]);
+              const purchasedProducts = purchasedProducts || []
+              const newPurchasedProducts = purchasedProducts.concat([ product ])
               this.setState({
                 purchasedProducts: newPurchasedProducts,
-              });
+              })
             }
-          });
+          })
 
           const data = {
             productID: response.productIdentifier,
@@ -135,13 +135,13 @@ export default class Subscription extends Component {
             }
           )
         }
-      });
+      })
     }
   }
 
   renderBuyScreen() {
-    const { navigator } = this.props;
-    const { isPurchasing } = this.state;
+    const { navigator } = this.props
+    const { isPurchasing } = this.state
     return (
       <View style={ styles.container }>
         <Text style={ styles.noteText }>
@@ -246,7 +246,7 @@ export default class Subscription extends Component {
   }
 
   renderYourPlan() {
-    const { purchasedProducts } = this.state;
+    const { purchasedProducts } = this.state
     return (
       <View style={styles.container}>
         <View>
@@ -262,14 +262,14 @@ export default class Subscription extends Component {
   }
 
   render() {
-    const { isLoading, isRestoring } = this.state;
+    const { isLoading, isRestoring } = this.state
     if (isLoading || isRestoring) {
       return (
         <Loader />
-      );
+      )
     }
-    const { purchasedProducts } = this.state;
-    const hasPurchasedProducts = purchasedProducts && purchasedProducts.length > 0;
+    const { purchasedProducts } = this.state
+    const hasPurchasedProducts = purchasedProducts && purchasedProducts.length > 0
     return (
       <ScrollView>
         {hasPurchasedProducts ?
@@ -277,7 +277,7 @@ export default class Subscription extends Component {
           this.renderBuyScreen()
         }
       </ScrollView>
-    );
+    )
   }
 }
 

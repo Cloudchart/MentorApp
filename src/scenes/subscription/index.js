@@ -123,6 +123,7 @@ export default class Subscription extends Component {
 
           const data = {
             productID: response.productIdentifier,
+            transactionID: response.transactionIdentifier,
           }
           Relay.Store.applyUpdate(
             new PurchaseProductMutation(data), {

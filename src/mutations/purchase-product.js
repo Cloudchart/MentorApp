@@ -6,8 +6,8 @@ export default class PurchaseProductMutation extends Relay.Mutation {
   }
 
   getVariables () {
-    const { productID } = this.props;
-    return { productID };
+    const { productID, transactionID } = this.props;
+    return { productID, transactionID };
   }
 }
 

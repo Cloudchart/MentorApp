@@ -72,17 +72,18 @@ export default class Subscription extends Component {
         isRestoring: true,
       })
       InAppUtils.restorePurchases((error, products) => {
-        this.setState({
-          isRestoring: false
-        })
         if (error) {
           AlertIOS.alert(
             'In-App Purchases',
             'Could not connect to iTunes store to restore your purchases.'
           );
+          this.setState({
+            isRestoring: false,
+          })
         } else {
           this.setState({
-            purchasedProducts: products
+            purchasedProducts: products,
+            isRestoring: false,
           })
         }
       });

@@ -5,6 +5,19 @@ export default StyleSheet.create({
   container: {
     flex: 1
   },
+  yourPlanHeader: {
+    color: '#fff',
+    alignSelf: 'center',
+    paddingTop: device.size(20),
+    paddingBottom: device.size(20),
+    fontSize: device.fontSize(32)
+  },
+  yourPlanProduct: {
+    color: 'rgb(249, 188, 54)',
+    alignSelf: 'center',
+    fontSize: device.fontSize(18),
+    fontWeight: '400'
+  },
   transparentText: {
     color: 'transparent'
   },
@@ -23,6 +36,15 @@ export default StyleSheet.create({
   subscription: {
     alignItems: 'center',
     backgroundColor: 'rgb(247, 187, 53)',
+    borderRadius: device.size(15),
+    flexDirection: 'row',
+    height: device.size(85),
+    marginVertical: device.size(10),
+    paddingHorizontal: device.size(20)
+  },
+  disabledSubscription: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(247, 187, 53, .5)',
     borderRadius: device.size(15),
     flexDirection: 'row',
     height: device.size(85),
@@ -63,9 +85,9 @@ export default StyleSheet.create({
     right: 0,
     top: 0,
     transform: [
-      { rotate: '-10deg' },
-      { translateY: device.size(12) },
-      { translateX: device.size(-2) }
+      {rotate: '-10deg'},
+      {translateY: device.size(12)},
+      {translateX: device.size(-2)}
     ],
   },
   subscriptionsFootnote: {

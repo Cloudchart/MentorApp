@@ -163,20 +163,6 @@
 			remoteGlobalIDString = 134814201AA4EA6300B7C361;
 			remoteInfo = BVLinearGradient;
 		};
-		0A605BF21CB8DDC7008F5350 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0A605BE91CB8DDC6008F5350 /* InAppUtils.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 46E694321B289730000B634E;
-			remoteInfo = InAppUtils;
-		};
-		0A605BF41CB8DDC7008F5350 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0A605BE91CB8DDC6008F5350 /* InAppUtils.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 46E6943D1B289730000B634E;
-			remoteInfo = InAppUtilsTests;
-		};
 		0A6763311CAAA2BE00BCF22C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0A67632D1CAAA2BE00BCF22C /* RCTPushNotification.xcodeproj */;
@@ -226,6 +212,20 @@
 			remoteGlobalIDString = 58B5119B1A9E6C1200147676;
 			remoteInfo = RCTText;
 		};
+		DD6242111CD102F400FE81DE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DD62420C1CD102F400FE81DE /* InAppUtils.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 46E694321B289730000B634E;
+			remoteInfo = InAppUtils;
+		};
+		DD6242131CD102F400FE81DE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DD62420C1CD102F400FE81DE /* InAppUtils.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 46E6943D1B289730000B634E;
+			remoteInfo = InAppUtilsTests;
+		};
 		DD7AC6C21C9C713E005B652B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 703BA417F2C84AAF8456505F /* InAppUtils.xcodeproj */;
@@ -261,7 +261,6 @@
 		0A5242801C89D4E20073D7ED /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Mentor2/Images.xcassets; sourceTree = "<group>"; };
 		0A55D7D21C7B6D8600230319 /* RNDeviceInfo.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RNDeviceInfo.xcodeproj; path = "../node_modules/react-native-device-info/RNDeviceInfo.xcodeproj"; sourceTree = "<group>"; };
 		0A55D7E21C7B974F00230319 /* BVLinearGradient.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = BVLinearGradient.xcodeproj; path = "../node_modules/react-native-linear-gradient/BVLinearGradient.xcodeproj"; sourceTree = "<group>"; };
-		0A605BE91CB8DDC6008F5350 /* InAppUtils.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = InAppUtils.xcodeproj; path = "../node_modules/react-native-in-app-utils/InAppUtils.xcodeproj"; sourceTree = "<group>"; };
 		0A67632D1CAAA2BE00BCF22C /* RCTPushNotification.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTPushNotification.xcodeproj; path = "../node_modules/react-native/Libraries/PushNotificationIOS/RCTPushNotification.xcodeproj"; sourceTree = "<group>"; };
 		0A7C51E31C78C55B0047355C /* Entypo.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = Entypo.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Entypo.ttf"; sourceTree = "<group>"; };
 		0A7C51E41C78C55B0047355C /* EvilIcons.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = EvilIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/EvilIcons.ttf"; sourceTree = "<group>"; };
@@ -287,6 +286,7 @@
 		78C398B01ACF4ADC00677621 /* RCTLinking.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTLinking.xcodeproj; path = "../node_modules/react-native/Libraries/LinkingIOS/RCTLinking.xcodeproj"; sourceTree = "<group>"; };
 		832341B01AAA6A8300B99B32 /* RCTText.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTText.xcodeproj; path = "../node_modules/react-native/Libraries/Text/RCTText.xcodeproj"; sourceTree = "<group>"; };
 		AE03E55B9311490C8014C5FD /* libInAppUtils.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libInAppUtils.a; sourceTree = "<group>"; };
+		DD62420C1CD102F400FE81DE /* InAppUtils.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = InAppUtils.xcodeproj; path = "../node_modules/react-native-in-app-utils/InAppUtils.xcodeproj"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -444,15 +444,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		0A605BEA1CB8DDC6008F5350 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				0A605BF31CB8DDC7008F5350 /* libInAppUtils.a */,
-				0A605BF51CB8DDC7008F5350 /* InAppUtilsTests.xctest */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		0A67632E1CAAA2BE00BCF22C /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -541,7 +532,7 @@
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
-				0A605BE91CB8DDC6008F5350 /* InAppUtils.xcodeproj */,
+				DD62420C1CD102F400FE81DE /* InAppUtils.xcodeproj */,
 				0A67632D1CAAA2BE00BCF22C /* RCTPushNotification.xcodeproj */,
 				0A5240FB1C84BBA70073D7ED /* RCTFBSDKLogin.xcodeproj */,
 				0A5240DF1C84BBA10073D7ED /* RCTFBSDKCore.xcodeproj */,
@@ -607,6 +598,15 @@
 			name = Pods;
 			sourceTree = "<group>";
 		};
+		DD62420D1CD102F400FE81DE /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				DD6242121CD102F400FE81DE /* libInAppUtils.a */,
+				DD6242141CD102F400FE81DE /* InAppUtilsTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		DD7AC6BC1C9C713E005B652B /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -670,6 +670,9 @@
 						CreatedOnToolsVersion = 6.2;
 						TestTargetID = 13B07F861A680F5B00A75B9A;
 					};
+					13B07F861A680F5B00A75B9A = {
+						DevelopmentTeam = KZDST378G5;
+					};
 				};
 			};
 			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "Mentor2" */;
@@ -697,8 +700,8 @@
 					ProjectRef = 703BA417F2C84AAF8456505F /* InAppUtils.xcodeproj */;
 				},
 				{
-					ProductGroup = 0A605BEA1CB8DDC6008F5350 /* Products */;
-					ProjectRef = 0A605BE91CB8DDC6008F5350 /* InAppUtils.xcodeproj */;
+					ProductGroup = DD62420D1CD102F400FE81DE /* Products */;
+					ProjectRef = DD62420C1CD102F400FE81DE /* InAppUtils.xcodeproj */;
 				},
 				{
 					ProductGroup = 0A5240861C839B890073D7ED /* Products */;
@@ -890,20 +893,6 @@
 			remoteRef = 0A55D7E61C7B974F00230319 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		0A605BF31CB8DDC7008F5350 /* libInAppUtils.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libInAppUtils.a;
-			remoteRef = 0A605BF21CB8DDC7008F5350 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		0A605BF51CB8DDC7008F5350 /* InAppUtilsTests.xctest */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = InAppUtilsTests.xctest;
-			remoteRef = 0A605BF41CB8DDC7008F5350 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		0A6763321CAAA2BE00BCF22C /* libRCTPushNotification.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
@@ -951,6 +940,20 @@
 			fileType = archive.ar;
 			path = libRCTText.a;
 			remoteRef = 832341B41AAA6A8300B99B32 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		DD6242121CD102F400FE81DE /* libInAppUtils.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libInAppUtils.a;
+			remoteRef = DD6242111CD102F400FE81DE /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		DD6242141CD102F400FE81DE /* InAppUtilsTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = InAppUtilsTests.xctest;
+			remoteRef = DD6242131CD102F400FE81DE /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		DD7AC6C31C9C713E005B652B /* libInAppUtils.a */ = {
@@ -1138,6 +1141,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "Brand Assets";
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEAD_CODE_STRIPPING = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1149,13 +1154,16 @@
 					"$(SRCROOT)/../node_modules/react-native-in-app-utils/InAppUtils/**",
 				);
 				INFOPLIST_FILE = Mentor2/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = (
 					"-ObjC",
 					"$(inherited)",
 				);
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.getmentorbot.getmentorbot;
 				PRODUCT_NAME = Mentor2;
+				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
@@ -1167,6 +1175,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = "Brand Assets";
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEAD_CODE_STRIPPING = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1178,13 +1188,16 @@
 					"$(SRCROOT)/../node_modules/react-native-in-app-utils/InAppUtils/**",
 				);
 				INFOPLIST_FILE = Mentor2/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				OTHER_LDFLAGS = (
 					"-ObjC",
 					"$(inherited)",
 				);
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.getmentorbot.getmentorbot;
 				PRODUCT_NAME = Mentor2;
+				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;

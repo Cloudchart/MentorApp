@@ -65,18 +65,13 @@ class FollowUp extends Component {
     }
   }
 
-  componentWillMount () {
+  componentWillMount() {
     const { viewer } = this.props;
     this.state.listInsights = viewer.insights.edges;
     this.state.dataSource = this.state.dataSource.cloneWithRows(this.state.listInsights);
   }
 
-  componentWillUnmount () {
-
-  }
-
-
-  _onEndReached () {
+  _onEndReached() {
     const { relay, viewer } = this.props;
     let pageNext = viewer.insights.pageInfo;
     let count = relay.variables.count;
@@ -95,16 +90,15 @@ class FollowUp extends Component {
     return null;
   }
 
-
-  _itWorks (insight) {
+  _itWorks(insight) {
     likeInsightInTopic(insight, true).then(this.filterLike);
   }
 
-  _didNotWork (insight) {
+  _didNotWork(insight) {
     dislikeInsightInTopic(insight).then(this.filterDisLike);
   }
 
-  filterLike (tran) {
+  filterLike(tran) {
     const { likeInsightInTopic } = tran;
     const listInsights = [ ...this.state.listInsights ];
     listInsights.forEach((item) => {
@@ -203,59 +197,35 @@ const ButtonsBoris = (props) => (
   </View>
 )
 
-
-
-var insightFragment = Relay.QL`
-    fragment on Insight {
-        id
-        content
-        origin {
-            author
-            url
-            title
-            duration
-        }
-    }
-`;
-
-
-const topicFragment = Relay.QL`
-    fragment on  Topic {
-        id
-        name
-        isDefault
-        isPaid
-        isSubscribedByViewer
-        insights (first: 1) {
-            ratedCount
-            unratedCount
-        }
-    }
-`;
-
-
 export default Relay.createContainer(FollowUp, {
   initialVariables: {
-    count: 50
+    count: 50,
+    filter: 'RATED',
   },
   fragments: {
     viewer: () => Relay.QL`
-        fragment on User {
-            insights(first : $count) {
-                edges {
-                    node {
-                        ${insightFragment}
-                    }
-                    topic {
-                        ${topicFragment}
-                    }
-                }
-                pageInfo {
-                    hasNextPage
-                }
+      fragment on User {
+        insights(first: $count, filter: $filter) {
+          edges {
+            node {
+              id
+              content
+              origin {
+                author
+                url
+                title
+                duration
+              }
             }
+            topic {
+              id
+            }
+          }
+          pageInfo {
+            hasNextPage
+          }
         }
+      }
     `
   }
-});
-
+})

@@ -1,9 +1,10 @@
-import * as Scenes from './scenes';
-import React, { View } from "react-native";
-import Relay, { RootContainer } from 'react-relay';
-import store from '../src/store';
-import _ from 'lodash';
-import { Loader } from "./components";
+import React, { View } from "react-native"
+import Relay, { RootContainer } from 'react-relay'
+import store from '../src/store'
+import _ from 'lodash'
+import { Loader } from "./components"
+import * as Scenes from './scenes'
+import Subscription from './scenes/subscription'
 
 /**
  *
@@ -11,9 +12,9 @@ import { Loader } from "./components";
  * @returns {*}
  */
 let firstEnter = false;
-export function renderScreen (params) {
+export function renderScreen(params) {
   const { scene, screenParams } = params;
-  switch ( scene ) {
+  switch (scene) {
     case 'connect':
       return container(Scenes.Connect, screenParams);
     case 'advice_for_me':
@@ -37,7 +38,9 @@ export function renderScreen (params) {
     case 'settings':
       return container(Scenes.Settings, screenParams);
     case 'subscription':
-      return container(Scenes.Subscription, screenParams);
+      return (
+        <Subscription {...screenParams}/>
+      );
     case 'user-collections':
       return container(Scenes.UserCollections, screenParams, null, null, true);
     case 'user-topics':
@@ -92,13 +95,13 @@ export function renderScreen (params) {
  * @param forceFetch
  * @returns {XML}
  */
-export function container (Component, screenParams, opt_router, renderFailure, forceFetch) {
+export function container(Component, screenParams, opt_router, renderFailure, forceFetch) {
   const router = opt_router ? opt_router : new ViewerRoute();
   const params = screenParams ? screenParams : {};
   const failure = renderFailure ? renderFailure : ()=> {};
   const forceF = forceFetch ? forceFetch : false;
   firstEnter = true;
-  const renderFetched = _.throttle((data, readyState)=> {
+  const renderFetched = _.throttle((data, readyState) => {
     return <Component {...params} {...data} />
   }, 300);
 

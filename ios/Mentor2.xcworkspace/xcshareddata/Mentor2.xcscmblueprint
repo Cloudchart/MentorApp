@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "5B6B75F82D66E54FD4724F0CB00D1C90CB6A0C33",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "C05D9EB68AE25B02688B4C688013022CA6A2CEA1" : 0,
+    "5B6B75F82D66E54FD4724F0CB00D1C90CB6A0C33" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "1CCBBC6F-F11C-4BB0-9E2A-7CA523E06844",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "C05D9EB68AE25B02688B4C688013022CA6A2CEA1" : "react-native-in-app-utils\/",
+    "5B6B75F82D66E54FD4724F0CB00D1C90CB6A0C33" : "mentor2-app-dist\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "Mentor2",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "ios\/Mentor2.xcworkspace",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:Cloudchart\/MentorApp.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "5B6B75F82D66E54FD4724F0CB00D1C90CB6A0C33"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:DenisIzmaylov\/react-native-in-app-utils.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "C05D9EB68AE25B02688B4C688013022CA6A2CEA1"
+    }
+  ]
+}

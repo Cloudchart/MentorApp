@@ -90,8 +90,42 @@ export default class Subscription extends Component {
     })
   }
 
-  _handlePurchase(productID) {
+  _handlePurchaseComplete({ productIdentifier, transactionIdentifier }) {
+    const { navigator } = this.props
     const { loadedProducts, purchasedProducts } = this.state
+    loadedProducts.forEach(product => {
+      if (product.identifier === productIdentifier) {
+        const purchasedProducts = purchasedProducts || []
+        const newPurchasedProducts = purchasedProducts.concat([ product ])
+        this.setState({
+          purchasedProducts: newPurchasedProducts,
+        })
+      }
+    })
+
+    const mutation = new PurchaseProductMutation({
+      productID: productIdentifier,
+      transactionID: transactionIdentifier,
+    })
+    Relay.Store.commitUpate(mutation, {
+      onSuccess: () => {
+        AlertIOS.alert(
+          'Purchase Complete',
+          'Thank you.'
+        )
+        navigator.pop()
+      },
+      onFailure: () => {
+        AlertIOS.alert(
+          'In-App Purchases',
+          'Failed to register your purchase. Please contact Application Developer.'
+        )
+      }
+    })
+  }
+
+  _handlePurchase(productID) {
+    const { loadedProducts } = this.state
     if (Object.keys(loadedProducts).length > 0) {
       this.setState({
         isPurchasing: true,
@@ -110,32 +144,7 @@ export default class Subscription extends Component {
           }
           return
         }
-        if (response && response.productIdentifier) {
-          loadedProducts.forEach(product => {
-            if (product.identifier === response.productIdentifier) {
-              const purchasedProducts = purchasedProducts || []
-              const newPurchasedProducts = purchasedProducts.concat([ product ])
-              this.setState({
-                purchasedProducts: newPurchasedProducts,
-              })
-            }
-          })
-
-          const data = {
-            productID: response.productIdentifier,
-            transactionID: response.transactionIdentifier,
-          }
-          Relay.Store.applyUpdate(
-            new PurchaseProductMutation(data), {
-              onFailure: () => {
-                AlertIOS.alert(
-                  'In-App Purchases',
-                  'Failed to register your purchase. Please contact Application Developer.'
-                )
-              }
-            }
-          )
-        }
+        this._handlePurchaseComplete(response);
       })
     }
   }

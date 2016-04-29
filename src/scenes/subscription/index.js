@@ -90,7 +90,7 @@ export default class Subscription extends Component {
     })
   }
 
-  _onHandlePurchase(productID) {
+  _handlePurchase(productID) {
     const { loadedProducts, purchasedProducts } = this.state
     if (Object.keys(loadedProducts).length > 0) {
       this.setState({
@@ -155,7 +155,7 @@ export default class Subscription extends Component {
             {...ActiveOpacity}
             style={isPurchasing ? styles.disabledSubscription : styles.subscription}
             disabled={isPurchasing}
-            onPress={() => this._onHandlePurchase(PRODUCT_3_PREMIUM_TOPICS)}
+            onPress={() => this._handlePurchase(PRODUCT_3_PREMIUM_TOPICS)}
             >
             <View style={ styles.subscriptionTitle }>
               <Text style={ styles.subscriptionTitleText }>
@@ -178,7 +178,7 @@ export default class Subscription extends Component {
           <TouchableOpacity {...ActiveOpacity}
             style={isPurchasing ? styles.disabledSubscription : styles.subscription}
             disabled={isPurchasing}
-            onPress={() => this._onHandlePurchase(PRODUCT_FULL_ACCESS_MONTHLY)}
+            onPress={() => this._handlePurchase(PRODUCT_FULL_ACCESS_MONTHLY)}
             >
             <View style={ styles.subscriptionTitle }>
               <Text style={ styles.subscriptionTitleText }>
@@ -200,7 +200,7 @@ export default class Subscription extends Component {
             {...ActiveOpacity}
             style={isPurchasing ? styles.disabledSubscription : styles.subscription}
             disabled={isPurchasing}
-            onPress={() => this._onHandlePurchase(PRODUCT_FULL_ACCESS_YEARLY)}
+            onPress={() => this._handlePurchase(PRODUCT_FULL_ACCESS_YEARLY)}
             >
             <View style={ styles.subscriptionTitle }>
               <Text style={ styles.subscriptionTitleText }>

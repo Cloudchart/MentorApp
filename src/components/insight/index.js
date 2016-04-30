@@ -19,7 +19,7 @@ import clamp from "clamp";
 import * as device from "../../utils/device";
 
 
-export function animationCardLeft (params, animate_prop, callback) {
+export function animationCardLeft(params, animate_prop, callback) {
   let setting = {
     velocity: { x: clamp(100 * -1, 3, 5) * -3, y: 0 },
     deceleration: 0.98,
@@ -31,14 +31,14 @@ export function animationCardLeft (params, animate_prop, callback) {
     .start(callback ? callback : ()=> {})
 }
 
-export function animationCardRight (animate_prop, callback) {
+export function animationCardRight(animate_prop, callback) {
   let setting = {
     velocity: { x: clamp(7, 3, 5), y: 0 },
     deceleration: 0.98
   }
   Animated
     .decay(animate_prop, setting)
-    .start(callback ? callback : ()=> {})
+    .start(callback ? callback : () => {})
 }
 
 export function returnCardToStartingPosition (animate_prop) {

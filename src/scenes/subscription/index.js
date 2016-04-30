@@ -18,11 +18,11 @@ const PRODUCT_3_PREMIUM_TOPICS = 'PRODUCT_3_PREMIUM_TOPICS'
 const PRODUCT_FULL_ACCESS_MONTHLY = 'PRODUCT_FULL_ACCESS_MONTHLY'
 const PRODUCT_FULL_ACCESS_YEARLY = 'PRODUCT_FULL_ACCESS_YEARLY'
 
-const ActiveOpacity = {
+const activeOpacityProps = {
   activeOpacity: 0.75,
 }
 
-export default class Subscription extends Component {
+export default class SubscriptionScene extends Component {
 
   constructor(props, context) {
     super(props, context)
@@ -103,25 +103,25 @@ export default class Subscription extends Component {
       }
     })
 
-    const mutation = new PurchaseProductMutation({
-      productID: productIdentifier,
-      transactionID: transactionIdentifier,
-    })
-    Relay.Store.commitUpate(mutation, {
-      onSuccess: () => {
-        AlertIOS.alert(
-          'Purchase Complete',
-          'Thank you.'
-        )
-        navigator.pop()
-      },
-      onFailure: () => {
-        AlertIOS.alert(
-          'In-App Purchases',
-          'Failed to register your purchase. Please contact Application Developer.'
-        )
-      }
-    })
+    //const mutation = new PurchaseProductMutation({
+    //  productID: productIdentifier,
+    //  transactionID: transactionIdentifier,
+    //})
+    //Relay.Store.commitUpate(mutation, {
+    //  onSuccess: () => {
+    //    AlertIOS.alert(
+    //      'Purchase Complete',
+    //      'Thank you.'
+    //    )
+    //    navigator.pop()
+    //  },
+    //  onFailure: () => {
+    //    AlertIOS.alert(
+    //      'In-App Purchases',
+    //      'Failed to register your purchase. Please contact Application Developer.'
+    //    )
+    //  }
+    //})
   }
 
   _handlePurchase(productID) {
@@ -159,97 +159,101 @@ export default class Subscription extends Component {
           get more advices, more topic slots,
           premium content, detailed progress state.
         </Text>
-        <View style={ styles.subscriptionsContainer }>
+        <View style={styles.subscriptionsContainer}>
           <TouchableOpacity
-            {...ActiveOpacity}
+            {...activeOpacityProps}
             style={isPurchasing ? styles.disabledSubscription : styles.subscription}
             disabled={isPurchasing}
             onPress={() => this._handlePurchase(PRODUCT_3_PREMIUM_TOPICS)}
             >
-            <View style={ styles.subscriptionTitle }>
-              <Text style={ styles.subscriptionTitleText }>
+            <View style={styles.subscriptionTitle}>
+              <Text style={styles.subscriptionTitleText}>
                 3 premium topics
               </Text>
-              <Text style={ styles.subscriptionTitleNote }>
+              <Text style={styles.subscriptionTitleNote}>
                 incl. this one
               </Text>
             </View>
-            <View style={ styles.subscriptionPrice }>
-              <Text style={ styles.subscriptionPriceText }>
-                <Text style={ styles.subscriptionPriceTextNote }>just</Text>
+            <View style={styles.subscriptionPrice}>
+              <Text style={styles.subscriptionPriceText}>
+                <Text style={styles.subscriptionPriceTextNote}>just</Text>
                 <Text>&nbsp;</Text>
                 $0.99
-                <Text style={ [styles.subscriptionPriceTextNote, styles.transparentText] }>/mo</Text>
+                <Text style={[styles.subscriptionPriceTextNote, styles.transparentText]}>/mo</Text>
               </Text>
-              <Text style={ styles.subscriptionTitleNote }/>
+              <Text style={styles.subscriptionTitleNote}/>
             </View>
           </TouchableOpacity>
-          <TouchableOpacity {...ActiveOpacity}
+          <TouchableOpacity
+            {...activeOpacityProps}
             style={isPurchasing ? styles.disabledSubscription : styles.subscription}
             disabled={isPurchasing}
             onPress={() => this._handlePurchase(PRODUCT_FULL_ACCESS_MONTHLY)}
             >
-            <View style={ styles.subscriptionTitle }>
-              <Text style={ styles.subscriptionTitleText }>
+            <View style={styles.subscriptionTitle}>
+              <Text style={styles.subscriptionTitleText}>
                 Full access
               </Text>
-              <Text style={ styles.subscriptionTitleNote }>
+              <Text style={styles.subscriptionTitleNote}>
                 (billed monthly)
               </Text>
             </View>
-            <View style={ styles.subscriptionPrice }>
-              <Text style={ styles.subscriptionPriceText }>
+            <View style={styles.subscriptionPrice}>
+              <Text style={styles.subscriptionPriceText}>
                 $7.99
-                <Text style={ styles.subscriptionPriceTextNote }>/mo</Text>
+                <Text style={styles.subscriptionPriceTextNote}>/mo</Text>
               </Text>
-              <Text style={ styles.subscriptionTitleNote }/>
+              <Text style={styles.subscriptionTitleNote}/>
             </View>
           </TouchableOpacity>
           <TouchableOpacity
-            {...ActiveOpacity}
+            {...activeOpacityProps}
             style={isPurchasing ? styles.disabledSubscription : styles.subscription}
             disabled={isPurchasing}
             onPress={() => this._handlePurchase(PRODUCT_FULL_ACCESS_YEARLY)}
             >
-            <View style={ styles.subscriptionTitle }>
-              <Text style={ styles.subscriptionTitleText }>
+            <View style={styles.subscriptionTitle}>
+              <Text style={styles.subscriptionTitleText}>
                 Full access
               </Text>
-              <Text style={ styles.subscriptionTitleNote }>
+              <Text style={styles.subscriptionTitleNote}>
                 (billed annually*)
               </Text>
             </View>
-            <View style={ styles.subscriptionPrice }>
-              <Text style={ [styles.subscriptionPriceText, styles.subscriptionDisabledText] }>
+            <View style={styles.subscriptionPrice}>
+              <Text style={[styles.subscriptionPriceText, styles.subscriptionDisabledText]}>
                 $7.99
               </Text>
-              <Text style={ styles.subscriptionTitleNote }/>
-              <View style={ styles.deleted }/>
+              <Text style={styles.subscriptionTitleNote}/>
+              <View style={styles.deleted}/>
             </View>
-            <View style={ styles.subscriptionPrice }>
-              <Text style={ styles.subscriptionPriceText }>
+            <View style={styles.subscriptionPrice}>
+              <Text style={styles.subscriptionPriceText}>
                 $5.60
-                <Text style={ styles.subscriptionPriceTextNote }>/mo</Text>
+                <Text style={styles.subscriptionPriceTextNote}>/mo</Text>
               </Text>
-              <Text style={ styles.subscriptionTitleNote }/>
+              <Text style={styles.subscriptionTitleNote}/>
             </View>
           </TouchableOpacity>
 
-          <View style={ styles.subscriptionsFootnote}>
-            <Text style={ styles.subscriptionsFootnoteText }>
+          <View style={styles.subscriptionsFootnote}>
+            <Text style={styles.subscriptionsFootnoteText}>
               * 30% off! That's mentoring for just 18 cents
             </Text>
-            <Text style={ styles.subscriptionsFootnoteText }>
+            <Text style={styles.subscriptionsFootnoteText}>
               a day or the price of 1 coffee in 3 weeks
             </Text>
           </View>
         </View>
 
         <TouchableOpacity
-          {...ActiveOpacity}
-          style={ styles.denyControl }
-          onPress={() => navigator.pop()}>
-          <Text style={ styles.denyControlText}>Sorry, not now</Text>
+          {...activeOpacityProps}
+          style={styles.denyControl}
+          onPress={() => navigator.pop()}
+          >
+          <Text style={styles.denyControlText}>
+            Sorry, not now
+          </Text>
         </TouchableOpacity>
       </View>
     )
@@ -279,7 +283,7 @@ export default class Subscription extends Component {
       )
     }
     const { purchasedProducts } = this.state
-    const hasPurchasedProducts = purchasedProducts && purchasedProducts.length > 0
+    const hasPurchasedProducts = purchasedProducts && (purchasedProducts.length > 0)
     return (
       <ScrollView>
         {hasPurchasedProducts ?

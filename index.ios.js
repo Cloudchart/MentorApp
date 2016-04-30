@@ -18,7 +18,6 @@ import DeviceInfo from "react-native-device-info";
 import { SAVE_UNIQUE_ID_AND_DATE } from "./src/actions/actions";
 import { EventManager } from './src/event-manager';
 
-
 Relay.injectNetworkLayer(
   new DefaultNetworkLayer(graphqlURL, {
     /*fetchTimeout: 30000,

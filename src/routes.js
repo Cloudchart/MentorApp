@@ -4,7 +4,8 @@ import store from '../src/store'
 import _ from 'lodash'
 import { Loader } from "./components"
 import * as Scenes from './scenes'
-import Subscription from './scenes/subscription'
+import InsightsScene from './scenes/insights'
+import SubscriptionScene from './scenes/subscription'
 
 /**
  *
@@ -18,17 +19,21 @@ export function renderScreen(params) {
     case 'connect':
       return container(Scenes.Connect, screenParams);
     case 'advice_for_me':
-      const InsightsForMeFilter = screenParams.filter || 'UNRATED';
       return container(
-        Scenes.InsightsForMe,
-        screenParams,
-        new QueryNodeId({
-          nodeID: screenParams.topicId,
-          filter: InsightsForMeFilter
-        }),
-        null,
-        !firstEnter
-      );
+        InsightsScene,
+        screenParams
+      )
+      //const InsightsForMeFilter = screenParams.filter || 'UNRATED';
+      //return container(
+      //  Scenes.InsightScene,
+      //  screenParams,
+      //  new QueryNodeId({
+      //    nodeID: screenParams.topicId,
+      //    filter: InsightsForMeFilter
+      //  }),
+      //  null,
+      //  !firstEnter
+      //);
     case 'questionnaire':
       return container(Scenes.Questionnaire, screenParams);
     case 'select_topics':
@@ -39,8 +44,8 @@ export function renderScreen(params) {
       return container(Scenes.Settings, screenParams);
     case 'subscription':
       return (
-        <Subscription {...screenParams}/>
-      );
+        <SubscriptionScene {...screenParams}/>
+      )
     case 'user-collections':
       return container(Scenes.UserCollections, screenParams, null, null, true);
     case 'user-topics':
@@ -111,7 +116,9 @@ export function container(Component, screenParams, opt_router, renderFailure, fo
       Component={Component}
       route={router}
       forceFetch={forceF}
-      renderLoading={() => <Loader />}
+      renderLoading={() => (
+        <Loader />
+      )}
       renderFailure={failure}
       renderFetched={renderFetched}
     />

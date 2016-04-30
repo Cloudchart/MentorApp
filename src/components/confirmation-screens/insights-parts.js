@@ -16,112 +16,94 @@ const BorisNote = "That's all for now! Want more advice more often? Human up and
 const BorisNoteAllEnded = "Achievement unlocked! You have mastered all the topics, thus achieving supreme knowledge. I bow to you, Master";
 const BorisNoteTopicFinished = "Congratulations, apprentice! You're not as hopeless as I thought. But no time to celebrate, let the learning go on!";
 
-
-class CommentBad extends Component {
-
-  state = {
-    user: null
-  }
-
-  constructor (props) {
-    super(props)
-    this._undo = this.props.undo.bind(this, 'undo');
-    this._delete = this.props.undo.bind(this, 'delete');
-  }
-
-  render () {
-    const { dislikeReaction } = this.props;
-    const { mood, content } = dislikeReaction;
-    let ifMood = mood ? mood : 'negative';
-    let ifContent = content ? content : '';
-
-    return (
-      <View style={ commentStyle.container }>
-        <View style={ commentStyle.borisContainer }>
-          <Boris
-            mood={ifMood}
-            size="small"
-            note={ifContent}/>
-        </View>
-
-        <Button
-          label=""
-          color="green"
-          onPress={this._undo}
-          style={ commentStyle.button }>
-          <Text style={ commentStyle.buttonText }>Undo</Text>
-        </Button>
-
-        <TransparentButton
-          style={{paddingVertical: 10}}
-          label="I know what I am doing"
-          onPress={this._delete}
-          color="red"
-        />
-
+const CommentBad = props => {
+  const { dislikeReaction } = props
+  const { mood, content } = dislikeReaction
+  const borisMood = mood ? mood : 'negative'
+  const borisMessage = content ? content : ''
+  const next =
+    props.undo ?
+      () => props.undo('undo') :
+      () => props.handleNext()
+  const undo =
+    props.undo ?
+      () => props.undo('delete') :
+      () => props.handleUndoAction()
+  return (
+    <View style={commentStyle.container}>
+      <View style={commentStyle.borisContainer}>
+        <Boris
+          mood={borisMood}
+          size="small"
+          note={borisMessage}
+          />
       </View>
-    )
-  }
+      <Button
+        label=""
+        color="green"
+        onPress={() => next()}
+        style={commentStyle.button}
+        >
+        <Text style={commentStyle.buttonText}>
+          Undo
+        </Text>
+      </Button>
+      <TransparentButton
+        style={{paddingVertical: 10}}
+        label='I know what I am doing'
+        onPress={() => undo()}
+        color="red"
+        />
+    </View>
+  )
 }
 
-class CommentGood extends Component {
-
-  state = {
-    user: null
-  }
-
-  constructor (props) {
-    super(props)
-    this._continue = this.props.continue.bind(this);
-  }
-
-  render () {
-    const { likeReaction } = this.props;
-    const { mood, content } = likeReaction;
-    let ifMood = mood ? mood : 'positive';
-    let ifContent = content ? content : '';
-
-
-    return (
-      <View style={ commentStyle.container }>
-        <View style={ commentStyle.borisContainer }>
-          <Boris
-            mood={ifMood}
-            size="small"
-            note={ifContent}/>
-        </View>
-
-        <Button
-          label=""
-          color="green"
-          onPress={this._continue}
-          style={ commentStyle.button }>
-          <Text style={ [commentStyle.buttonText, {marginBottom: 0}] }>Continue</Text>
-        </Button>
+const CommentGood = props => {
+  const { likeReaction } = props
+  const { mood, content } = likeReaction
+  let borisMood = mood ? mood : 'positive'
+  let borisMessage = content ? content : ''
+  return (
+    <View style={commentStyle.container}>
+      <View style={commentStyle.borisContainer}>
+        <Boris
+          mood={borisMood}
+          size="small"
+          note={borisMessage}/>
       </View>
-    )
-  }
+      <Button
+        label=""
+        color="green"
+        onPress={() => props.continue && props.continue()}
+        style={commentStyle.button}
+        >
+        <Text style={[commentStyle.buttonText, {marginBottom: 0}]}>
+          Continue
+        </Text>
+      </Button>
+    </View>
+  )
 }
 
 class AllForNow extends Component {
 
   state = {}
 
-  constructor (props) {
+  constructor(props) {
     super(props)
     this.subscribeNow = this.subscribeNow.bind(this)
   }
 
-  subscribeNow () {
+  subscribeNow() {
     const { navigator } = this.props;
-    navigator.push({ scene: 'subscription', title: 'Subscription' })
+    navigator.push({scene: 'subscription', title: 'Subscription'})
   }
 
   /**
    *s
    * @returns {XML}
    */
-  render () {
+  render() {
     return (
       <View style={ allForNowStyle.container }>
         <View style={ allForNowStyle.borisContainer }>
@@ -146,21 +128,21 @@ class AllEnded extends Component {
 
   state = {}
 
-  constructor (props) {
+  constructor(props) {
     super(props)
     this.subscribeNow = this.subscribeNow.bind(this)
   }
 
-  subscribeNow () {
+  subscribeNow() {
     const { navigator } = this.props;
-    navigator.push({ scene: 'subscription', title: 'Subscription' })
+    navigator.push({scene: 'subscription', title: 'Subscription'})
   }
 
   /**
    *s
    * @returns {XML}
    */
-  render () {
+  render() {
     return (
       <View style={ allForNowStyle.container }>
         <View style={ allForNowStyle.borisContainer }>
@@ -184,12 +166,12 @@ class TopicFinished extends Component {
 
   state = {}
 
-  constructor (props) {
+  constructor(props) {
     super(props)
     this.exploreTopic = this.exploreTopic.bind(this)
   }
 
-  exploreTopic () {
+  exploreTopic() {
     const { navigator } = this.props;
     navigator.push({
       scene: 'select_topics',
@@ -202,7 +184,7 @@ class TopicFinished extends Component {
    *s
    * @returns {XML}
    */
-  render () {
+  render() {
     return (
       <View style={ allForNowStyle.container }>
         <View>
@@ -229,7 +211,7 @@ class TopicFinished extends Component {
           label="Continue learning"
           onPress={this.props.continueLearning}
           color="green"
-        />
+          />
 
       </View>
     )
@@ -246,17 +228,17 @@ class RandomAdvice extends Component {
     }
   }
 
-  constructor (props) {
+  constructor(props) {
     super(props);
 
     this.gotIt = this.gotIt.bind(this);
   }
 
-  gotIt () {
+  gotIt() {
     this.props.undo && this.props.undo('hide');
   }
 
-  shouldComponentUpdate (nextProps, nextState) {
+  shouldComponentUpdate(nextProps, nextState) {
     return nextProps.viewer.reactions.edges.length;
   }
 
@@ -264,24 +246,24 @@ class RandomAdvice extends Component {
    *
    * @param reactions
    */
-  getRandomReaction (reactions) {
+  getRandomReaction(reactions) {
     const sample = _.chain(reactions)
-                    .map(n => n.node)
-                    .shuffle()
-                    .filter(n => n.content != this.state.reactions.content)
-                    .sample()
-                    .value();
+      .map(n => n.node)
+      .shuffle()
+      .filter(n => n.content != this.state.reactions.content)
+      .sample()
+      .value();
 
     return sample;
   }
 
-  render () {
+  render() {
     const { viewer } = this.props;
     const { reactions } = this.state;
     let mood = reactions.mood;
     let note = reactions.content;
 
-    if ( !viewer.reactions.edges.length ) {
+    if (!viewer.reactions.edges.length) {
       mood = 'negative';
       note = 'error';
     } else {

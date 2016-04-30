@@ -45,7 +45,7 @@ function onPanResponderMove(raw, gestureState) {
     _overControlShare({ x, y, width, height, px, py }, gestureState)
   });
   //if ( this.state.showCardTopicName ) return;
-  this._showControlPiece()
+  this._showPopupControl()
   this._pan.setValue({ x: gestureState.dx, y: 0 });
 }
 

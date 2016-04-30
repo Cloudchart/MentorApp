@@ -17,18 +17,9 @@ const BorisNoteAllEnded = "Achievement unlocked! You have mastered all the topic
 const BorisNoteTopicFinished = "Congratulations, apprentice! You're not as hopeless as I thought. But no time to celebrate, let the learning go on!";
 
 const CommentBad = props => {
-  const { dislikeReaction } = props
-  const { mood, content } = dislikeReaction
+  const { mood, content, handleNext, handleUndo } = props
   const borisMood = mood ? mood : 'negative'
   const borisMessage = content ? content : ''
-  const next =
-    props.undo ?
-      () => props.undo('undo') :
-      () => props.handleNext()
-  const undo =
-    props.undo ?
-      () => props.undo('delete') :
-      () => props.handleUndoAction()
   return (
     <View style={commentStyle.container}>
       <View style={commentStyle.borisContainer}>
@@ -41,7 +32,7 @@ const CommentBad = props => {
       <Button
         label=""
         color="green"
-        onPress={() => next()}
+        onPress={() => handleNext && handleNext()}
         style={commentStyle.button}
         >
         <Text style={commentStyle.buttonText}>
@@ -51,7 +42,7 @@ const CommentBad = props => {
       <TransparentButton
         style={{paddingVertical: 10}}
         label='I know what I am doing'
-        onPress={() => undo()}
+        onPress={() => handleUndo && handleUndo()}
         color="red"
         />
     </View>
@@ -59,8 +50,7 @@ const CommentBad = props => {
 }
 
 const CommentGood = props => {
-  const { likeReaction } = props
-  const { mood, content } = likeReaction
+  const { mood, content, handleNext } = props
   let borisMood = mood ? mood : 'positive'
   let borisMessage = content ? content : ''
   return (
@@ -74,7 +64,7 @@ const CommentGood = props => {
       <Button
         label=""
         color="green"
-        onPress={() => props.continue && props.continue()}
+        onPress={() => handleNext && handleNext()}
         style={commentStyle.button}
         >
         <Text style={[commentStyle.buttonText, {marginBottom: 0}]}>

@@ -17,12 +17,12 @@ class LikeInsightInTopicMutation extends Relay.Mutation {
 
   getFatQuery () {
     return Relay.QL`
-        fragment on LikeInsightInTopicMutationPayload {
-            insight
-            insightID
-            topic
-            insightEdge
-        }
+      fragment on LikeInsightInTopicMutationPayload {
+        insight
+        insightID
+        topic
+        insightEdge
+      }
     `
   }
 

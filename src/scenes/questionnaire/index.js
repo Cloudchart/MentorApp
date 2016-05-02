@@ -39,16 +39,17 @@ class Questionnaire extends Component {
   }
 
   _onSelect (questionID, answerID) {
-    const { navigator, goAfterFinish } = this.props;
+    const { navigator, goAfterFinish, goAfterFinishProps } = this.props;
 
     answerTheQuestion({ questionID, answerID })
       .then((transaction)=> {
         const scene = goAfterFinish ? goAfterFinish : 'select_topics';
         const title = goAfterFinish ? '' : 'Select up to 3 topics to start:';
-        navigator.push({ scene, title });
+        const routeProps = goAfterFinishProps || {}
+        navigator.push({ scene, title, ...routeProps });
       })
   }
-  
+
   _onEndReached () {
     const { relay, viewer, questions } = this.props;
     let pageNext = questions.pageInfo;
@@ -169,7 +170,7 @@ var answerFragment = Relay.QL`
         content
         position
         reaction {
-            ${botReactionFragment}        
+            ${botReactionFragment}
         }
     }
 `;

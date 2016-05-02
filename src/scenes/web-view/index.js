@@ -10,8 +10,8 @@ import Relay from 'react-relay';
 
 import styles from "./style";
 import { Loader } from "../../components";
-import Share from "../../components/navbar/share";
-import AngleLeft from "../../components/navbar/back";
+import Share from "../../navbar/share";
+import AngleLeft from "../../navbar/back";
 
 const WEBVIEW_REF = 'webview';
 
@@ -91,7 +91,7 @@ class WebViewScreen extends Component {
 export default Relay.createContainer(WebViewScreen, {
   fragments: {
     viewer: () => Relay.QL`
-      fragment on User {       
+      fragment on User {
         topics(first: 100, filter: DEFAULT) {
           edges {
             node {

@@ -18,7 +18,6 @@ import {
   ADD_CARD_REF,
 } from '../../components/insight/const'
 import * as device from '../../utils/device'
-import ConfirmationScreens from './confirmation'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import baseStyle from '../../styles/base'
 import clamp from 'clamp'
@@ -35,7 +34,7 @@ import Insight, {
   animationCardLeft,
   returnCardToStartingPosition,
 } from '../../components/insight'
-import styles from './style'
+import styles from './styles'
 
 
 const dimensions = Dimensions.get('window')

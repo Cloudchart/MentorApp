@@ -5,6 +5,7 @@ import _ from 'lodash'
 import { Loader } from "./components"
 import * as Scenes from './scenes'
 import InsightsScene from './scenes/insights'
+import RandomAdviceScene from './scenes/random-advice'
 import SubscriptionScene from './scenes/subscription'
 
 /**
@@ -12,19 +13,22 @@ import SubscriptionScene from './scenes/subscription'
  * @param params
  * @returns {*}
  */
-let firstEnter = false;
+//let firstEnter = false;
 export function renderScreen(params) {
   const { scene, screenParams } = params;
   switch (scene) {
+    case 'welcome':
+      return renderRootContainer(Scenes.Welcome, screenParams)
     case 'connect':
-      return container(Scenes.Connect, screenParams);
-    case 'advice_for_me':
-      return container(
-        InsightsScene,
-        screenParams
-      )
+      return renderRootContainer(Scenes.Connect, screenParams)
+    case 'questionnaire':
+      return renderRootContainer(Scenes.Questionnaire, screenParams)
+    case 'select_topics':
+      return renderRootContainer(Scenes.SelectTopic, screenParams)
+    case 'insights':
+      return renderRootContainer(InsightsScene, screenParams)
       //const InsightsForMeFilter = screenParams.filter || 'UNRATED';
-      //return container(
+      //return renderRootContainer(
       //  Scenes.InsightScene,
       //  screenParams,
       //  new QueryNodeId({
@@ -34,100 +38,82 @@ export function renderScreen(params) {
       //  null,
       //  !firstEnter
       //);
-    case 'questionnaire':
-      return container(Scenes.Questionnaire, screenParams);
-    case 'select_topics':
-      return container(Scenes.SelectTopic, screenParams);
-    case 'welcome':
-      return container(Scenes.Welcome, screenParams);
+    case 'random_advice':
+      return renderRootContainer(RandomAdviceScene, screenParams)
     case 'settings':
-      return container(Scenes.Settings, screenParams);
+      return renderRootContainer(Scenes.Settings, screenParams);
     case 'subscription':
       return (
         <SubscriptionScene {...screenParams}/>
       )
     case 'user-collections':
-      return container(Scenes.UserCollections, screenParams, null, null, true);
+      return renderRootContainer(Scenes.UserCollections, screenParams, { forceFetch: true })
     case 'user-topics':
-      return container(Scenes.UserTopics, screenParams, null, null, true);
+      return renderRootContainer(Scenes.UserTopics, screenParams, { forceFetch: true })
     case 'explore-topic':
-      return container(Scenes.ExploreTopics, screenParams);
+      return renderRootContainer(Scenes.ExploreTopics, screenParams)
     case 'replace-topic':
-      return container(Scenes.ReplaceTopic, screenParams);
+      return renderRootContainer(Scenes.ReplaceTopic, screenParams)
     case 'follow-up':
-      return container(Scenes.FollowUp, screenParams);
+      return renderRootContainer(Scenes.FollowUp, screenParams)
     case 'insights_useful':
-      return container(
-        Scenes.UserInsightsUseful,
-        screenParams,
-        new QueryNodeId({
+      return renderRootContainer(Scenes.UserInsightsUseful, screenParams, {
+        route: new QueryNodeId({
           nodeID: screenParams.collectionId,
-          filter: 'USEFUL'
+          filter: 'USEFUL',
         }),
-        null,
-        true
-      );
+        forceFetch: true,
+      })
     case 'insights_useless':
-      return container(
-        Scenes.UserInsightsUseless,
-        screenParams,
-        new QueryNodeId({
+      return renderRootContainer(Scenes.UserInsightsUseless, screenParams, {
+        route: new QueryNodeId({
           nodeID: screenParams.collectionId,
-          filter: 'USELESS'
+          filter: 'USELESS',
         }),
-        null,
-        true
-      );
+        forceFetch: true,
+      })
     case 'notifications':
-      return container(Scenes.NotificationsScreen, screenParams);
+      return renderRootContainer(Scenes.NotificationsScreen, screenParams);
     case 'profile':
-      return container(Scenes.Profile, screenParams);
-    case 'web-view':
-      return container(Scenes.WebViewScreen, screenParams);
+      return renderRootContainer(Scenes.Profile, screenParams);
     case 'return_in_app':
-      return container(Scenes.ReturnInApp, screenParams);
+      return renderRootContainer(Scenes.ReturnInApp, screenParams);
     default:
       return null
   }
 }
 
 /**
- *
  * @param Component
  * @param screenParams
- * @param opt_router
- * @param renderFailure
- * @param forceFetch
- * @returns {XML}
+ * @param [options]
  */
-export function container(Component, screenParams, opt_router, renderFailure, forceFetch) {
-  const router = opt_router ? opt_router : new ViewerRoute();
-  const params = screenParams ? screenParams : {};
-  const failure = renderFailure ? renderFailure : ()=> {};
-  const forceF = forceFetch ? forceFetch : false;
-  firstEnter = true;
+export function renderRootContainer(Component, screenParams, options) {
+  const { route, renderFailure, forceFetch } = options || {}
+  const finalRoute = route ? route : new ViewerRoute()
+  const finalParams = screenParams ? screenParams : {}
+  const finalRenderFailure = renderFailure ? renderFailure : () => {}
+  const finalForceFetch = forceFetch !== undefined ? forceFetch : false
+  //firstEnter = true;
   const renderFetched = _.throttle((data, readyState) => {
-    return <Component {...params} {...data} />
+    return <Component {...finalParams} {...data} />
   }, 300);
 
   return (
     <RootContainer
       store={store}
       Component={Component}
-      route={router}
-      forceFetch={forceF}
+      route={finalRoute}
+      forceFetch={finalForceFetch}
       renderLoading={() => (
         <Loader />
       )}
-      renderFailure={failure}
+      renderFailure={finalRenderFailure}
       renderFetched={renderFetched}
     />
   )
 }
 
-/**
- *
- */
 export class ViewerRoute extends Relay.Route {
   static routeName = 'ViewerRoute';
   static queries = {
@@ -135,28 +121,22 @@ export class ViewerRoute extends Relay.Route {
   };
 }
 
-/**
- *
- */
-class QueryNodeId extends Relay.Route {
-  static routeName = 'QueryNodeId';
-  static paramDefinitions = {
-    nodeID: { required: true },
-    filter: { required: true }
-  }
-  static queries = {
-    node: () => Relay.QL`
-        query {
-            node(id: $nodeID)
-        }
-    `,
-    viewer: () => Relay.QL`
-        query {
-            viewer
-        }
-    `
-  }
-}
-
-
-
+//class QueryNodeId extends Relay.Route {
+//  static routeName = 'QueryNodeId'
+//  static paramDefinitions = {
+//    nodeID: { required: true },
+//    filter: { required: true }
+//  }
+//  static queries = {
+//    node: () => Relay.QL`
+//      query {
+//        node(id: $nodeID)
+//      }
+//    `,
+//    viewer: () => Relay.QL`
+//      query {
+//        viewer
+//      }
+//    `
+//  }
+//}

@@ -48,7 +48,7 @@ class ExploreTopics extends Component {
 
     setTimeout(()=> {
       navigator.push({
-        scene: 'advice_for_me',
+        scene: 'insights',
         title: topic.name,
         topicId: topic.id,
         filter: 'PREVIEW'
@@ -127,7 +127,7 @@ export default Relay.createContainer(ExploreTopics, {
   fragments: {
     viewer: () => Relay.QL`
         fragment on User {
-            ${TopicEmpty.getFragment('user')}      
+            ${TopicEmpty.getFragment('user')}
             topics(first: $count) {
                 availableSlotsCount
                 edges {

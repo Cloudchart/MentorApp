@@ -3,20 +3,24 @@ import React, {
   Text,
   ScrollView,
   TouchableOpacity,
-  View
-} from "react-native";
-import Relay from 'react-relay';
-import _ from 'lodash';
-import { Boris, Button, TransparentButton } from "../index";
-import Icon from "react-native-vector-icons/FontAwesome";
-import styles from "../../styles/base";
-import { commentStyle, allForNowStyle, topicFinished } from "./style";
+  View,
+} from 'react-native'
+import _ from 'lodash'
+import { Boris, Button, TransparentButton } from '../index'
+import Icon from 'react-native-vector-icons/FontAwesome'
+import styles from '../../styles/base'
+import { commentStyle, allForNowStyle, topicFinished } from './style'
 
-const BorisNote = "That's all for now! Want more advice more often? Human up and subscribe!";
-const BorisNoteAllEnded = "Achievement unlocked! You have mastered all the topics, thus achieving supreme knowledge. I bow to you, Master";
-const BorisNoteTopicFinished = "Congratulations, apprentice! You're not as hopeless as I thought. But no time to celebrate, let the learning go on!";
+const ALL_FOR_NOW_MESSAGE =
+  'That\'s all for now! Want more advice more often? Human up and subscribe!'
+const ALL_ENDED_MESSAGE =
+  'Achievement unlocked! You have mastered all the topics, thus achieving supreme ' +
+  'knowledge. I bow to you, Master'
+const TOPIC_FINISHED_MESSAGE =
+  'Congratulations, apprentice! You\'re not as hopeless as I thought. But no time ' +
+  'to celebrate, let the learning go on!'
 
-const CommentBad = props => {
+export const CommentBad = props => {
   const { mood, content, handleNext, handleUndo } = props
   const borisMood = mood ? mood : 'negative'
   const borisMessage = content ? content : ''
@@ -49,7 +53,7 @@ const CommentBad = props => {
   )
 }
 
-const CommentGood = props => {
+export const CommentGood = props => {
   const { mood, content, handleNext } = props
   let borisMood = mood ? mood : 'positive'
   let borisMessage = content ? content : ''
@@ -75,9 +79,7 @@ const CommentGood = props => {
   )
 }
 
-class AllForNow extends Component {
-
-  state = {}
+export class AllForNow extends Component {
 
   constructor(props) {
     super(props)
@@ -89,15 +91,11 @@ class AllForNow extends Component {
     navigator.push({scene: 'subscription', title: 'Subscription'})
   }
 
-  /**
-   *s
-   * @returns {XML}
-   */
   render() {
     return (
       <View style={ allForNowStyle.container }>
         <View style={ allForNowStyle.borisContainer }>
-          <Boris mood="positive" size="small" note={ BorisNote }/>
+          <Boris mood="positive" size="small" note={ALL_FOR_NOW_MESSAGE}/>
         </View>
 
         <Button
@@ -113,10 +111,7 @@ class AllForNow extends Component {
   }
 }
 
-class AllEnded extends Component {
-
-
-  state = {}
+export class AllEnded extends Component {
 
   constructor(props) {
     super(props)
@@ -128,15 +123,11 @@ class AllEnded extends Component {
     navigator.push({scene: 'subscription', title: 'Subscription'})
   }
 
-  /**
-   *s
-   * @returns {XML}
-   */
   render() {
     return (
       <View style={ allForNowStyle.container }>
         <View style={ allForNowStyle.borisContainer }>
-          <Boris mood="positive" size="small" note={ BorisNoteAllEnded }/>
+          <Boris mood="positive" size="small" note={ALL_ENDED_MESSAGE}/>
         </View>
 
         <Button
@@ -152,7 +143,7 @@ class AllEnded extends Component {
   }
 }
 
-class TopicFinished extends Component {
+export class TopicFinished extends Component {
 
   state = {}
 
@@ -185,7 +176,7 @@ class TopicFinished extends Component {
         </View>
 
         <View style={ allForNowStyle.borisContainer }>
-          <Boris mood="positive" size="small" note={ BorisNoteTopicFinished }/>
+          <Boris mood="positive" size="small" note={TOPIC_FINISHED_MESSAGE}/>
         </View>
 
         <Button
@@ -206,109 +197,4 @@ class TopicFinished extends Component {
       </View>
     )
   }
-}
-
-
-class RandomAdvice extends Component {
-
-  state = {
-    reactions: {
-      mood: 'positive',
-      content: ''
-    }
-  }
-
-  constructor(props) {
-    super(props);
-
-    this.gotIt = this.gotIt.bind(this);
-  }
-
-  gotIt() {
-    this.props.undo && this.props.undo('hide');
-  }
-
-  shouldComponentUpdate(nextProps, nextState) {
-    return nextProps.viewer.reactions.edges.length;
-  }
-
-  /**
-   *
-   * @param reactions
-   */
-  getRandomReaction(reactions) {
-    const sample = _.chain(reactions)
-      .map(n => n.node)
-      .shuffle()
-      .filter(n => n.content != this.state.reactions.content)
-      .sample()
-      .value();
-
-    return sample;
-  }
-
-  render() {
-    const { viewer } = this.props;
-    const { reactions } = this.state;
-    let mood = reactions.mood;
-    let note = reactions.content;
-
-    if (!viewer.reactions.edges.length) {
-      mood = 'negative';
-      note = 'error';
-    } else {
-      this.state.reactions = this.getRandomReaction(viewer.reactions.edges);
-      mood = this.state.reactions.mood;
-      note = this.state.reactions.content;
-    }
-
-    return (
-      <View style={ commentStyle.container }>
-        <View style={ commentStyle.borisContainer }>
-          <Boris
-            mood={mood}
-            notAnimate={true}
-            size="small"
-            note={note}
-            randomId={(Math.random(1000) * 100).toString(16)}/>
-        </View>
-
-        <Button
-          label=""
-          color="green"
-          onPress={this.gotIt}
-          style={ commentStyle.button }>
-          <Text style={ commentStyle.buttonText }>Got it</Text>
-        </Button>
-      </View>
-    )
-  }
-}
-
-
-RandomAdvice = Relay.createContainer(RandomAdvice, {
-  fragments: {
-    viewer: () => Relay.QL`
-        fragment on User {
-            reactions(first : 100, scope: "clicker") {
-                edges {
-                    node {
-                        mood
-                        content
-                        weight
-                    }
-                }
-            }
-        }
-    `
-  }
-});
-
-export {
-  CommentBad,
-  CommentGood,
-  AllForNow,
-  AllEnded,
-  TopicFinished,
-  RandomAdvice
 }

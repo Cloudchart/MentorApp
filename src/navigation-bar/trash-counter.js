@@ -8,10 +8,10 @@ import React, {
 } from "react-native";
 import { connect } from "react-redux";
 import Icon from "react-native-vector-icons/FontAwesome";
-import styles from "../../styles/base";
+import styles from "../styles/base";
 
 
-class Trash extends Component {
+class TrashCounter extends Component {
 
   constructor (props) {
     super(props)
@@ -42,21 +42,16 @@ class Trash extends Component {
       uselessCount = insights.uselessCount;
     }
 
-
     return (!uselessCount || route.showBadAdvice ? null :
-        <TouchableOpacity
-          style={styles.crumbIconWrapper}
-          activeOpacity={ 0.75 }
-          onPress={this._showBadAdvice}>
-          <Icon name="trash-o" style={styles.crumbIconBasket}/>
-          <Text>&nbsp;</Text>
-          <Text style={styles.crumbIconBasketText}>{uselessCount}</Text>
-        </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.crumbIconWrapper}
+        activeOpacity={0.75}
+        onPress={this._showBadAdvice}
+        >
+        <Icon name="trash-o" style={styles.crumbIconBasket}/>
+        <Text>&nbsp;</Text>
+        <Text style={styles.crumbIconBasketText}>{uselessCount}</Text>
+      </TouchableOpacity>
     )
   }
 }
-
-
-export default connect(state => ({
-  collection: state.collections.currentCollection
-}))(Trash)

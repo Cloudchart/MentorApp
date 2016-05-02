@@ -1,3 +1,5 @@
+// @todo Replace all references to Redux dispatch
+
 /**
  * EventEmitter nodejs
  */

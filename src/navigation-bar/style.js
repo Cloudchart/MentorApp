@@ -1,5 +1,5 @@
 import React, { StyleSheet } from "react-native";
-import * as device from "../../utils/device";
+import * as device from "../utils/device";
 
 const HEIGHT = 150;
 const BOTTOM_POSITION = 0;

@@ -52,15 +52,15 @@ class FollowUp extends Component {
 
   componentWillReceiveProps (nextProps) {
     const { insights } = nextProps.viewer;
-    const thisInsights = this.props.viewer.insights;
+    //const thisInsights = this.props.viewer.insights;
 
     /*if ( insights.edges.length != thisInsights.edges.length ) {
      this.state.listInsights = insights.edges;
      }*/
-    if ( !insights.edges.length ) {
+    if (insights.edges.length === 0) {
       this.props.navigator.resetTo({
-        scene: 'advice_for_me',
-        title: ''
+        scene: 'insights',
+        filter: 'UNRATED',
       })
     }
   }

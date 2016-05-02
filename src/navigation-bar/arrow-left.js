@@ -1,24 +1,22 @@
 import React, { Component, Image, LayoutAnimation, Text, TouchableOpacity, View } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
-import styles from "../../styles/base";
+import styles from "../styles/base";
 
-const AngleLeft = (props) => {
-
+export default ({ back, navigator }) => {
+  const handlePress = () => {
+    if (back) {
+      back()
+    } else {
+      navigator.pop()
+    }
+  }
   return (
     <TouchableOpacity
       activeOpacity={ 0.75 }
       style={styles.crumbIconPlaceholder}
-      onPress={()=>{
-        if(props.back) {
-          props.back()
-        } else {
-          props.navigator.pop()
-        }               
-      }}>
+      onPress={() => handlePress()}
+      >
       <Icon name="angle-left" style={styles.crumbIconAngle}/>
     </TouchableOpacity>
   )
 }
-
-
-export default AngleLeft

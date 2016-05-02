@@ -1,1 +1,1 @@
-export const graphqlURL = "https://virtualmentor.io/graphql";
+export const GraphQLServerURL = 'https://virtualmentor.io/graphql'

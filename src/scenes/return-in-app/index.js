@@ -39,22 +39,35 @@ class ReturnInApp extends Component {
   _navigatorReplace () {
     const { viewer, navigator } = this.props;
     const { questions, insights } = viewer;
-    let routerConf = {
-      scene: 'advice_for_me',
-      title: 'Virtual Mentor'
-    }
-
+    let routerConf
     if ( questions && questions.edges.length ) {
-      routerConf.scene = 'questionnaire';
-      routerConf.title = '';
-      routerConf.goAfterFinish = 'advice_for_me';
+      routerConf = {
+        scene: 'questionnaire',
+        title: '',
+        goAfterFinish: 'insights',
+        goAfterFinishProps: {
+          filter: 'UNRATED',
+        },
+      }
     } else if ( insights && insights.edges.length ) {
-      routerConf.scene = 'follow-up';
-      routerConf.title = 'Rate used advice';
-      routerConf.goAfterFinish = 'advice_for_me';
-      routerConf.buttonSkip = 'advice_for_me';
+      routerConf = {
+        scene: 'follow-up',
+        title: 'Rate used advice',
+        goAfterFinish: 'insights',
+        goAfterFinishProps: {
+          filter: 'UNRATED',
+        },
+        buttonSkip: 'insights',
+        buttonSkipProps: {
+          filter: 'UNRATED',
+        }
+      }
+    } else {
+      routerConf = {
+        scene: 'insights',
+        filter: 'UNRATED',
+      }
     }
-
     navigator.resetTo(routerConf);
   }
 

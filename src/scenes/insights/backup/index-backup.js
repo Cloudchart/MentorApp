@@ -17,21 +17,21 @@ import Relay from 'react-relay';
 import { connect } from "react-redux";
 import { _ } from "lodash";
 import { Button, Loader, ScrollListView, TopicSubscribed } from "../../components";
-import { RandomAdvice } from '../../components/confirmation-screens/insights-parts';
+import { RandomAdvice } from '../../../components/confirmation-screens/insights-parts';
 import * as InsightAnimations from '../../components/insight';
-import * as constant from '../../components/insight/const';
-import * as actions from '../../actions/actions';
-import * as device from "../../utils/device";
+import * as constant from '../../../components/insight/const';
+import * as actions from '../../../actions/actions';
+import * as device from "../../../utils/device";
 import ConfirmationScreens from "./confirmation";
 import Insight from "../../components/insight";
-import Icon from "react-native-vector-icons/FontAwesome";
-import baseStyle from "../../styles/base";
+import Icon from "../../../../node_modules/react-native-vector-icons/FontAwesome";
+import baseStyle from "../../../styles/base";
 import clamp from "clamp";
-import { likeInsightInTopic, dislikeInsightInTopic } from "../../actions/insight";
+import { likeInsightInTopic, dislikeInsightInTopic } from "../../../actions/insight";
 import { ShareCard, AddCard } from "./add-card-to-collection";
-import { _panResponder } from "./pan-responder";
+import { _panResponder } from "./../pan-responder";
 
-import styles from "./style";
+import styles from "./../style";
 const dimensions = Dimensions.get('window');
 
 

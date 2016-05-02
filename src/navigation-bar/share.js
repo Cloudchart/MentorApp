@@ -11,9 +11,9 @@ import React, {
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import Clipboard from "react-native-clipboard";
-import stylesBase from "../../styles/base";
+import stylesBase from "../styles/base";
 import styles from "./style";
-import * as device from "../../utils/device";
+import * as device from "../utils/device";
 const dimensions = Dimensions.get('window');
 
 class Share extends Component {

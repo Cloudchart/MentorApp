@@ -10,23 +10,37 @@ import {
   AllEnded,
 } from '../../components/confirmation-screens/insights-parts'
 import InsightForMeContainer from './insight-for-me'
-import styles from './style'
+import styles from './styles'
 
 class InsightsScene extends Component {
   constructor(props, context) {
     super(props, context)
+    //const { relay, filter } = props
+    //if (filter) {
+    //  relay.setVariable({ filter })
+    //}
     this.state = {
       reaction: null,
       isTopicFinished: null,
     }
   }
 
+  componentWillReceiveProps(nextProps) {
+    //const { relay, filter } = this.props
+    //if (nextProps.filter !== filter) {
+    //  relay.setVariable({
+    //    filter: nextProps.filter
+    //  })
+    //}
+  }
+
   handleNextInsight() {
     const { reaction } = this.state
     //this._checkTopicForFinish()
-    if (reaction && reaction.rate_checkTopicForFinish === 'like') {
-      this._reactionCallback && this._reactionCallback()
-    }
+    //if (reaction && reaction.rate_checkTopicForFinish === 'like') {
+    //if (reaction) {
+    this._reactionCallback && this._reactionCallback()
+    //}
     this.setState({
       reaction: null,
     })
@@ -47,7 +61,7 @@ class InsightsScene extends Component {
   }
 
   render() {
-    const { viewer, navigator, filter } = this.props
+    const { viewer, navigator } = this.props
     const { reaction, isTopicFinished } = this.state
     if (reaction) {
       if (reaction.type === 'like') {
@@ -94,7 +108,7 @@ class InsightsScene extends Component {
       }
       // Otherwise it seems the end
       return (
-        <AllForNow
+        <AllEnded
           navigator={navigator}
           />
       )
@@ -119,15 +133,15 @@ class InsightsScene extends Component {
 
 export default Relay.createContainer(InsightsScene, {
   initialVariables: {
-    insightsCount: 100,
-    insightsFilter: 'UNRATED',
+    count: 100,
+    filter: 'UNRATED',
   },
   fragments: {
     viewer: () => Relay.QL`
       fragment on User {
         ${InsightForMeContainer.getFragment('user')}
 
-        insights(first: $insightsCount, filter: $insightsFilter)  {
+        insights(first: $count, filter: $filter)  {
           edges {
             ${InsightForMeContainer.getFragment('insight')}
             topic {

@@ -2,9 +2,9 @@ import React, {
   Animated,
   Easing,
   Dimensions,
-  PanResponder
-} from "react-native";
-import clamp from "clamp";
+  PanResponder,
+} from 'react-native'
+import clamp from 'clamp'
 import {
   SWIPE_THRESHOLD,
   SWIPE_THRESHOLD_MINI,
@@ -12,19 +12,19 @@ import {
   CONTROLS_WIDTH,
   SHARE_CARD_REF,
   CONTROL_PIECE,
-  DEVIATION
-} from "../../components/insight/const";
+  DEVIATION,
+} from '../../components/insight/const'
+
+let _whatToDoOnRelease = ''
 
 /**
- * if a negative number
- * @param n
- * @returns {boolean}
+ * Is it a negative number?
+ * @param {Number} n
+ * @returns {Boolean}
  */
 function negative(n) {
   return n < 0;
 }
-
-let _whatToDoOnRelease = '';
 
 function onPanResponderGrant() {
   this._pan.setOffset({

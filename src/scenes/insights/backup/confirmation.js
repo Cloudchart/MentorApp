@@ -12,9 +12,8 @@ import {
   AllForNow,
   AllEnded,
   TopicFinished,
-  RandomAdvice
-} from '../../components/confirmation-screens/insights-parts';
-import * as actions from '../../actions/actions';
+} from '../../../components/confirmation-screens/insights-parts';
+import * as actions from '../../../actions/actions';
 import { SubscribeTopicAdd } from "../../components";
 
 class ConfirmationScreens extends Component {

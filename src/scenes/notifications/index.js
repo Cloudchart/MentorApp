@@ -41,7 +41,10 @@ class NotificationsScreen extends Component {
       let permission = await AsyncStorage.getItem(STORAGE_KEY);
       if ( permission ) {
         clearInterval(this.intervalId)
-        this._navigatorReplace('advice_for_me')
+        this._navigatorReplace({
+          scene: 'insights',
+          filter: 'UNRATED',
+        })
       }
     } catch ( error ) {
     }
@@ -72,14 +75,20 @@ class NotificationsScreen extends Component {
     );
   }
 
-  _navigatorReplace (scene, title = "") {
+  _navigatorReplace(params) {
     const { navigator } = this.props;
     updateUserNotifications();
-    navigator.resetTo({ scene, title: title || scene })
+    navigator.resetTo(params)
+  }
+
+  handleSkipPress() {
+    this._navigatorReplace({
+      scene: 'insights',
+      filter: 'UNRATED',
+    })
   }
 
   render () {
-
     return (
       <View style={ styles.container }>
         <Boris
@@ -97,7 +106,7 @@ class NotificationsScreen extends Component {
           />
           <TransparentButton
             label="Skip"
-            onPress={ ()=>{ this._navigatorReplace('advice_for_me') }}
+            onPress={() => this.handleSkipPress()}
             color="blue"
             style={styles.transparent}
           />

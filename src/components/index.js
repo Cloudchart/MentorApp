@@ -6,7 +6,6 @@ import Boris from './boris';
 import Topic from './topic/topic';
 import TopicSubscribed from './topic/topic-subscribed';
 import TopicEmpty from './topic/topic-empty';
-import { navBarRouteMapper } from './navbar';
 import AnimateSequences from './animate-sequences';
 import Insight from './insight';
 import InsightRate from './insight/insight-rate';
@@ -20,7 +19,6 @@ export {
   Insight,
   InsightRate,
   AnimateSequences,
-  navBarRouteMapper,
   Loader,
   LoaderMini,
   ScrollListView,

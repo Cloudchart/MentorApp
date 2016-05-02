@@ -126,7 +126,10 @@ class SelectTopic extends Component {
       let isConfirm = await AsyncStorage.getItem(STORAGE_KEY);
 
       if ( isConfirm || isConfirm == 'already_request_permissions' ) {
-        navigator.resetTo({ scene: 'advice_for_me', title: '' });
+        navigator.resetTo({
+          scene: 'insights',
+          title: ''
+        });
         return;
       }
 

@@ -11,26 +11,27 @@ import React, {
   AlertIOS,
   AsyncStorage,
   NetInfo
-} from "react-native";
-import Relay from 'react-relay';
-import styles from "./styles/base";
-import { CustomSceneConfig } from "./router-conf";
-import { renderScreen } from "./routes";
-import { navBarRouteMapper, UserNotifications } from "./components";
-import moment from "moment";
-import * as actions from './actions/actions';
-import { EventManager } from './event-manager';
+} from 'react-native'
+import Relay from 'react-relay'
+import styles from './styles/base'
+import { CustomSceneConfig } from './router-conf'
+import { renderScreen } from './routes'
+import { UserNotifications } from './components'
+import moment from 'moment'
+import * as actions from './actions/actions'
+import { EventManager } from './event-manager'
+import { NavigationBar, routeMapper } from './navigation-bar'
 import {
   setUserPushToken,
   activateUser,
   resetUser,
   updateUserNotifications
-} from "./actions/user";
+} from './actions/user'
 import {
   checkPermissions,
   NETAlert,
   checkNET
-} from './system';
+} from './system'
 
 
 moment.createFromInputFallback = function (config) {
@@ -38,11 +39,11 @@ moment.createFromInputFallback = function (config) {
 };
 
 /**
- * repaint white StatusBar
- * do not forget to add in the info.plist -  UIViewControllerBasedStatusBarAppearance : NO
+ * Repaint white StatusBar
+ * Do not forget to add in the info.plist:
+ * UIViewControllerBasedStatusBarAppearance : NO
  */
 StatusBar.setBarStyle(1);
-
 
 class Application extends Component {
 
@@ -74,11 +75,6 @@ class Application extends Component {
     });
   }
 
-  /**
-   *
-   * @param currentAppState
-   * @private
-   */
   _appStateChange(currentAppState) {
     this.state.currentAppState = currentAppState;
 
@@ -102,23 +98,17 @@ class Application extends Component {
     })
   }
 
-  /**
-   * @param reach
-   * @private
-   */
   _NetInfo(reach) {
     if (this.state.currentAppState != 'background' && reach == 'none') {
       this.notifyNetworkError()
     }
   }
 
-  /**
-   * Send
-   * @param token
-   * @private
-   */
   _register(token) {
-    setUserPushToken({user: this.props.viewer, token})
+    setUserPushToken({
+      user: this.props.viewer,
+      token
+    })
   }
 
   _notification(notification) {
@@ -133,24 +123,19 @@ class Application extends Component {
   }
 
   _activateUser() {
-    activateUser({user: this.props.viewer})
+    activateUser({ user: this.props.viewer })
   }
 
   _resetUser() {
-    resetUser({user: this.props.viewer})
-      .then((tran)=> {
+    resetUser({ user: this.props.viewer })
+      .then(() => {
         this._activateUser()
       })
-      .catch(()=> {
+      .catch(() => {
         this._activateUser()
       })
   }
 
-  /**
-   *
-   * @param item
-   * @returns {*}
-   */
   prepareData(item) {
     if (_.isDate(item)) {
       item = item.toString();
@@ -162,8 +147,6 @@ class Application extends Component {
     return item;
   }
 
-;
-
   /**
    * comparing the time re-entry application
    * @param currentAppState
@@ -172,38 +155,38 @@ class Application extends Component {
   _diffTimeStartApp(currentAppState) {
     switch (currentAppState) {
       case 'active':
-        AsyncStorage.setItem(actions.UPDATE_APP_START_TIME, this.prepareData(new Date));
-        break;
+        AsyncStorage.setItem(actions.UPDATE_APP_START_TIME, this.prepareData(new Date))
+        break
       case 'background':
-        AsyncStorage.setItem(actions.APP_BACKGROUND_TIME, this.prepareData(new Date));
-        break;
+        AsyncStorage.setItem(actions.APP_BACKGROUND_TIME, this.prepareData(new Date))
+        break
       default:
+        break
     }
 
     if (currentAppState == 'background') {
-      updateUserNotifications(true);
+      updateUserNotifications(true)
     } else if (currentAppState == 'active') {
-      updateUserNotifications();
+      updateUserNotifications()
     }
 
-    // add active
     if (currentAppState == 'active') {
-      const now = moment();
-      AsyncStorage.getItem(actions.APP_BACKGROUND_TIME, (err, result)=> {
-        if (err || !result) return;
-        const backgroundDate = moment(result);
-        if (!backgroundDate.diff) return;
-        const diffHour = Math.abs(backgroundDate.diff(now, 'hour'));
-
+      const now = moment()
+      AsyncStorage.getItem(actions.APP_BACKGROUND_TIME, (err, result) => {
+        if (err || !result) return
+        const backgroundDate = moment(result)
+        if (!backgroundDate.diff) {
+          return
+        }
+        const diffHour = Math.abs(backgroundDate.diff(now, 'hour'))
         if (diffHour >= 24) {
           this._navigator.resetTo({
             scene: 'return_in_app',
-            title: ''
+            title: '',
           })
         }
       });
     }
-
   }
 
   /**
@@ -214,72 +197,56 @@ class Application extends Component {
    */
   _renderScene(route, navigator) {
     const props = route.props || {}
-    props.navigator = navigator;
+    props.navigator = navigator
+    console.log('renderScene', { route })
     return renderScreen({
       scene: route.scene,
       screenParams: {
         navigator,
         ...route,
         ...props
-      }
+      },
     })
   }
 
-
-  /**
-   * @returns {*|{LeftButton, Title, RightButton}}
-   * @private
-   */
-  _navBarRouteMapper() {
-    return navBarRouteMapper
-  }
-
   render() {
-    const { subscribedTopics } = this.props.viewer;
-    const { networkNone } = this.state;
-    const initialScene =
-      (subscribedTopics.edges.length > 0) ?
-        'advice_for_me' :
-        'welcome';
-    const title = 'Virtual Mentor';
+    const { viewer } = this.props
+    const { networkNone } = this.state
+    const { subscribedTopics } = viewer
+    let initialRoute;
+    if(subscribedTopics.edges.length === 0) {
+      initialRoute = {
+        scene: 'welcome',
+        title: 'Virtual Mentor',
+      }
+    } else {
+      initialRoute = {
+        scene: 'insights',
+        filter: 'UNRATED',
+      }
+    }
     return (
       <View style={styles.scene}>
         <Navigator
           ref={navigator => this._navigator = navigator}
-          initialRoute={{ scene: initialScene, title }}
+          initialRoute={initialRoute}
           navigationBar={
-            <NavigationBar routeMapper={this._navBarRouteMapper()} />
+            <NavigationBar routeMapper={routeMapper(viewer)} />
           }
           renderScene={(route, navigator) => this._renderScene(route, navigator)}
           configureScene={route => {
             if (route.FloatFromBottom) {
-              return Navigator.SceneConfigs.FloatFromBottom;
+              return Navigator.SceneConfigs.FloatFromBottom
             }
-            return CustomSceneConfig;
+            return CustomSceneConfig
           }}
           sceneStyle={styles.sceneStyle}
         />
-
         {networkNone && (
           <UserNotifications notification={networkNone}/>
         )}
       </View>
     )
-  }
-}
-
-class NavigationBar extends Navigator.NavigationBar {
-  render() {
-    const { navState } = this.props
-    var routes = navState.routeStack
-    let route
-    if (routes.length > 0) {
-      route = routes[routes.length - 1]
-    }
-    if (route.sceneConfig && route.sceneConfig.hideBar) {
-      return null
-    }
-    return super.render()
   }
 }
 
@@ -305,4 +272,4 @@ export default Relay.createContainer(Application, {
       }
     `
   }
-});
+})

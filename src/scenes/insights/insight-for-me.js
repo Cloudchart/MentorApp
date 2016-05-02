@@ -91,7 +91,6 @@ class InsightForMe extends Component {
   _requestLikeMutation(shouldAddToUserCollectionWithTopicName) {
     const { user, insight } = this.props
     const mutation = new LikeInsightInTopicMutation({
-      viewer: this.props.viewer,
       topic: insight.topic,
       insight: insight.node,
       user: user,
@@ -102,8 +101,7 @@ class InsightForMe extends Component {
         if (response.topic && response.topic.isFinishedByViewer) {
           this.props.handleTopicFinish();
         }
-      },
-      onFailure: error => console.error('Fail to call LikeInsightInTopicMutation', error)
+      }
     })
   }
 
@@ -139,19 +137,17 @@ class InsightForMe extends Component {
 
   _requestDislikeMutation() {
     const { user, insight } = this.props
-    const mutation = new DisikeInsightInTopicMutation({
+    const mutation = new DislikeInsightInTopicMutation({
       topic: insight.topic,
       insight: insight.node,
       user: user,
     })
     Relay.Store.commitUpdate(mutation, {
       onSuccess: response => {
-        console.log('DisikeInsightInTopicMutation', arguments)
         if (response.topic && response.topic.isFinishedByViewer) {
           this.props.handleTopicFinish();
         }
-      },
-      onFailure: error => console.error('Fail to call DisikeInsightInTopicMutation', error)
+      }
     })
   }
 

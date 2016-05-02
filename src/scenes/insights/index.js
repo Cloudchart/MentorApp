@@ -96,6 +96,7 @@ class InsightsScene extends Component {
           />
       )
     }
+    console.log('insights-scene: found ' + viewer.insights.edges.length + ' available insights')
     const firstInsight = viewer.insights.edges[0]
     if (firstInsight) {
       return (

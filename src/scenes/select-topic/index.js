@@ -128,6 +128,7 @@ class SelectTopic extends Component {
       if ( isConfirm || isConfirm == 'already_request_permissions' ) {
         navigator.resetTo({
           scene: 'insights',
+          filter: 'UNRATED',
           title: ''
         });
         return;

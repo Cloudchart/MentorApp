@@ -30,8 +30,9 @@ class LikeInsightInTopicMutation extends Relay.Mutation {
     return [{
       type: 'FIELDS_CHANGE',
       fieldIDs: {
-        insight: this.props.insight.id
-      }
+        insight: insight.id,
+        topic: topic.id,
+      },
     }, {
     //  type: 'RANGE_DELETE',
     //  parentName: 'insights',
@@ -42,13 +43,13 @@ class LikeInsightInTopicMutation extends Relay.Mutation {
     //}, {
       type: 'RANGE_ADD',
       parentName: 'insight',
-      parentID: this.props.insight.id,
+      parentID: insight.id,
       connectionName: 'insights',
       edgeName: 'insightEdge',
       rangeBehaviors: {
         'filter(RATED)': 'append',
-        'filter(UNRATED)': 'remove'
-      }
+        'filter(UNRATED)': 'remove',
+      },
     }]
   }
 }

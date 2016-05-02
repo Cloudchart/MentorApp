@@ -16,36 +16,43 @@ class DislikeInsightInTopicMutation extends Relay.Mutation {
   getFatQuery () {
     return Relay.QL`
       fragment on DislikeInsightInTopicMutationPayload {
-        insight
-        insightID
-        topic
+        insight {
+          id
+        }
+        topic {
+          id
+          isFinishedByViewer
+        }
         insightEdge
+        user {
+          insights
+        }
       }
     `
   }
 
   getConfigs() {
-    const { insight, topic } = this.props
+    const { insight, topic, user } = this.props
     return [{
       type: 'FIELDS_CHANGE',
       fieldIDs: {
         insight: insight.id,
         topic: topic.id,
+        user: user.id,
       },
     }, {
-      /* ,{
-        type: 'RANGE_DELETE',
-        parentName: 'topic',
-        parentID: topic.id,
-        connectionName: 'topics',
-        deletedIDFieldName: 'insightID',
-        pathToConnection: [ 'user', 'topics' ]
-      }*/
+    //  type: 'RANGE_DELETE',
+    //  parentName: 'topic',
+    //  parentID: topic.id,
+    //  connectionName: 'topics',
+    //  deletedIDFieldName: 'insightID',
+    //  pathToConnection: ['user', 'topics']
+    //}, {
       type: 'RANGE_ADD',
-      parentName: 'insight',
-      parentID: insight.id,
+      parentName: 'topic',
+      parentID: topic.id,
       connectionName: 'insights',
-      edgeName: 'insightEdge',
+      edgeName: 'topicInsightEdge',
       rangeBehaviors: {
         'filter(RATED)': 'append',
         'filter(UNRATED)': 'remove',

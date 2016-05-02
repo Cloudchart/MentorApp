@@ -30,7 +30,6 @@ const showBackIconInScenes = [
   'user-topics',
   'explore-topic',
   'settings',
-  'web_view',
 ]
 const showSettingsIconInScenes = [
   'insights',
@@ -77,7 +76,7 @@ export const routeMapper = (viewer) => ({
       case 'insights':
         if (route.filter !== 'UNRATED') {
           return (
-            <LaunchTitle title={title}/>
+            <LaunchTitle title={route.title}/>
           )
         }
         return (
@@ -119,7 +118,7 @@ export const routeMapper = (viewer) => ({
       case 'insights':
         if (route.filter === 'UNRATED') {
           return (
-            <UsefulCounter navigator={navigator} viewer={viewer}/>
+            <UsefulCounter navigator={navigator}/>
           )
         }
         break
@@ -212,6 +211,7 @@ export class NavigationBar extends Navigator.NavigationBar {
       route = routes[routes.length - 1]
     }
     if (route.sceneConfig && route.sceneConfig.hideBar) {
+      console.log('NavigationBar', route)
       return null
     }
     return super.render()

@@ -17,8 +17,8 @@ const UsefulCounter = ({ navigator, viewer }) => {
       add: 'no',
     })
   }
-  console.log('Useful Counter', viewer.collections)
-  const count = viewer.collections && viewer.collections.edges.reduce((memo, edge) => {
+  console.log('Useful Counter', viewer && viewer.collections)
+  const count = viewer && viewer.collections && viewer.collections.edges.reduce((memo, edge) => {
     return memo + edge.node.insights.usefulCount
   }, 0)
   if (count === 0 || count === undefined) {

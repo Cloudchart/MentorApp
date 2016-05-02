@@ -81,16 +81,17 @@ class InsightForMe extends Component {
           // We can ignore mutations
           return
         }
-        this._requestLikeMutation()
+        this._requestLikeMutation(true)
       })
     } else {
-      this._requestLikeMutation()
+      this._requestLikeMutation(true)
     }
   }
 
   _requestLikeMutation(shouldAddToUserCollectionWithTopicName) {
     const { user, insight } = this.props
     const mutation = new LikeInsightInTopicMutation({
+      viewer: this.props.viewer,
       topic: insight.topic,
       insight: insight.node,
       user: user,
@@ -98,8 +99,7 @@ class InsightForMe extends Component {
     })
     Relay.Store.commitUpdate(mutation, {
       onSuccess: response => {
-        console.log('LikeInsightInTopicMutation', arguments)
-        if (response.topic.isFinishedByViewer) {
+        if (response.topic && response.topic.isFinishedByViewer) {
           this.props.handleTopicFinish();
         }
       },
@@ -147,7 +147,7 @@ class InsightForMe extends Component {
     Relay.Store.commitUpdate(mutation, {
       onSuccess: response => {
         console.log('DisikeInsightInTopicMutation', arguments)
-        if (response.topic.isFinishedByViewer) {
+        if (response.topic && response.topic.isFinishedByViewer) {
           this.props.handleTopicFinish();
         }
       },

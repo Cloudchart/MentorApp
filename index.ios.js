@@ -29,7 +29,7 @@ if (process.env['NODE_ENV'] === 'development') {
   class LoggingNetworkLayer extends DefaultNetworkLayer {
     sendMutation(mutation) {
       mutation.then(
-          response => console.log('GraphQL mutation done: ',response),
+          response => console.log('GraphQL mutation done: ', response),
           error => console.error('GraphQL mutation failed: ', error)
       );
       return super.sendMutation(mutation)

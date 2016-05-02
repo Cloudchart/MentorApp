@@ -36,7 +36,7 @@ export const CommentBad = props => {
       <Button
         label=""
         color="green"
-        onPress={() => handleNext && handleNext()}
+        onPress={() => handleUndo && handleUndo()}
         style={commentStyle.button}
         >
         <Text style={commentStyle.buttonText}>
@@ -46,7 +46,7 @@ export const CommentBad = props => {
       <TransparentButton
         style={{paddingVertical: 10}}
         label='I know what I am doing'
-        onPress={() => handleUndo && handleUndo()}
+        onPress={() => handleNext && handleNext()}
         color="red"
         />
     </View>

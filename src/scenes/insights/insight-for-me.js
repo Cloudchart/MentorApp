@@ -24,6 +24,10 @@ import clamp from 'clamp'
 import LikeInsightInTopicMutation from '../../mutations/like-insight-in-topic'
 import DislikeInsightInTopicMutation from '../../mutations/dislike-insight-in-topic'
 import {
+  CommentGood,
+  CommentBad,
+} from '../../components/confirmation-screens/insights-parts'
+import {
   ShareCard,
   AddCard
 } from './popup-controls'
@@ -45,6 +49,8 @@ class InsightForMe extends Component {
     this.state = {
       top: dimensions.height / 4.5,
       isDetailsVisible: false,
+      isPendingForInsight: null,
+      reaction: null,
     }
     this._shareControl = new Animated.ValueXY({ x: 0, y: 0 })
     this._addControl = new Animated.ValueXY({ x: 0, y: 0 })
@@ -56,6 +62,14 @@ class InsightForMe extends Component {
     this._panResponder = insightPanResponder(this)
   }
 
+  componentWillReceiveProps(nextProps) {
+    const currentInsight = this.props.insight
+    const nextInsight = nextProps.insight
+    if (nextInsight.node.id !== currentInsight.node.id) {
+      this._resetState()
+    }
+  }
+
   handlePressCard() {
     const { isDetailsVisible } = this.state
     this.setState({
@@ -65,24 +79,70 @@ class InsightForMe extends Component {
 
   handleLikePress() {
     const { _pan } = this
-    animationCardRight(_pan, () => this.handleLikeRate())
+    animationCardRight(_pan, () => this._requestLikeRate())
   }
 
-  handleLikeRate() {
-    const { handleReaction, insight, filter } = this.props
+  handleDislikePress(params) {
+    const { _pan } = this
+    animationCardLeft(params || {}, _pan, () => this._requestDislikeRate())
+  }
+
+  handleAddButtonPress() {
+    const { navigator, insight } = this.props
+    navigator.push({
+      scene: 'user-collections',
+      title: 'Add to collection',
+      advice: insight.node
+    })
+  }
+
+  handleShareButtonPress() {
+    const { node } = this.props.insight
+    ActionSheetIOS.showShareActionSheetWithOptions(
+      {
+        url: node.origin.url || '',
+        message: node.content,
+        subject: 'a subject to go in the email heading'
+      },
+      error => {},
+      (success, method) => {
+        console.log({ success, method })
+      }
+    )
+  }
+
+  handleNextInsightPress() {
+    const { filter } = this.props
+    const { reaction } = this.state
+    if (filter === 'PREVIEW') {
+      // We can ignore mutations
+      return
+    }
+    if (reaction.type === 'like') {
+      this._requestLikeMutation()
+    } else {
+      this._requestDislikeMutation()
+    }
+  }
+
+  handleUndoRatePress() {
+    this.setState({
+      reaction: null,
+      isPendingForInsight: null,
+    })
+    this._returnCardToStartingPosition()
+    this._resetState()
+  }
+
+  _requestLikeRate() {
+    const { insight } = this.props
     const basicReaction = insight.node.likeReaction
     if (basicReaction) {
-      const finalReaction = {
+      const reaction = {
         type: 'like',
         ...basicReaction,
       }
-      handleReaction(finalReaction, () => {
-        if (filter === 'PREVIEW') {
-          // We can ignore mutations
-          return
-        }
-        this._requestLikeMutation(true)
-      })
+      this.setState({ reaction })
     } else {
       this._requestLikeMutation(true)
     }
@@ -90,6 +150,11 @@ class InsightForMe extends Component {
 
   _requestLikeMutation(shouldAddToUserCollectionWithTopicName) {
     const { user, insight } = this.props
+    const insightID = insight.node.id
+    this.setState({
+      isPendingForInsight: insightID,
+      reaction: null,
+    })
     const mutation = new LikeInsightInTopicMutation({
       topic: insight.topic,
       insight: insight.node,
@@ -105,31 +170,15 @@ class InsightForMe extends Component {
     })
   }
 
-  handleDislikePress(params) {
-    const { _pan } = this
-    animationCardLeft(params || {}, _pan, () => this.handleDislikeRate())
-  }
-
-  handleDislikeRate() {
-    const { handleReaction, insight, filter } = this.props
+  _requestDislikeRate() {
+    const { insight } = this.props
     const basicReaction = insight.node.dislikeReaction
     if (basicReaction) {
-      const finalReaction = {
+      const reaction = {
         type: 'dislike',
         ...basicReaction,
       }
-      handleReaction(finalReaction, (cancelled) => {
-        if (filter === 'PREVIEW') {
-          // We can ignore mutations
-          return
-        }
-        if (cancelled) {
-          this._resetState()
-          this._returnCardToStartingPosition()
-          return
-        }
-        this._requestDislikeMutation()
-      })
+      this.setState({ reaction })
     } else {
       this._requestDislikeMutation()
     }
@@ -137,6 +186,11 @@ class InsightForMe extends Component {
 
   _requestDislikeMutation() {
     const { user, insight } = this.props
+    const insightID = insight.node.id
+    this.setState({
+      isPendingForInsight: insightID,
+      reaction: null,
+    })
     const mutation = new DislikeInsightInTopicMutation({
       topic: insight.topic,
       insight: insight.node,
@@ -145,7 +199,7 @@ class InsightForMe extends Component {
     Relay.Store.commitUpdate(mutation, {
       onSuccess: response => {
         if (response.topic && response.topic.isFinishedByViewer) {
-          this.props.handleTopicFinish();
+          this.props.handleTopicFinish()
         }
       }
     })
@@ -177,32 +231,6 @@ class InsightForMe extends Component {
     }
   }
 
-  handleAddButtonPress() {
-    const { navigator, insight } = this.props
-    navigator.push({
-      scene: 'user-collections',
-      title: 'Add to collection',
-      advice: insight.node
-    })
-  }
-
-  handleShareButtonPress() {
-    const { node } = this.props.insight
-    ActionSheetIOS.showShareActionSheetWithOptions(
-      {
-        url: node.origin.url || '',
-        message: node.content,
-        subject: 'a subject to go in the email heading'
-      },
-        error => {
-        // nothing
-      },
-      (success, method) => {
-        console.log({ success, method })
-      }
-    );
-  }
-
   _hidePopupControls() {
     this._isPopupControlVisible = false
     const params = {
@@ -223,7 +251,30 @@ class InsightForMe extends Component {
     animateEntrance(this._enter)
   }
 
-  render () {
+  _renderReaction() {
+    const { navigator } = this.props
+    const { reaction } = this.state
+    if (reaction.type === 'like') {
+      return (
+        <CommentGood
+          {...reaction}
+          navigator={navigator}
+          handleNext={() => this.handleNextInsightPress()}
+          />
+      )
+    }
+    // Otherwise it means dislike
+    return (
+      <CommentBad
+        {...reaction}
+        navigator={navigator}
+        handleNext={() => this.handleNextInsightPress()}
+        handleUndo={() => this.handleUndoRatePress()}
+        />
+    )
+  }
+
+  _renderCard() {
     const { navigator, insight } = this.props
     const { isDetailsVisible } = this.state
     const {
@@ -326,6 +377,21 @@ class InsightForMe extends Component {
         )}
       </View>
     )
+  }
+
+  render() {
+    const { insight } = this.props
+    const { isPendingForInsight, reaction } = this.state
+    const insightID = insight.node.id
+    if (isPendingForInsight === insightID) {
+      return (
+        <Loader />
+      )
+    }
+    if (reaction) {
+      return this._renderReaction()
+    }
+    return this._renderCard()
   }
 }
 

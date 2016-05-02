@@ -4,8 +4,6 @@ import { _ } from 'lodash'
 import LikeInsightInTopic from '../../mutations/like-insight-in-topic'
 import { Loader } from '../../components'
 import {
-  CommentGood,
-  CommentBad,
   TopicFinished,
   AllForNow,
   AllEnded,
@@ -17,55 +15,22 @@ class InsightsScene extends Component {
   constructor(props, context) {
     super(props, context)
     this.state = {
-      reaction: null,
       isTopicFinished: null,
     }
   }
 
-  handleNextInsight() {
-    this._reactionCallback && this._reactionCallback()
-    this.setState({
-      reaction: null,
-    })
-  }
-
-  handleUndoRate() {
-    this.setState({
-      reaction: null,
-    })
-    this._reactionCallback && this._reactionCallback(true)
-  }
-
-  handleReaction(reaction, callback) {
-    this.setState({
-      reaction,
-    })
-    this._reactionCallback = callback
+  handleTopicFinish() {
+    try {
+      this.setState({ isTopicFinished: true })
+    } catch (e) {
+      // Sometimes we can submit mutation and change scene
+    }
   }
 
   render() {
     const { viewer, navigator } = this.props
-    const { reaction, isTopicFinished } = this.state
-    if (reaction) {
-      if (reaction.type === 'like') {
-        return (
-          <CommentGood
-            {...reaction}
-            navigator={navigator}
-            handleNext={() => this.handleNextInsight()}
-            />
-        )
-      }
-      // Otherwise it means dislike
-      return (
-        <CommentBad
-          {...reaction}
-          navigator={navigator}
-          handleNext={() => this.handleNextInsight()}
-          handleUndo={() => this.handleUndoRate()}
-          />
-      )
-    }
+    const { isTopicFinished } = this.state
+    console.log('insights-scene: found ' + viewer.insights.edges.length + ' available insights.')
     let isAllEnded = true
     viewer.subscribedTopics.edges.forEach(edge => {
       if (!edge.node.isTopicFinished) {
@@ -102,8 +67,7 @@ class InsightsScene extends Component {
           navigator={navigator}
           insight={firstInsight}
           user={viewer}
-          handleReaction={(reaction, callback) => this.handleReaction(reaction, callback)}
-          handleTopicFinish={() => this.setState({ isTopicFinished: true })}
+          handleTopicFinish={() => this.handleTopicFinish()}
           />
       )
     }

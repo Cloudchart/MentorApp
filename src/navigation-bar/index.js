@@ -7,6 +7,8 @@ import React, {
   TouchableOpacity,
   View,
 } from 'react-native'
+import Relay from 'react-relay'
+import { ViewerRoute } from '../routes.js'
 import { EventManager } from '../event-manager'
 import * as device from '../utils/device'
 import Icon from 'react-native-vector-icons/FontAwesome'
@@ -118,7 +120,13 @@ export const routeMapper = (viewer) => ({
       case 'insights':
         if (route.filter === 'UNRATED') {
           return (
-            <UsefulCounter navigator={navigator}/>
+            <Relay.RootContainer
+              Component={UsefulCounter}
+              route={ new ViewerRoute()}
+              renderFetched={data => (
+                <UsefulCounter {...data} navigator={navigator}/>
+              )}
+              />
           )
         }
         break
@@ -211,7 +219,7 @@ export class NavigationBar extends Navigator.NavigationBar {
       route = routes[routes.length - 1]
     }
     if (route.sceneConfig && route.sceneConfig.hideBar) {
-      console.log('NavigationBar', route)
+      console.log('NavigationBar hideBar: ', route)
       return null
     }
     return super.render()

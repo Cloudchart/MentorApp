@@ -15,32 +15,14 @@ import styles from './styles'
 class InsightsScene extends Component {
   constructor(props, context) {
     super(props, context)
-    //const { relay, filter } = props
-    //if (filter) {
-    //  relay.setVariable({ filter })
-    //}
     this.state = {
       reaction: null,
       isTopicFinished: null,
     }
   }
 
-  componentWillReceiveProps(nextProps) {
-    //const { relay, filter } = this.props
-    //if (nextProps.filter !== filter) {
-    //  relay.setVariable({
-    //    filter: nextProps.filter
-    //  })
-    //}
-  }
-
   handleNextInsight() {
-    const { reaction } = this.state
-    //this._checkTopicForFinish()
-    //if (reaction && reaction.rate_checkTopicForFinish === 'like') {
-    //if (reaction) {
     this._reactionCallback && this._reactionCallback()
-    //}
     this.setState({
       reaction: null,
     })
@@ -55,7 +37,7 @@ class InsightsScene extends Component {
 
   handleReaction(reaction, callback) {
     this.setState({
-      reaction
+      reaction,
     })
     this._reactionCallback = callback
   }

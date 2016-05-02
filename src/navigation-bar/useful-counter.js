@@ -17,11 +17,10 @@ const UsefulCounter = ({ navigator, viewer }) => {
       add: 'no',
     })
   }
-  console.log('Useful Counter', viewer && viewer.collections)
-  const count = viewer && viewer.collections && viewer.collections.edges.reduce((memo, edge) => {
-    return memo + edge.node.insights.usefulCount
-  }, 0)
-  if (count === 0 || count === undefined) {
+  const count = viewer.collections.edges.reduce((memo, edge) => {
+      return memo + edge.node.insights.usefulCount
+    }, 0)
+  if (count === 0) {
     return (
       <View />
     )
@@ -30,7 +29,8 @@ const UsefulCounter = ({ navigator, viewer }) => {
     <TouchableOpacity
       style={[styles.crumbIconWrapperGreen, {bottom : 1}]}
       activeOpacity={0.75}
-      onPress={() => handlePress()}>
+      onPress={() => handlePress()}
+      >
       <Text style={styles.crumbIconBasketText}>{count}</Text>
     </TouchableOpacity>
   )
@@ -53,5 +53,3 @@ export default Relay.createContainer(UsefulCounter, {
     `
   }
 })
-
-

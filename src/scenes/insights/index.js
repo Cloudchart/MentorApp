@@ -66,37 +66,35 @@ class InsightsScene extends Component {
           />
       )
     }
-    if (isTopicFinished) {
-      let isNotAllFinished = false
-      viewer.subscribedTopics.edges.forEach(edge => {
-        if (!edge.node.isTopicFinished) {
-          isNotAllFinished = true
-        }
-      })
-      if (isNotAllFinished) {
-        return (
-          <TopicFinished
-            navigator={navigator}
-            continueLearning={() => this.setState({ isTopicFinished: false })}
-            />
-        )
+    let isAllEnded = true
+    viewer.subscribedTopics.edges.forEach(edge => {
+      if (!edge.node.isTopicFinished) {
+        isAllEnded = false
       }
-      const isAllForNow = (viewer.insights.edges.length === 0)
-      if (isAllForNow) {
-        return (
-          <AllForNow
-            navigator={navigator}
-            />
-        )
-      }
-      // Otherwise it seems the end
+    })
+    if (isAllEnded) {
       return (
         <AllEnded
           navigator={navigator}
           />
       )
     }
-    console.log('insights-scene: found ' + viewer.insights.edges.length + ' available insights')
+    if (isTopicFinished) {
+      return (
+        <TopicFinished
+          navigator={navigator}
+          continueLearning={() => this.setState({ isTopicFinished: false })}
+          />
+      )
+    }
+    const isAllForNow = (viewer.insights.edges.length === 0)
+    if (isAllForNow) {
+      return (
+        <AllForNow
+          navigator={navigator}
+          />
+      )
+    }
     const firstInsight = viewer.insights.edges[0]
     if (firstInsight) {
       return (

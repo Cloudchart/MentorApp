@@ -10,7 +10,7 @@ import { ACTION_SHOW_RANDOM_ADVICE } from "../actions/actions";
 import Icon from "react-native-vector-icons/FontAwesome";
 import styles from "../styles/base";
 
-export default () => {
+export default ({ navigator }) => {
   const handlePress = () => {
     navigator.push({
       scene: 'settings',

@@ -407,7 +407,6 @@ class UserCollections extends Component {
   }
 }
 
-
 const ReduxComponent = connect()(UserCollections)
 export default Relay.createContainer(ReduxComponent, {
   initialVariables: {

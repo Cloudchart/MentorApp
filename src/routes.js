@@ -31,7 +31,7 @@ export function renderScreen(params) {
       //return renderRootContainer(
       //  Scenes.InsightScene,
       //  screenParams,
-      //  new QueryNodeId({
+      //  new NodeRoute({
       //    nodeID: screenParams.topicId,
       //    filter: InsightsForMeFilter
       //  }),
@@ -58,7 +58,7 @@ export function renderScreen(params) {
       return renderRootContainer(Scenes.FollowUp, screenParams)
     case 'insights_useful':
       return renderRootContainer(Scenes.UserInsightsUseful, screenParams, {
-        route: new QueryNodeId({
+        route: new NodeRoute({
           nodeID: screenParams.collectionId,
           filter: 'USEFUL',
         }),
@@ -66,7 +66,7 @@ export function renderScreen(params) {
       })
     case 'insights_useless':
       return renderRootContainer(Scenes.UserInsightsUseless, screenParams, {
-        route: new QueryNodeId({
+        route: new NodeRoute({
           nodeID: screenParams.collectionId,
           filter: 'USELESS',
         }),
@@ -121,22 +121,22 @@ export class ViewerRoute extends Relay.Route {
   };
 }
 
-//class QueryNodeId extends Relay.Route {
-//  static routeName = 'QueryNodeId'
-//  static paramDefinitions = {
-//    nodeID: { required: true },
-//    filter: { required: true }
-//  }
-//  static queries = {
-//    node: () => Relay.QL`
-//      query {
-//        node(id: $nodeID)
-//      }
-//    `,
-//    viewer: () => Relay.QL`
-//      query {
-//        viewer
-//      }
-//    `
-//  }
-//}
+export class NodeRoute extends Relay.Route {
+  static routeName = 'NodeRoute'
+  static paramDefinitions = {
+    nodeID: { required: true },
+    filter: { required: true },
+  }
+  static queries = {
+    node: () => Relay.QL`
+      query {
+        node(id: $nodeID)
+      }
+    `,
+    viewer: () => Relay.QL`
+      query {
+        viewer
+      }
+    `
+  }
+}

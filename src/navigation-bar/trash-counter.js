@@ -5,7 +5,8 @@ import React, {
   Text,
   TouchableOpacity,
   View
-} from "react-native";
+} from "react-native"
+import Relay from 'react-relay'
 import { connect } from "react-redux";
 import Icon from "react-native-vector-icons/FontAwesome";
 import styles from "../styles/base";
@@ -19,29 +20,27 @@ class TrashCounter extends Component {
   }
 
   _showBadAdvice () {
-    const { navigator, route, collection } = this.props;
-
-    if ( collection.insights.uselessCount ) {
+    const { navigator, route, node } = this.props
+    const { insights } = node
+    if (insights) {
       let routeParams = {
         scene: 'insights_useless',
         title: route.title,
-        collectionId: collection.id,
-        showBadAdvice: true
+        collectionId: node.id,
+        showBadAdvice: true,
       }
-      if ( !route.showBadAdvice ) {
-        navigator.push({ ...routeParams });
+      if (!route.showBadAdvice) {
+        navigator.push({ ...routeParams })
       }
     }
   }
 
   render () {
-    const { insights } = this.props.collection;
-    const { route } = this.props;
-    let uselessCount = 0;
-    if ( insights ) {
-      uselessCount = insights.uselessCount;
+    const { route, node } = this.props
+    let uselessCount = 0
+    if (node && node.insights) {
+      uselessCount = node.insights.uselessCount
     }
-
     return (!uselessCount || route.showBadAdvice ? null :
       <TouchableOpacity
         style={styles.crumbIconWrapper}
@@ -55,3 +54,17 @@ class TrashCounter extends Component {
     )
   }
 }
+
+export default Relay.createContainer(TrashCounter, {
+  fragments: {
+    node: () => Relay.QL`
+      fragment on UserCollection {
+        id
+        insights(first: 100, filter: USELESS) {
+          usefulCount
+          uselessCount
+        }
+      }
+    `
+  }
+})

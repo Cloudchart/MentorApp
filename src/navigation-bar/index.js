@@ -8,7 +8,7 @@ import React, {
   View,
 } from 'react-native'
 import Relay from 'react-relay'
-import { ViewerRoute } from '../routes.js'
+import { ViewerRoute, NodeRoute } from '../routes.js'
 import { EventManager } from '../event-manager'
 import * as device from '../utils/device'
 import Icon from 'react-native-vector-icons/FontAwesome'
@@ -106,8 +106,19 @@ export const routeMapper = (viewer) => ({
         }
         break
       case 'insights_useless':
+        const { screenParams } = route
+        const relayRoute = new NodeRoute({
+          nodeID: screenParams.collectionId,
+          filter: 'USELESS',
+        })
         return (
-          <TrashCounter navigator={navigator} route={route}/>
+          <Relay.RootContainer
+            Component={TrashCounter}
+            route={relayRoute}
+            renderFetched={data => (
+              <TrashCounter {...data} navigator={navigator}/>
+            )}
+            />
         )
       case 'insights_useful':
         return (
@@ -122,7 +133,7 @@ export const routeMapper = (viewer) => ({
           return (
             <Relay.RootContainer
               Component={UsefulCounter}
-              route={ new ViewerRoute()}
+              route={new ViewerRoute()}
               renderFetched={data => (
                 <UsefulCounter {...data} navigator={navigator}/>
               )}

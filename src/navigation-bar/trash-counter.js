@@ -1,15 +1,11 @@
 import React, {
-  Component,
-  Image,
-  LayoutAnimation,
   Text,
   TouchableOpacity,
   View
-} from "react-native"
+} from 'react-native'
 import Relay from 'react-relay'
-import { connect } from "react-redux";
-import Icon from "react-native-vector-icons/FontAwesome";
-import styles from "../styles/base";
+import Icon from 'react-native-vector-icons/FontAwesome'
+import styles from '../styles/base'
 
 const TrashCounter = ({ navigator, route, node }) => {
   const handleBadAdvice = () => {

@@ -115,9 +115,9 @@ export function renderRootContainer(Component, screenParams, options) {
 }
 
 export class ViewerRoute extends Relay.Route {
-  static routeName = 'ViewerRoute';
+  static routeName = 'ViewerRoute'
   static queries = {
-    viewer: () => Relay.QL` query { viewer }`
+    viewer: () => Relay.QL`query { viewer }`,
   };
 }
 
@@ -137,6 +137,6 @@ export class NodeRoute extends Relay.Route {
       query {
         viewer
       }
-    `
+    `,
   }
 }

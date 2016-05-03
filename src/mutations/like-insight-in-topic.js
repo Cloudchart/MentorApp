@@ -1,4 +1,5 @@
 import Relay from 'react-relay'
+import UsefulCounter from '../navigation-bar/useful-counter'
 
 class LikeInsightInTopicMutation extends Relay.Mutation {
   getMutation() {
@@ -27,6 +28,15 @@ class LikeInsightInTopicMutation extends Relay.Mutation {
         insightEdge
         user {
           insights
+          collections(first: 100) {
+            edges {
+              node {
+                insights {
+                  usefulCount
+                }
+              }
+            }
+          }
         }
       }
     `

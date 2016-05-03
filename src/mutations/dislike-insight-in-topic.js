@@ -26,6 +26,15 @@ class DislikeInsightInTopicMutation extends Relay.Mutation {
         insightEdge
         user {
           insights
+          collections(first: 100) {
+            edges {
+              node {
+                insights {
+                  usefulCount
+                }
+              }
+            }
+          }
         }
       }
     `

@@ -8,18 +8,18 @@ import React, {
   TouchableHighlight,
   View,
   ListView
-} from "react-native";
-import Relay from 'react-relay';
-import { Boris, Button, Loader, ScrollListView, TopicEmpty } from "../../components";
-import styles from "./style";
-import { _flex } from "../../styles/base";
-
-
+} from 'react-native'
+import Relay from 'react-relay'
+import { Boris, Button, Loader, ScrollListView } from '../../components'
+import TopicEmpty from '../../components/topic/topic-empty.js'
+import styles from './style'
+import { _flex } from '../../styles/base'
 import {
   unsubscribeFromTopic,
   subscribeOnTopic
-} from '../../actions/topic';
+} from '../../actions/topic'
 
+const PAGE_SIZE = 30
 const dataSource = new ListView.DataSource({
   rowHasChanged: (row1, row2) => row1 !== row2
 })
@@ -38,7 +38,6 @@ class ReplaceTopic extends Component {
 
   constructor (props) {
     super(props)
-    this.PAGE_SIZE = 30;
 
     this._onEndReached = this._onEndReached.bind(this)
   }
@@ -91,23 +90,14 @@ class ReplaceTopic extends Component {
     });
   }
 
-  subscribeNow () {
-    const { navigator } = this.props;
-    navigator.push({
-      scene: 'subscription',
-      title: 'Subscription'
-    })
-  }
-
   _renderTopic (rowData, sectionID, rowID) {
-    const { viewer } = this.props;
-
+    const { viewer } = this.props
     return (
       <TopicEmpty
         topic={ rowData.node }
         user={ this.props.viewer }
         index={ rowID }
-        selectTopic={this._replaceTopic.bind(this, rowData.node)}/>
+        onTopicSelect={topic => this._replaceTopic(rowData.node)}/>
     )
   }
 
@@ -136,27 +126,27 @@ class ReplaceTopic extends Component {
 
 export default Relay.createContainer(ReplaceTopic, {
   initialVariables: {
-    count: 30
+    count: PAGE_SIZE,
   },
   fragments: {
     viewer: () => Relay.QL`
-        fragment on User {
-            id
-            ${TopicEmpty.getFragment('user')}      
-            subscribedTopics: topics(first: $count, filter: SUBSCRIBED) {
-                availableSlotsCount
-                edges {
-                    node {
-                        id
-                        isSubscribedByViewer
-                        ${TopicEmpty.getFragment('topic')}
-                    }
-                }
-                pageInfo {
-                    hasNextPage
-                }
+      fragment on User {
+        id
+        ${TopicEmpty.getFragment('user')}
+        subscribedTopics: topics(first: $count, filter: SUBSCRIBED) {
+          availableSlotsCount
+          edges {
+            node {
+              id
+              isSubscribedByViewer
+              ${TopicEmpty.getFragment('topic')}
             }
+          }
+          pageInfo {
+            hasNextPage
+          }
         }
+      }
     `
   }
 });

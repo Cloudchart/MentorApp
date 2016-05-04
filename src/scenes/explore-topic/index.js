@@ -88,14 +88,6 @@ class ExploreTopicScene extends Component {
     })
   }
 
-  subscribeNow() {
-    const { navigator } = this.props
-    navigator.push({
-      scene: 'subscription',
-      title: 'Subscription',
-    })
-  }
-
   _renderTopic(rowData, sectionID, rowID) {
     const { viewer } = this.props
     const topic = rowData.node
@@ -104,7 +96,7 @@ class ExploreTopicScene extends Component {
         topic={topic}
         user={viewer}
         index={rowID}
-        selectTopic={topic => this.handleSelectTopic(topic)}
+        onTopicSelect={topic => this.handleSelectTopic(topic)}
         />
     )
   }
@@ -153,4 +145,4 @@ export default Relay.createContainer(ExploreTopicScene, {
       }
     `
   },
-});
+})

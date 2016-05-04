@@ -85,7 +85,6 @@ export default Relay.createContainer(InsightsScene, {
     viewer: () => Relay.QL`
       fragment on User {
         ${InsightCardContainer.getFragment('user')}
-
         insights(first: $count, filter: $filter)  {
           edges {
             ${InsightCardContainer.getFragment('insight')}
@@ -94,7 +93,6 @@ export default Relay.createContainer(InsightsScene, {
             }
           }
         }
-
         subscribedTopics: topics(first: 1, filter: SUBSCRIBED) {
           edges {
             node {

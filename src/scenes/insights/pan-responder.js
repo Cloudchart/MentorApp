@@ -52,7 +52,6 @@ function panResponderMoveHandler(insightCardElement) {
     insightCardElement.showPopupControls()
     insightCardElement._pan.setValue({ x: gestureState.dx, y: 0 })
     if (Math.abs(gestureState.dx) > 50 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy)) {
-      console.log({ x: gestureState.dx })
       insightCardElement.handleCardSwipeStart &&
         insightCardElement.handleCardSwipeStart()
     }
@@ -111,7 +110,6 @@ function overControlAdd(measure, gestureState) {
 
 function panResponderReleaseHandler(insightCardElement, params) {
   return (event, { vx, vy }) => {
-    console.log('panResponderReleaseHandler')
     const { onLike, onDislike } = params || {}
     /**
      * some magic

@@ -8,6 +8,7 @@ import InsightsScene from './scenes/insights'
 import RandomAdviceScene from './scenes/random-advice'
 import SubscriptionScene from './scenes/subscription'
 import UserInsightsScene from './scenes/user-insights'
+import ExploreTopicScene from './scenes/explore-topic'
 
 /**
  * @param {String} scene
@@ -39,7 +40,7 @@ export function renderScreen(scene, screenParams) {
     case 'user-topics':
       return renderRootContainer(Scenes.UserTopics, screenParams, { forceFetch: true })
     case 'explore-topic':
-      return renderRootContainer(Scenes.ExploreTopics, screenParams)
+      return renderRootContainer(ExploreTopicScene, screenParams)
     case 'replace-topic':
       return renderRootContainer(Scenes.ReplaceTopic, screenParams)
     case 'follow-up':

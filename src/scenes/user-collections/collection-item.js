@@ -9,33 +9,29 @@ import React, {
   ListView,
   PanResponder,
   ScrollView
-} from "react-native";
-import Relay from 'react-relay';
-
-import Swipeout from "react-native-swipeout";
-import Icon from "react-native-vector-icons/FontAwesome";
-import styles from "./style";
-import baseStyles from "../../styles/base";
-import * as device from "../../utils/device";
-
+} from 'react-native'
+import Relay from 'react-relay'
+import Swipeout from 'react-native-swipeout'
+import Icon from 'react-native-vector-icons/FontAwesome'
+import styles from './style'
+import baseStyles from '../../styles/base'
+import * as device from '../../utils/device'
 import {
   AddCollectionToUserMutation,
   RemoveCollectionFromUserMutation
-} from "../../mutations";
+} from '../../mutations'
 
 class UserCollectionItem extends Component {
-
   constructor (props, context) {
     super(props, context)
-
     this._swipeButtons = [{
       text: 'Delete',
       close: true,
       styleButton: {
-        backgroundColor: '#fa3d39'
+        backgroundColor: '#fa3d39',
       },
       styleText: {
-        color: '#fff'
+        color: '#fff',
       },
       component: (
         <View style={styles.iconBasketView}>
@@ -43,8 +39,7 @@ class UserCollectionItem extends Component {
         </View>
       ),
       onPress: () => this.handleDeletePress(),
-    }];
-
+    }]
     this.state = {
       isLoadingTail: false,
       visibility: 0,
@@ -53,10 +48,11 @@ class UserCollectionItem extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.closeAllItems) {
+    const { closeAllItems } = nextProps
+    if (closeAllItems) {
       this.setState({
-        closeAllItems: nextProps.closeAllItems
-      });
+        closeAllItems,
+      })
     }
   }
 
@@ -68,12 +64,12 @@ class UserCollectionItem extends Component {
   }
 
   openedRightCallback() {
-    this.openedRight = true;
+    this.openedRight = true
   }
 
   closeSwipeoutCallback() {
     if (this.openedRight) {
-      this.openedRight = false;
+      this.openedRight = false
     }
     this.setState({
       closeAllItems: false,
@@ -91,20 +87,18 @@ class UserCollectionItem extends Component {
   }
 
   render () {
-    const { collection, pressRow } = this.props;
-    const { insights } = collection;
+    const { collection, pressRow } = this.props
+    const { insights } = collection
     const basicRowHeight =
       insights.count > 3 ?
         (3 * 30 + 30) :
-        insights.edges.length * 30 + 13;
-    const finalRowHeight = device.size(basicRowHeight);
-
+        insights.edges.length * 30 + 13
+    const finalRowHeight = device.size(basicRowHeight)
     return (
       <TouchableOpacity
         style={styles.collectionItem}
         activeOpacity={ 0.75 }
         onPress={pressRow}>
-
         <Swipeout
           right={this._swipeButtons}
           autoClose={true}
@@ -125,7 +119,6 @@ class UserCollectionItem extends Component {
             </View>
           </TouchableHighlight>
         </Swipeout>
-
         {insights.edges && (insights.edges.length > 0) && (
           <View style={[styles.collectionItemMore, { height: finalRowHeight }]}>
             <View style={{ flex: 1 }}>
@@ -151,9 +144,9 @@ export default Relay.createContainer(UserCollectionItem, {
   },
   fragments: {
     user: () => Relay.QL`
-        fragment on User {
-            id
-        }
+      fragment on User {
+        id
+      }
     `
-  }
-});
+  },
+})

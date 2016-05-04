@@ -8,18 +8,18 @@ import React, {
   ListView,
   DeviceEventEmitter,
   PanResponder
-} from "react-native";
-import Relay from 'react-relay';
-import { connect } from "react-redux";
-import { ScrollHandler } from "../../utils/animation";
-import { createCollection, removeCollection, addToCollection } from "../../actions/collections";
-import * as actions from '../../actions/application';
-import Icon from "react-native-vector-icons/FontAwesome";
-import { EventManager } from "../../event-manager";
-import UserCollectionItem from "./collection-item";
-import OnlyAdd from "./only-add";
-import styles from "./style";
-import baseStyles from "../../styles/base";
+} from 'react-native'
+import Relay from 'react-relay'
+import { connect } from 'react-redux'
+import { ScrollHandler } from '../../utils/animation'
+import { createCollection, removeCollection, addToCollection } from '../../actions/collections'
+import * as actions from '../../actions/application'
+import Icon from 'react-native-vector-icons/FontAwesome'
+import { EventManager } from '../../event-manager'
+import UserCollectionItem from './collection-item'
+import OnlyAdd from './only-add'
+import styles from './style'
+import baseStyles from '../../styles/base'
 
 const dataSource = new ListView.DataSource({
   rowHasChanged: (row1, row2) => row1 !== row2
@@ -37,30 +37,31 @@ class UserCollections extends Component {
 
   constructor (props) {
     super(props)
-    this.PAGE_SIZE = 20;
-    this._textInput = null;
-    this._goBack = false;
+    this.PAGE_SIZE = 20
+    this._textInput = null
+    this._goBack = false
     // subscribe to an event to create a new collection
-    this._showControlAddNewItem = this._showControlAddNewItem.bind(this);
-    this._forceFetch = this._forceFetch.bind(this);
-    EventManager.addListener(actions.ACTION_ADD_USER_COLLECTION, this._showControlAddNewItem);
+    this._showControlAddNewItem = this._showControlAddNewItem.bind(this)
+    this._forceFetch = this._forceFetch.bind(this)
+
+    EventManager.addListener(actions.ACTION_ADD_USER_COLLECTION, this._showControlAddNewItem)
     EventManager.addListener(actions.UPDATE_COLLECTIONS, this._forceFetch)
 
-    this.keyboardDidShowSubscription = DeviceEventEmitter.addListener('keyboardDidShow', this._keyboardDidShow.bind(this));
-    this.keyboardWillHideSubscription = DeviceEventEmitter.addListener('keyboardWillHide', this._keyboardWillHide.bind(this));
+    this.keyboardDidShowSubscription = DeviceEventEmitter.addListener('keyboardDidShow', this._keyboardDidShow.bind(this))
+    this.keyboardWillHideSubscription = DeviceEventEmitter.addListener('keyboardWillHide', this._keyboardWillHide.bind(this))
 
-    this._handleCollectionNameChange = this._handleCollectionNameChange.bind(this);
-    this._handleCollectionNameBlur = this._handleCollectionNameBlur.bind(this);
-    this._onEndReached = this._onEndReached.bind(this);
-    this._keyboardDidShow = this._keyboardDidShow.bind(this);
-    this.renderHeader = this.renderHeader.bind(this);
+    this._handleCollectionNameChange = this._handleCollectionNameChange.bind(this)
+    this._handleCollectionNameBlur = this._handleCollectionNameBlur.bind(this)
+    this._onEndReached = this._onEndReached.bind(this)
+    this._keyboardDidShow = this._keyboardDidShow.bind(this)
+    this.renderHeader = this.renderHeader.bind(this)
 
     this._panResponder = PanResponder.create({
       onStartShouldSetPanResponderCapture: (evt, gestureState) => {
-        this.setState({ closeAllItems: true });
-        return false;
+        this.setState({ closeAllItems: true })
+        return false
       }
-    });
+    })
   }
 
 
@@ -308,15 +309,11 @@ class UserCollections extends Component {
   }
 
   _renderCollectionItem (rowData, sectionID, rowID) {
-    const collection = rowData;
-
-    const { viewer } = this.props;
-    const { addControlShow, advice, closeAllItems } = this.state;
-
-    const last = (parseInt(rowID) + 1) == this.state.collections.length;
-    const isShow = addControlShow && last;
-
-    if ( advice ) {
+    const { viewer } = this.props
+    const { addControlShow, advice, closeAllItems } = this.state
+    const last = (parseInt(rowID) + 1) == this.state.collections.length
+    const collection = rowData
+    if (advice) {
       return (
         <OnlyAdd
           key={rowID}
@@ -339,12 +336,12 @@ class UserCollections extends Component {
   }
 
   _renderList () {
-    return this.state.collections.map((collection, index)=> {
+    return this.state.collections.map((collection, index) => {
       return this._renderCollectionItem(collection, null, index)
     })
   }
 
-  render () {
+  render() {
     const { isLoadingTail, addControlShow, collections } = this.state
     const _scroll = ScrollHandler.bind(this, {
       isLoadingTail,

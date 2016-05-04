@@ -173,11 +173,11 @@ class UserInsightCard extends Component {
   }
 
   handleCardSwipeStart() {
-    //this.props.onSwipeStart && this.props.onSwipeStart()
+    this.props.onSwipeStart && this.props.onSwipeStart()
   }
 
   handleCardSwipeEnd() {
-    //this.props.onSwipeEnd && this.props.onSwipeEnd()
+    this.props.onSwipeEnd && this.props.onSwipeEnd()
   }
 
   /**

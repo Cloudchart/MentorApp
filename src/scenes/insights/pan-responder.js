@@ -179,18 +179,15 @@ function panResponderReleaseHandler(insightCardElement, params) {
         }
         break
     }
-    const hasAction = (_whatToDoOnRelease !== '')
-    _whatToDoOnRelease = ''
     // Do that in next event loop cycle
     setTimeout(() => {
+      _whatToDoOnRelease = ''
       insightCardElement.hidePopupControls()
-      if (!hasAction) {
-        insightCardElement.returnCardToStartPosition()
+      insightCardElement.returnCardToStartPosition()
+      if (insightCardElement.handleCardSwipeEnd) {
+        insightCardElement.handleCardSwipeEnd()
       }
     }, 0)
-    if (insightCardElement.handleCardSwipeEnd) {
-      insightCardElement.handleCardSwipeEnd()
-    }
   }
 }
 
@@ -200,7 +197,6 @@ function panResponderReleaseHandler(insightCardElement, params) {
  * @param {Function} [params.onLike]
  * @param {Function} [params.onDislike]
  * @returns {Object}
- * @constructor
  */
 export default function createInsightCardPanResponder(insightCardElement, params) {
   return PanResponder.create({

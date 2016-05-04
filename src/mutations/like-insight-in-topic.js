@@ -27,7 +27,13 @@ class LikeInsightInTopicMutation extends Relay.Mutation {
         }
         insightEdge
         user {
-          insights
+          insights(first: 100, filter: UNRATED) {
+            edges {
+              node {
+                id
+              }
+            }
+          }
           collections(first: 100) {
             edges {
               node {

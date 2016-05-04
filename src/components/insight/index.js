@@ -19,44 +19,42 @@ import clamp from "clamp";
 import * as device from "../../utils/device";
 
 
-export function animationCardLeft(params, animate_prop, callback) {
+export function animationCardLeft(params, animateProps, callback) {
   let setting = {
     velocity: { x: clamp(100 * -1, 3, 5) * -3, y: 0 },
     deceleration: 0.98,
     ...params
   }
-
   Animated
-    .decay(animate_prop, setting)
+    .decay(animateProps, setting)
     .start(callback ? callback : ()=> {})
 }
 
-export function animationCardRight(animate_prop, callback) {
+export function animationCardRight(animateProps, callback) {
   let setting = {
     velocity: { x: clamp(7, 3, 5), y: 0 },
-    deceleration: 0.98
+    deceleration: 0.98,
   }
   Animated
-    .decay(animate_prop, setting)
+    .decay(animateProps, setting)
     .start(callback ? callback : () => {})
 }
 
-export function returnCardToStartingPosition (animate_prop) {
-  Animated.spring(animate_prop, {
+export function animateReturnCardToStartPosition(animateProps) {
+  Animated.spring(animateProps, {
     toValue: { x: 0, y: 0 },
     friction: 4
   }).start()
 }
 
-export function animateEntrance (animate_prop) {
-  Animated.spring(animate_prop, {
+export function animateEntrance(animateProps) {
+  Animated.spring(animateProps, {
       toValue: 1,
       duration: 500,
       friction: 8
     }
   ).start();
 }
-
 
 class Insight extends Component {
 
@@ -70,7 +68,7 @@ class Insight extends Component {
     super(props)
 
     this._openWebView = this._openWebView.bind(this);
-    this._onPressCard = this._onPressCard.bind(this)
+    this._onCardPress = this._onCardPress.bind(this)
 
     this._panResponder = PanResponder.create({
       onStartShouldSetPanResponder: (evt, gestureState) => true,
@@ -141,12 +139,12 @@ class Insight extends Component {
    * @param evt
    * @private
    */
-  _onPressCard (evt) {
+  _onCardPress(evt) {
     if ( !this.props.doNotToggle ) {
       this._toggle()
     }
-    if ( this.props.onPressCard ) {
-      this.props.onPressCard(this.props)
+    if (this.props.onCardPress) {
+      this.props.onCardPress(this.props)
     }
   }
 
@@ -272,7 +270,7 @@ class Insight extends Component {
       <TouchableOpacity
         activeOpacity={ 0.75 }
         style={[styles.item, this.props.style]}
-        onPress={this._onPressCard}>
+        onPress={this._onCardPress}>
         <View style={ styles.itemInner }>
           <Text style={[styles.itemText, this.calculateContentFontSize(content)]}>
             {content.length ? content.trim() : content}

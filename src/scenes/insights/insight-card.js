@@ -36,7 +36,7 @@ import Insight, {
   animateEntrance,
   animationCardRight,
   animationCardLeft,
-  returnCardToStartingPosition,
+  animateReturnCardToStartPosition,
 } from '../../components/insight'
 import styles from './styles'
 
@@ -70,7 +70,7 @@ class InsightCard extends Component {
     }
   }
 
-  handlePressCard() {
+  handleCardPress() {
     const { isDetailsVisible } = this.state
     this.setState({
       isDetailsVisible: !isDetailsVisible,
@@ -87,7 +87,7 @@ class InsightCard extends Component {
     animationCardLeft(params || {}, _pan, () => this._requestDislikeRate())
   }
 
-  handleAddButtonPress() {
+  handleAddControlPress() {
     const { navigator, insight } = this.props
     navigator.push({
       scene: 'user-collections',
@@ -96,7 +96,7 @@ class InsightCard extends Component {
     })
   }
 
-  handleShareButtonPress() {
+  handleShareControlPress() {
     const { node } = this.props.insight
     ActionSheetIOS.showShareActionSheetWithOptions(
       {
@@ -130,7 +130,7 @@ class InsightCard extends Component {
       reaction: null,
       isPendingForInsight: null,
     })
-    this._returnCardToStartingPosition()
+    this.returnCardToStartPosition()
     this._resetState()
   }
 
@@ -205,19 +205,19 @@ class InsightCard extends Component {
     })
   }
 
-  _returnCardToStartingPosition() {
-    returnCardToStartingPosition(this._pan)
+  returnCardToStartPosition() {
+    animateReturnCardToStartPosition(this._pan)
   }
 
-  _showPopupControl() {
+  showPopupControls() {
     const { filter } = this.props
     if (filter && filter == 'PREVIEW') {
       return
     }
     const { _pan } = this
     if (_pan.__getValue().x > 50) {
-      if (!this._isPopupControlVisible) {
-        this._isPopupControlVisible = true
+      if (!this._isPopupControlsVisible) {
+        this._isPopupControlsVisible = true
         const param = {
           toValue: CONTROL_PIECE,
           duration: 200,
@@ -231,8 +231,8 @@ class InsightCard extends Component {
     }
   }
 
-  _hidePopupControls() {
-    this._isPopupControlVisible = false
+  hidePopupControls() {
+    this._isPopupControlsVisible = false
     const params = {
       toValue: 0,
       duration: 100,
@@ -247,7 +247,7 @@ class InsightCard extends Component {
   _resetState() {
     this._pan.setValue({ x: 0, y: 0 })
     this._enter.setValue(0.9)
-    this._hidePopupControls()
+    this.hidePopupControls()
     animateEntrance(this._enter)
   }
 
@@ -283,7 +283,7 @@ class InsightCard extends Component {
       _enter,
       _shareControl,
       _addControl,
-      } = this
+    } = this
     const [ translateX, translateY ] = [ _pan.x, _pan.y ]
     const rotate = _pan.x.interpolate({
       inputRange: [ -200, 0, 200 ],
@@ -357,7 +357,7 @@ class InsightCard extends Component {
             style={{alignSelf: 'center'}}
             navigator={navigator}
             insight={insight.node}
-            onPressCard={() => this.handlePressCard()}
+            onCardPress={() => this.handleCardPress()}
             />
         </Animated.View>
         <View style={popupToolbarStyle}>

@@ -9,12 +9,8 @@ import styles from '../styles/base'
 
 const TrashCounter = ({ navigator, route, node, title, filter }) => {
   const handleUselessPress = () => {
-    const scene =
-      (filter === 'USEFUL') ?
-        'user-insights_useful' :
-        'user-insights_useless'
     const route = {
-      scene,
+      scene: 'user-insights_useless',
       title: title,
       collectionId: node.id,
     }
@@ -22,11 +18,7 @@ const TrashCounter = ({ navigator, route, node, title, filter }) => {
   }
   let count
   if (node && node.insights) {
-    if (filter === 'USELESS') {
-      count = node.insights.uselessCount
-    } else {
-      count = node.insights.usefulCount
-    }
+    count = node.insights.uselessCount
   }
   if (!count) {
     return (
@@ -47,11 +39,14 @@ const TrashCounter = ({ navigator, route, node, title, filter }) => {
 }
 
 export default Relay.createContainer(TrashCounter, {
+  initialVariables: {
+    filter: 'USELESS',
+  },
   fragments: {
     node: () => Relay.QL`
       fragment on UserCollection {
         id
-        insights(first: 100, filter: ALL) {
+        insights(first: 100, filter: $filter) {
           uselessCount
         }
       }

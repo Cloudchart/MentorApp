@@ -27,7 +27,8 @@ import {
 import { insightFragment } from '../insights/insight-card'
 import styles from './style'
 
-const DEFAULT_BORIS_NOTE = 'Hello superman! How is going?'
+const BORIS_NOTE_FOR_USEFUL = 'Hello superman! How is going?'
+const BORIS_NOTE_FOR_USELESS = 'Today what do you think about that?'
 
 class UserInsightsScene extends Component {
   //state = {
@@ -88,9 +89,17 @@ class UserInsightsScene extends Component {
   //  }, 66)
   //}
 
-  handleSwipeStart(enabled) {
+  handleSwipeStart() {
+    console.log('onSwipeStart')
     this.setState({
-      isScrollEnabled: enabled,
+      isScrollEnabled: false,
+    })
+  }
+
+  handleSwipeEnd() {
+    console.log('onSwipeEnd')
+    this.setState({
+      isScrollEnabled: true,
     })
   }
 
@@ -109,17 +118,18 @@ class UserInsightsScene extends Component {
         key={index}
         collection={node}
         opacityOff={this._opacityOff}
-        insight={insight.node}
+        insight={insight}
         navigator={navigator}
         type={filter}
-        onSwipeStart={(enabled) => this.handleSwipeStart(enabled)}
+        onSwipeStart={() => this.handleSwipeStart()}
+        onSwipeEnd={() => this.handleSwipeEnd()}
         forceFetch={() => this._forceFetch}
         />
     ))
   }
 
   render() {
-    const { node } = this.props
+    const { node, filter } = this.props
     const { isScrollEnabled } = this.state
     const { description, insights } = node
     if (insights.length === 0) {
@@ -127,13 +137,18 @@ class UserInsightsScene extends Component {
         <Empty />
       )
     }
+    let note = description
+    if (!note) {
+      note = (filter === 'USEFUL') ? BORIS_NOTE_FOR_USEFUL : BORIS_NOTE_FOR_USELESS
+    }
     return (
       <View style={styles.container}>
         <ScrollView
+          automaticallyAdjustContentInsets={true}
           scrollEnabled={isScrollEnabled}
           showsVerticalScrollIndicator={true}
           >
-          <ButtonsBoris note={description || DEFAULT_BORIS_NOTE} />
+          <ButtonsBoris note={note} />
           <View style={styles.scroll}>
             {this._renderList()}
           </View>

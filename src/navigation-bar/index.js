@@ -88,6 +88,10 @@ export const routeMapper = (viewer) => ({
         return (
           <NavLogo navigator={navigator}/>
         )
+      case 'user-insights_useless':
+        return (
+          <LaunchTitle title={route.title} textStyle={styles.title_itemForDeleted} />
+        )
       default:
         break;
     }
@@ -118,19 +122,6 @@ export const routeMapper = (viewer) => ({
             )}
             />
         )
-      //case 'user-insights_useless':
-      //  return (
-      //    <Relay.RootContainer
-      //      Component={TrashCounter}
-      //      route={new NodeRoute({
-      //        nodeID: route.collectionId,
-      //        filter: 'USEFUL',
-      //      })}
-      //      renderFetched={data => (
-      //        <TrashCounter {...route} {...data} navigator={navigator}/>
-      //      )}
-      //      />
-      //  )
       case 'follow-up':
         return (
           <Skip navigator={navigator} route={route}/>
@@ -213,7 +204,7 @@ const AngleLeftReplace = ({ back, navigator, scene, title }) => {
   )
 }
 
-const LaunchTitle = ({ title }) => {
+const LaunchTitle = ({ title, textStyle }) => {
   const preparedTitle =
     (title && title.length > 31) ?
       `${title.substr(0, 31)}...` :
@@ -221,7 +212,7 @@ const LaunchTitle = ({ title }) => {
   return (
     <View style={styles.title}>
       <Text style={styles.title_blank}>&nbsp;</Text>
-      <Text style={styles.title_item} numberOfLines={1}>
+      <Text style={textStyle || styles.title_item} numberOfLines={1}>
         {preparedTitle || ''}
       </Text>
     </View>

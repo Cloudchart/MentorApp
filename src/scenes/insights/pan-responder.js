@@ -28,13 +28,13 @@ function negative(n) {
 
 function panResponderGrantHandler(insightCardElement) {
   return (event) => {
-    // event.stopPropagation()
     const { _pan } = insightCardElement
     _pan.setOffset({
       x: _pan.x._value,
       y: _pan.y._value
     })
     _pan.setValue({x: 0, y: 0})
+    _whatToDoOnRelease = ''
   }
 }
 
@@ -43,14 +43,19 @@ function panResponderMoveHandler(insightCardElement) {
     const _overControlAdd = overControlAdd.bind(insightCardElement)
     const _overControlShare = overControlShare.bind(insightCardElement)
     insightCardElement.refs[ADD_CARD_REF].measure((x, y, width, height, px, py) => {
-      _overControlAdd({x, y, width, height, px, py}, gestureState)
+      _overControlAdd({ x, y, width, height, px, py }, gestureState)
     })
     insightCardElement.refs[SHARE_CARD_REF].measure((x, y, width, height, px, py) => {
-      _overControlShare({x, y, width, height, px, py}, gestureState)
+      _overControlShare({ x, y, width, height, px, py }, gestureState)
     })
     //if ( this.state.showCardTopicName ) return;
-    insightCardElement._showPopupControl()
-    insightCardElement._pan.setValue({x: gestureState.dx, y: 0})
+    insightCardElement.showPopupControls()
+    insightCardElement._pan.setValue({ x: gestureState.dx, y: 0 })
+    if (Math.abs(gestureState.dx) > 50 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy)) {
+      console.log({ x: gestureState.dx })
+      insightCardElement.handleCardSwipeStart &&
+        insightCardElement.handleCardSwipeStart()
+    }
   }
 }
 
@@ -106,6 +111,7 @@ function overControlAdd(measure, gestureState) {
 
 function panResponderReleaseHandler(insightCardElement, params) {
   return (event, { vx, vy }) => {
+    console.log('panResponderReleaseHandler')
     const { onLike, onDislike } = params || {}
     /**
      * some magic
@@ -123,14 +129,24 @@ function panResponderReleaseHandler(insightCardElement, params) {
      */
     if (negative(insightCardElement._pan.x._value) &&
       Math.abs(insightCardElement._pan.x._value) > SWIPE_THRESHOLD) {
+      _whatToDoOnRelease = ''
       const params = {
-        velocity: {x: velocity, y: vy},
-        deceleration: 0.98
+        velocity: { x: velocity, y: vy },
+        deceleration: 0.98,
       }
-      if (onDislike) {
-        onDislike(params)
-      } else {
-        insightCardElement.handleDislikePress(params)
+      const available =
+        onDislike ?
+          onDislike(params) :
+          insightCardElement.handleDislikePress(params)
+      if (available === false) {
+        // Do that in next event loop cycle
+        setTimeout(() => {
+          insightCardElement.hidePopupControls()
+          insightCardElement.returnCardToStartPosition()
+        }, 0)
+      }
+      if (insightCardElement.handleCardSwipeEnd) {
+        insightCardElement.handleCardSwipeEnd()
       }
       return
     }
@@ -140,27 +156,41 @@ function panResponderReleaseHandler(insightCardElement, params) {
     //if (Math.abs(this.state.pan.x._value) > SWIPE_THRESHOLD) {
     switch (_whatToDoOnRelease) {
       case 'share':
-        this.handleShareButtonPress()
+        insightCardElement.handleShareControlPress()
         break;
       case 'add':
-        this.handleAddButtonPress(false, true)
+        insightCardElement.handleAddControlPress()
         break;
       default:
+        _whatToDoOnRelease = ''
         if (!negative(insightCardElement._pan.x._value) &&
           Math.abs(insightCardElement._pan.x._value) > SWIPE_THRESHOLD_MINI) {
-          if (onLike) {
-            onLike()
-          } else {
-            insightCardElement.handleLikePress()
-          }
+          //const available =
+            onLike ?
+              onLike(params) :
+              insightCardElement.handleLikePress(params)
+          //if (available === false) {
+          //  // Do that in next event loop cycle
+          //  setTimeout(() => {
+          //    insightCardElement.hidePopupControls()
+          //    insightCardElement.returnCardToStartPosition()
+          //  }, 0)
+          //}
         }
+        break
     }
+    const hasAction = (_whatToDoOnRelease !== '')
     _whatToDoOnRelease = ''
     // Do that in next event loop cycle
     setTimeout(() => {
-      insightCardElement._hidePopupControls()
-      insightCardElement._returnCardToStartingPosition()
+      insightCardElement.hidePopupControls()
+      if (!hasAction) {
+        insightCardElement.returnCardToStartPosition()
+      }
     }, 0)
+    if (insightCardElement.handleCardSwipeEnd) {
+      insightCardElement.handleCardSwipeEnd()
+    }
   }
 }
 
@@ -181,5 +211,7 @@ export default function createInsightCardPanResponder(insightCardElement, params
     onPanResponderGrant: panResponderGrantHandler(insightCardElement),
     onPanResponderMove: panResponderMoveHandler(insightCardElement),
     onPanResponderRelease: panResponderReleaseHandler(insightCardElement, params),
+    onPanResponderTerminate: panResponderReleaseHandler(insightCardElement, params),
+    onShouldBlockNativeResponder: (event, gestureState) => true,
   })
 }

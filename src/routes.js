@@ -87,12 +87,14 @@ export function renderRootContainer(Component, screenParams, options) {
   const { route, renderFailure, forceFetch } = options || {}
   const finalRoute = route ? route : new ViewerRoute()
   const finalParams = screenParams ? screenParams : {}
-  const finalRenderFailure = renderFailure ? renderFailure : () => {}
+  const finalRenderFailure = renderFailure ? renderFailure : null
   const finalForceFetch = forceFetch !== undefined ? forceFetch : false
   //firstEnter = true;
-  const renderFetched = _.throttle((data, readyState) => {
-    return <Component {...finalParams} {...data} />
-  }, 300);
+  //const renderFetched = _.throttle((data, readyState) => {
+  const renderFetched = data => (
+    <Component {...finalParams} {...data} />
+  )
+  //}, 300);
 
   return (
     <RootContainer

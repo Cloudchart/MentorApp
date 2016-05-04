@@ -14,15 +14,22 @@ class SubscribeOnTopicMutation extends Relay.Mutation {
 
   getFatQuery() {
     return Relay.QL`
-        fragment on SubscribeOnTopicMutationPayload {
-            topic {
-                isSubscribedByViewer
-            }
-            topicEdge
-            user {
-                topics
-            }
+      fragment on SubscribeOnTopicMutationPayload {
+        topic {
+          isSubscribedByViewer
         }
+        topicEdge
+        user {
+          topics
+          insights(first: 100, filter: UNRATED) {
+            edges {
+              node {
+                id
+              }
+            }
+          }
+        }
+      }
     `
   }
 

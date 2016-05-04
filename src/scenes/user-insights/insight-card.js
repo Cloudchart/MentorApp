@@ -20,7 +20,7 @@ import { Button, Loader, ScrollListView } from '../../components'
 import Insight, {
   animationCardLeft,
   animationCardRight,
-  returnCardToStartingPosition,
+  animateReturnCardToStartPosition,
 } from '../../components/insight'
 import {
   CONTROL_PIECE,
@@ -42,10 +42,10 @@ const dimensions = Dimensions.get('window')
 class UserInsightCard extends Component {
   constructor (props) {
     super(props)
-    this._onPressCard = this._onPressCard.bind(this)
+    //this._onPressCard = this._onPressCard.bind(this)
     //this._onMarkGood = this._onMarkGood.bind(this)
     //this._onMarkBad = this._onMarkBad.bind(this)
-    this._onShare = this._onShare.bind(this)
+    //this._onShare = this._onShare.bind(this)
     this.state = {
       removeView: false,
       opacityOn: false,
@@ -70,14 +70,15 @@ class UserInsightCard extends Component {
    *
    * Mark Bad card
    * @todo show comment_bad screen if {insight.confirmation == true}?
-   * @param params
-   * @param evt
-   * @private
    */
   handleMarkUseless(params) {
-    const { insight, collection, forceFetch, navigator } = this.props
-    animationCardLeft(this._pan, this._resetState.bind(this))
-    console.log({ insight, collection })
+    const { type } = this.props
+    if (type === 'USELESS') {
+      return false
+    }
+    console.log('handleMarkUseless')
+    const { insight, collection } = this.props
+    animationCardLeft(params, this._pan, this._resetState.bind(this))
     const mutation = new MarkInsightUselessInCollectionMutation({
       collection,
       insight,
@@ -95,7 +96,12 @@ class UserInsightCard extends Component {
    * @private
    */
   handleMarkUseful(opt_param) {
-    const { insight, collection, forceFetch, navigator } = this.props
+    const { type } = this.props
+    if (type === 'USEFUL') {
+      return false
+    }
+    console.log('handleMarkUseful')
+    const { insight, collection } = this.props
     animationCardRight(this._pan, this._resetState.bind(this))
     const mutation = new MarkInsightUsefulInCollectionMutation({
       collection,
@@ -120,51 +126,58 @@ class UserInsightCard extends Component {
     //    }
     //  })
   }
+  ///**
+  // *
+  // * TODO - forceFetch :(
+  // * @param params
+  // * @private
+  // */
+  //_animationCardLeftAndReset(params) {
+  //  const { collection, insight, forceFetch } = this.props;
+  //  animationCardLeft(params, this._pan, this._resetState.bind(this))
+  //  markInsightUselessInCollection({ insight, collection })
+  //    .then((transaction)=> {
+  //      forceFetch && forceFetch()
+  //    })
+  //    .catch((error)=> {
+  //      forceFetch && forceFetch()
+  //    })
+  //}
 
-  /**
-   *
-   * TODO - forceFetch :(
-   * @param params
-   * @private
-   */
-  _animationCardLeftAndReset(params) {
-    const { collection, insight, forceFetch } = this.props;
-    animationCardLeft(params, this._pan, this._resetState.bind(this))
-    markInsightUselessInCollection({ insight, collection })
-      .then((transaction)=> {
-        forceFetch && forceFetch()
-      })
-      .catch((error)=> {
-        forceFetch && forceFetch()
-      })
+  handleAddControlPress() {
+    const { navigator, insight } = this.props
+    navigator.push({
+      scene: 'user-collections',
+      title: 'Add to collection',
+      advice: insight,
+    })
   }
 
-  _onShare() {
-    const { insight } = this.props;
-    let origin = {
-      url: '',
-      content: '',
-    };
-    if ( insight && insight.origin ) {
-      origin.url = insight.origin.url || ''
-      origin.content = insight.origin.content || ''
-    }
-    ActionSheetIOS.showShareActionSheetWithOptions({
-        url: origin.url,
-        message: origin.content,
+  handleShareControlPress() {
+    const { node } = this.props.insight
+    ActionSheetIOS.showShareActionSheetWithOptions(
+      {
+        url: node.origin.url || '',
+        message: node.content,
         subject: 'a subject to go in the email heading'
       },
-      (error) => {
-        this._returnCardToStartingPosition()
-      },
+        error => {},
       (success, method) => {
-        this._returnCardToStartingPosition()
+        console.log({ success, method })
       }
-    );
+    )
   }
 
-  _onPressCard (dataCard) {
+  handleCardPress() {
+    // nothing
+  }
 
+  handleCardSwipeStart() {
+    //this.props.onSwipeStart && this.props.onSwipeStart()
+  }
+
+  handleCardSwipeEnd() {
+    //this.props.onSwipeEnd && this.props.onSwipeEnd()
   }
 
   /**
@@ -172,10 +185,10 @@ class UserInsightCard extends Component {
    * and scrollEnabled = false
    * @private
    */
-  _showPopupControl() {
+  showPopupControls() {
     const { _pan } = this
     if (_pan.__getValue().x > 50) {
-      this.props.onSwipeStart && this.props.onSwipeStart(false);
+      this.props.onSwipeStart && this.props.onSwipeStart()
       if (!this._isPopupControlVisible) {
         this._isPopupControlVisible = true
         const param = {
@@ -191,7 +204,7 @@ class UserInsightCard extends Component {
     }
   }
 
-  _hidePopupControls() {
+  hidePopupControls() {
     this._isPopupControlVisible = false
     const params = {
       toValue: 0,
@@ -204,14 +217,14 @@ class UserInsightCard extends Component {
     }, 0)
   }
 
-  _returnCardToStartingPosition() {
-    returnCardToStartingPosition(this._pan)
-    this.props && this.props.onSwipeStart(true);
+  returnCardToStartPosition() {
+    animateReturnCardToStartPosition(this._pan)
+    this.props.onSwipeEnd && this.props.onSwipeEnd()
   }
 
   _resetState () {
     this._pan.setValue({ x: 0, y: 0 })
-    this._hidePopupControls()
+    this.hidePopupControls()
     /*
      this.state.enter.setValue(1);
      this._hideControlShare();
@@ -249,20 +262,20 @@ class UserInsightCard extends Component {
           >
           <Animated.View style={animatedCardStyles}>
             <Insight
-              insight={{...insight}}
+              insight={insight.node}
               fontSize={20}
-              onPressCard={this._onPressCard}/>
+              onCardPress={() => this.handleCardPress()}/>
           </Animated.View>
         </View>
         <View style={styles.wrapperAddCardControl}>
           <Animated.View style={[{width: CONTROLS_WIDTH}, shareStyle]}>
             <View ref={SHARE_CARD_REF} style={{flex: 1}}>
-              <ShareCard currentInsights={{...insight}}/>
+              <ShareCard />
             </View>
           </Animated.View>
           <Animated.View style={[{width: CONTROLS_WIDTH}, addStyle]}>
             <View ref={ADD_CARD_REF} style={{flex: 1}}>
-              <AddCard currentInsights={{...insight}}/>
+              <AddCard />
             </View>
           </Animated.View>
         </View>

@@ -9,7 +9,7 @@ import LinearGradient from 'react-native-linear-gradient'
 import baseStyle from '../../styles/base'
 import styles from './styles'
 
-export const AddCard = props => {
+export const AddCard = () => {
   return (
     <LinearGradient colors={['#00aced', '#1cb8f6']} style={{flex : 1}}>
       <View style={styles.controlShare}>
@@ -22,7 +22,7 @@ export const AddCard = props => {
   )
 }
 
-export const ShareCard = props => (
+export const ShareCard = () => (
   <LinearGradient colors={['#00aced', '#1cb8f6']} style={{flex : 1}}>
     <View style={[styles.controlShare]}>
       <Icon name="share" style={[baseStyle.crumbIcon, {color: '#fff'}]}/>

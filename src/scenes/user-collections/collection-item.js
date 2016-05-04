@@ -120,7 +120,7 @@ class UserCollectionItem extends Component {
                 {collection.name}
               </Text>
               <Text style={styles.collectionCounterText}>
-                {!insights.count ? 0 : insights.count}
+                {!insights.usefulCount ? 0 : insights.usefulCount}
               </Text>
             </View>
           </TouchableHighlight>

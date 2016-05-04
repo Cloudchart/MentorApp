@@ -7,15 +7,14 @@ import * as Scenes from './scenes'
 import InsightsScene from './scenes/insights'
 import RandomAdviceScene from './scenes/random-advice'
 import SubscriptionScene from './scenes/subscription'
+import UserInsightsScene from './scenes/user-insights'
 
 /**
- *
- * @param params
+ * @param {String} scene
+ * @param {Object} screenParams
  * @returns {*}
  */
-//let firstEnter = false;
-export function renderScreen(params) {
-  const { scene, screenParams } = params;
+export function renderScreen(scene, screenParams) {
   switch (scene) {
     case 'welcome':
       return renderRootContainer(Scenes.Welcome, screenParams)
@@ -27,17 +26,6 @@ export function renderScreen(params) {
       return renderRootContainer(Scenes.SelectTopic, screenParams)
     case 'insights':
       return renderRootContainer(InsightsScene, screenParams)
-      //const InsightsForMeFilter = screenParams.filter || 'UNRATED';
-      //return renderRootContainer(
-      //  Scenes.InsightScene,
-      //  screenParams,
-      //  new NodeRoute({
-      //    nodeID: screenParams.topicId,
-      //    filter: InsightsForMeFilter
-      //  }),
-      //  null,
-      //  !firstEnter
-      //);
     case 'random_advice':
       return renderRootContainer(RandomAdviceScene, screenParams)
     case 'settings':
@@ -56,20 +44,25 @@ export function renderScreen(params) {
       return renderRootContainer(Scenes.ReplaceTopic, screenParams)
     case 'follow-up':
       return renderRootContainer(Scenes.FollowUp, screenParams)
-    case 'insights_useful':
-      return renderRootContainer(Scenes.UserInsightsUseful, screenParams, {
+    case 'user-insights_useful':
+      return renderRootContainer(UserInsightsScene, {
+        filter: 'USEFUL',
+        ...screenParams,
+      }, {
         route: new NodeRoute({
           nodeID: screenParams.collectionId,
           filter: 'USEFUL',
         }),
       })
-    case 'insights_useless':
-      return renderRootContainer(Scenes.UserInsightsUseless, screenParams, {
+    case 'user-insights_useless':
+      return renderRootContainer(UserInsightsScene, {
+        filter: 'USELESS',
+        ...screenParams,
+      }, {
         route: new NodeRoute({
           nodeID: screenParams.collectionId,
           filter: 'USELESS',
-        }),
-        forceFetch: true,
+        })
       })
     case 'notifications':
       return renderRootContainer(Scenes.NotificationsScreen, screenParams);
@@ -83,9 +76,12 @@ export function renderScreen(params) {
 }
 
 /**
- * @param Component
- * @param screenParams
- * @param [options]
+ * @param {Function} Component
+ * @param {Object} [screenParams]
+ * @param {Object} [options]
+ * @param {Object} [options.route]
+ * @param {Function} [options.renderFailure]
+ * @param {Boolean} [options.forceFetch]
  */
 export function renderRootContainer(Component, screenParams, options) {
   const { route, renderFailure, forceFetch } = options || {}

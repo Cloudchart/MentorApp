@@ -22,8 +22,8 @@ import UsefulCounter from './useful-counter'
 import { ACTION_ADD_USER_COLLECTION } from '../actions/application'
 
 const showBackIconInScenes = [
-  'insights_useless',
-  'insights_useful',
+  'user-insights_useless',
+  'user-insights_useful',
   'user-collections',
   'subscription',
   'replace-topic',
@@ -105,24 +105,31 @@ export const routeMapper = (viewer) => ({
           )
         }
         break
-      case 'insights_useless':
-        const { screenParams } = route
-        const relayRoute = new NodeRoute({
-          nodeID: screenParams.collectionId,
-          filter: 'USELESS',
-        })
+      case 'user-insights_useful':
         return (
           <Relay.RootContainer
             Component={TrashCounter}
-            route={relayRoute}
+            route={new NodeRoute({
+              nodeID: route.collectionId,
+              filter: 'USEFUL',
+            })}
             renderFetched={data => (
               <TrashCounter {...data} navigator={navigator}/>
             )}
             />
         )
-      case 'insights_useful':
+      case 'user-insights_useless':
         return (
-          <TrashCounter navigator={navigator} route={route}/>
+          <Relay.RootContainer
+            Component={TrashCounter}
+            route={new NodeRoute({
+              nodeID: route.collectionId,
+              filter: 'USELESS',
+            })}
+            renderFetched={data => (
+              <TrashCounter {...data} navigator={navigator}/>
+            )}
+            />
         )
       case 'follow-up':
         return (

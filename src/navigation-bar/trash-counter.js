@@ -8,21 +8,18 @@ import Icon from 'react-native-vector-icons/FontAwesome'
 import styles from '../styles/base'
 
 const TrashCounter = ({ navigator, route, node }) => {
-  const handleBadAdvice = () => {
+  const handleUselessPress = () => {
     const { insights } = node
     if (insights) {
       const route = {
-        scene: 'insights_useless',
+        scene: 'insights',
         title: route.title,
         collectionId: node.id,
-        showBadAdvice: true,
+        filter: 'USELESS',
       }
-      if (!route.showBadAdvice) {
-        navigator.push(route)
-      }
+      navigator.push(route)
     }
   }
-
   let uselessCount = 0
   if (node && node.insights) {
     uselessCount = node.insights.uselessCount
@@ -36,7 +33,7 @@ const TrashCounter = ({ navigator, route, node }) => {
     <TouchableOpacity
       style={styles.crumbIconWrapper}
       activeOpacity={0.75}
-      onPress={() => handleBadAdvice()}
+      onPress={() => handleUselessPress()}
       >
       <Icon name="trash-o" style={styles.crumbIconBasket}/>
       <Text>&nbsp;</Text>

@@ -29,7 +29,7 @@ import styles from './style'
 
 const DEFAULT_BORIS_NOTE = 'Hello superman! How is going?'
 
-class UserInsightsUseful extends Component {
+class UserInsightsScene extends Component {
 
   //state = {
   //  listInsights: [],
@@ -99,12 +99,12 @@ class UserInsightsUseful extends Component {
   _forceFetch () {
     const { relay } = this.props
     relay.forceFetch()
-    // TODO : update prev screen { user collections }
+    // @todo update prev screen { user collections }
     EventManager.emit(UPDATE_COLLECTIONS)
   }
 
   _renderList() {
-    const { node, navigator, showBadAdvice } = this.props
+    const { node, navigator, filter } = this.props
     const { edges } = node.insights
     return edges.map((insight, index) => (
       <Advice
@@ -113,7 +113,7 @@ class UserInsightsUseful extends Component {
         opacityOff={this._opacityOff}
         insight={insight.node}
         navigator={navigator}
-        isBadAdviceList={showBadAdvice}
+        isBadAdviceList={filter === 'USELESS'}
         onSwipeStart={(enabled) => this.handleSwipeStart(enabled)}
         forceFetch={() => this._forceFetch}
         />
@@ -124,7 +124,6 @@ class UserInsightsUseful extends Component {
     const { node } = this.props
     const { isScrollEnabled } = this.state
     const { description, insights } = node
-    const note = description || DEFAULT_BORIS_NOTE
     if (insights.length === 0) {
       return (
         <Empty />
@@ -136,7 +135,7 @@ class UserInsightsUseful extends Component {
           scrollEnabled={isScrollEnabled}
           showsVerticalScrollIndicator={true}
           >
-          <ButtonsBoris note={note} />
+          <ButtonsBoris note={description || DEFAULT_BORIS_NOTE} />
           <View style={styles.scroll}>
             {this._renderList()}
           </View>
@@ -156,9 +155,9 @@ const ButtonsBoris = ({ note }) => (
   </View>
 )
 
-const ReduxComponent = connect()(UserInsightsUseful)
+//const ReduxComponent = connect()(UserInsightsUseful)
 
-export default Relay.createContainer(ReduxComponent, {
+export default Relay.createContainer(UserInsightsScene, {
   initialVariables: {
     count: 100,
     filter: 'USEFUL',

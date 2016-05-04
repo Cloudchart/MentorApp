@@ -118,7 +118,7 @@ class Application extends Component {
     const { viewer } = this.props
     setUserPushToken({
       user: viewer,
-      token
+      token,
     })
   }
 
@@ -206,13 +206,10 @@ class Application extends Component {
     const props = route.props || {}
     props.navigator = navigator
     console.log('renderScene', { route })
-    return renderScreen({
-      scene: route.scene,
-      screenParams: {
-        navigator,
-        ...route,
-        ...props
-      },
+    return renderScreen(route.scene, {
+      navigator,
+      ...route,
+      ...props
     })
   }
 

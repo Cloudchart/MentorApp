@@ -50,8 +50,6 @@ class UserCollections extends Component {
     this.keyboardDidShowSubscription = DeviceEventEmitter.addListener('keyboardDidShow', this._keyboardDidShow.bind(this));
     this.keyboardWillHideSubscription = DeviceEventEmitter.addListener('keyboardWillHide', this._keyboardWillHide.bind(this));
 
-
-    this._deleteRow = this._deleteRow.bind(this);
     this._handleCollectionNameChange = this._handleCollectionNameChange.bind(this);
     this._handleCollectionNameBlur = this._handleCollectionNameBlur.bind(this);
     this._onEndReached = this._onEndReached.bind(this);
@@ -220,7 +218,7 @@ class UserCollections extends Component {
    * @param id
    * @private
    */
-  _deleteRow (collection) {
+  handleDeleteRow(collection) {
     const viewer = this.props.viewer;
     removeCollection({ collection: collection, user: viewer });
   }
@@ -280,29 +278,22 @@ class UserCollections extends Component {
     return null;
   }
 
-  /**
-   * if usefulCount == 0 then go to  showBadAdvice: true
-   *
-   * @param collection
-   * @param evt
-   * @private
-   */
-  _onPressRow (collection, evt) {
+  handlePressRow(collection) {
     const { navigator } = this.props;
-    const { insights } = collection;
-    let routeParams = {
-      scene: 'insights_useful',
+    //const { insights } = collection;
+    navigator.push({
+      scene: 'user-insights_useful',
       title: collection.name,
-      collectionId: collection.id
-    };
-    if ( !insights.usefulCount && insights.uselessCount ) {
-      routeParams = {
-        ...routeParams,
-        scene: 'insights_useless',
-        showBadAdvice: true
-      }
-    }
-    navigator.push(routeParams)
+      collectionId: collection.id,
+    })
+    //if (!insights.usefulCount && insights.uselessCount) {
+    //  routeParams = {
+    //    ...routeParams,
+    //    scene: 'user-insights_useless',
+    //    showBadAdvice: true
+    //  }
+    //}
+    //navigator.push(routeParams)
   }
 
   _addNewItem () {
@@ -355,8 +346,8 @@ class UserCollections extends Component {
           collection={collection}
           user={viewer}
           closeAllItems={closeAllItems}
-          deleteRow={ this._deleteRow }
-          pressRow={ this._onPressRow.bind(this, collection) }
+          deleteRow={() => this.handleDeleteRow(collection)}
+          pressRow={() => this.handlePressRow(collection)}
         />
       )
     }
@@ -388,16 +379,16 @@ class UserCollections extends Component {
           keyboardShouldPersistTaps={false}
           automaticallyAdjustContentInsets={false}
           scrollEventThrottle={16}
-          showsVerticalScrollIndicator={true}>
+          showsVerticalScrollIndicator={true}
+          >
           <ListView
             enableEmptySections={true}
             dataSource={dataSource.cloneWithRows(collections)}
             renderRow={(rowData, sectionID, rowID) => this._renderCollectionItem(rowData, sectionID, rowID)}
             pageSize={20}
             isLoadingTail={isLoadingTail}
-            renderHeader={this.renderHeader}/>
-
-
+            renderHeader={this.renderHeader}
+            />
           {addControlShow || (!collections.length && !this._goBack) ?
             this._addNewItem() : null  }
           <View ref="newItemInput"></View>
@@ -415,32 +406,32 @@ export default Relay.createContainer(ReduxComponent, {
   },
   fragments: {
     viewer: () => Relay.QL`
-        fragment on User {
-            ${UserCollectionItem.getFragment('user')}
-            ${OnlyAdd.getFragment('user')}
-            collections(first: $count) {
+      fragment on User {
+        ${UserCollectionItem.getFragment('user')}
+        ${OnlyAdd.getFragment('user')}
+        collections(first: $count) {
+          edges {
+            node {
+              id
+              name
+              insights(first : 3, filter : $filter) {
+                count
+                usefulCount
+                uselessCount
                 edges {
-                    node {
-                        id
-                        name
-                        insights(first : 3, filter : $filter) {
-                            count
-                            usefulCount
-                            uselessCount
-                            edges {
-                                node {
-                                    id
-                                    content
-                                }
-                            }
-                        }
-                    }
+                  node {
+                    id
+                    content
+                  }
                 }
-                pageInfo {
-                    hasNextPage
-                }
+              }
             }
+          }
+          pageInfo {
+            hasNextPage
+          }
         }
+      }
     `
-  }
+  },
 });

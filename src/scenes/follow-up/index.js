@@ -16,10 +16,10 @@ import React, {
 import Relay from 'react-relay';
 import { Boris, Button, ScrollListView, InsightRate } from "../../components";
 import { ScrollHandler } from "../../utils/animation";
-import Empty from "./../user-insights-defails/empty";
+import Empty from "./../user-insights/empty";
 import { likeInsightInTopic, dislikeInsightInTopic } from "../../actions/insight";
 
-import styles from "./../user-insights-defails/style";
+import styles from "./../user-insights/style";
 import * as device from "../../utils/device";
 
 

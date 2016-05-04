@@ -6,7 +6,7 @@ import React, {
   TouchableWithoutFeedback
 } from "react-native";
 import { connect } from "react-redux";
-import { ACTION_SHOW_RANDOM_ADVICE } from "../actions/actions";
+import { ACTION_SHOW_RANDOM_ADVICE } from "../actions/application";
 import Icon from "react-native-vector-icons/FontAwesome";
 import styles from "../styles/base";
 

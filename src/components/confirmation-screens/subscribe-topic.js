@@ -9,7 +9,7 @@ import { Boris, Button, TransparentButton } from "../../components";
 import { commentStyle } from "./style";
 import { EventManager } from '../../event-manager';
 import { subscribeOnTopic } from "../../actions/topic";
-import { TOPICS_FORCE_FETCH } from "../../actions/actions";
+import { TOPICS_FORCE_FETCH } from "../../actions/application";
 import { ExploreTopicSubscribeFull, ExploreTopicSubscribe } from './explore-topic-parts';
 
 class SubscribeTopicAdd extends Component {

@@ -17,7 +17,7 @@ import React, {
 import Relay from 'react-relay';
 import { checkPermissionsNotification } from "../../system";
 import { Boris, Button, Loader, Topic, ScrollListView, SubscribeTopicAdd } from "../../components";
-import { STORAGE_KEY } from "../../actions/actions";
+import { STORAGE_KEY } from "../../actions/application";
 import * as device from "../../utils/device";
 import styles from "./style";
 import { _flex } from "../../styles/base";

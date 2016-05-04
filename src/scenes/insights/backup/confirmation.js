@@ -13,7 +13,7 @@ import {
   AllEnded,
   TopicFinished,
 } from '../../../components/confirmation-screens/insights-parts';
-import * as actions from '../../../actions/actions';
+import * as actions from '../../../actions/application';
 import { SubscribeTopicAdd } from "../../components";
 
 class ConfirmationScreens extends Component {

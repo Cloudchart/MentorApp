@@ -23,7 +23,7 @@ import {
   SET_CURRENT_COLLECTION,
   UPDATE_COLLECTIONS,
   UPDATE_ADVICES_COLLECTIONS,
-} from '../../actions/actions'
+} from '../../actions/application'
 import { insightFragment } from '../insights/insight-card'
 import styles from './style'
 

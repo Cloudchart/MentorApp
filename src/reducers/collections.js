@@ -8,7 +8,7 @@ import {
   COUNT_INSIGHTS_PLUS,
   SET_INSIGHTS_USELESS,
   SET_INSIGHTS_USEFUL
-} from "../actions/actions";
+} from "../actions/application";
 
 
 function _getInsightsFromUserCollections (collections) {

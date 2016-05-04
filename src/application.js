@@ -18,7 +18,6 @@ import { CustomSceneConfig } from './router-conf'
 import { renderScreen } from './routes'
 import { UserNotifications } from './components'
 import moment from 'moment'
-import * as actions from './actions/actions'
 import { EventManager } from './event-manager'
 import { NavigationBar, routeMapper } from './navigation-bar'
 import {
@@ -32,6 +31,11 @@ import {
   NETAlert,
   checkNET
 } from './system'
+import {
+  HIDE_NOTIFICATION,
+  UPDATE_APP_START_TIME,
+  UPDATE_APP_BACKGROUND_TIME,
+} from './actions/application'
 
 
 moment.createFromInputFallback = function (config) {
@@ -56,7 +60,7 @@ class Application extends Component {
     AppState.addEventListener('change', this.handleAppStateChange.bind(this))
     NetInfo.addEventListener('change', this.handleNetInfoChange.bind(this));
 
-    EventManager.on(actions.HIDE_NOTIFICATION, () => {
+    EventManager.on(HIDE_NOTIFICATION, () => {
       this.setState({ networkNone: false })
     })
 
@@ -162,26 +166,27 @@ class Application extends Component {
   _diffTimeStartApp(currentAppState, prevAppState) {
     switch (currentAppState) {
       case 'active':
-        AsyncStorage.setItem(actions.UPDATE_APP_START_TIME, this.prepareData(new Date))
+        AsyncStorage.setItem(UPDATE_APP_START_TIME, this.prepareData(new Date))
         updateUserNotifications()
         break
       case 'background':
-        AsyncStorage.setItem(actions.APP_BACKGROUND_TIME, this.prepareData(new Date))
+        AsyncStorage.setItem(UPDATE_APP_BACKGROUND_TIME, this.prepareData(new Date))
         updateUserNotifications(true)
         break
       default:
+        // AsyncStorage.setItem(UPDATE_APP_INACTIVE_TIME, this.prepareData(new Date))
         break
     }
     if (currentAppState == 'active' && prevAppState !== 'inactive') {
       const now = moment()
-      AsyncStorage.getItem(actions.APP_BACKGROUND_TIME, (error, result) => {
+      AsyncStorage.getItem(UPDATE_APP_BACKGROUND_TIME, (error, result) => {
         if (error || !result) return
         const backgroundDate = moment(result)
         if (!backgroundDate.diff) {
           return
         }
-        const diffHour = Math.abs(backgroundDate.diff(now, 'hour'))
-        if (diffHour >= 24) {
+        const hours = Math.abs(backgroundDate.diff(now, 'hour'))
+        if (hours >= 24) {
           this._navigator.resetTo({
             scene: 'return_in_app',
             title: '',

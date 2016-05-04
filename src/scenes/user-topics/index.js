@@ -20,7 +20,7 @@ import styles from "./style";
 import { EventManager } from '../../event-manager';
 import * as device from "../../utils/device";
 import { getGradient } from "../../utils/colors";
-import { TOPICS_FORCE_FETCH } from '../../actions/actions';
+import { TOPICS_FORCE_FETCH } from '../../actions/application';
 
 
 const BorisNoteForSubscription = "Don’t restrain yourself with 3 topics, meatb… Master. Subscribe and unlock the full power of your Virtual Mentor!";
@@ -191,7 +191,7 @@ export default Relay.createContainer(UserTopics, {
   fragments: {
     viewer: () => Relay.QL`
         fragment on User {
-            ${TopicSubscribed.getFragment('user')}                                               
+            ${TopicSubscribed.getFragment('user')}
             subscribedTopics: topics(first: 100, filter: SUBSCRIBED) {
                 availableSlotsCount
                 edges {

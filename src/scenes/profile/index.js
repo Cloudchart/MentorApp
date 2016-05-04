@@ -11,7 +11,7 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import { connect } from "react-redux";
 import { FBSDKGraphRequest, FBSDKAccessToken } from "react-native-fbsdkcore";
 import { FBSDKLoginManager } from "react-native-fbsdklogin";
-import { USER_SUBSCRIBE_NEWSLETTER, USER_FACEBOOK_LOGIN } from "../../actions/actions";
+import { USER_SUBSCRIBE_NEWSLETTER, USER_FACEBOOK_LOGIN } from "../../actions/application";
 import { loginAndGetDataFromFB } from "../../actions/user";
 import styles from "./style";
 import baseStyles from "../../styles/base";

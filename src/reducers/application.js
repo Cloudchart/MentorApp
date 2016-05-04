@@ -1,37 +1,33 @@
 import {
   SAVE_UNIQUE_ID_AND_DATE,
   UPDATE_APP_START_TIME,
-  APP_BACKGROUND_TIME
-} from "../actions/actions";
+  UPDATE_APP_BACKGROUND_TIME,
+} from '../actions/application'
 
-/**
- *
- * @param state
- * @param action
- * @returns {*}
- */
-const application = (state = {
+const initialState = {
   unique_id: '',
   date: {},
   appStartTime: '',
   background: ''
-}, action) => {
-  switch ( action.type ) {
+}
+
+const application = (state = initialState, action = {}) => {
+  switch (action.type) {
     case SAVE_UNIQUE_ID_AND_DATE:
       return {
         ...state,
         unique_id: action.id,
-        appStartTime: action.appStart
+        appStartTime: action.appStart,
       }
     case UPDATE_APP_START_TIME:
       return {
         ...state,
-        appStartTime: action.appStart
+        appStartTime: action.appStart,
       }
-    case APP_BACKGROUND_TIME:
+    case UPDATE_APP_BACKGROUND_TIME:
       return {
         ...state,
-        background: action.background
+        background: action.background,
       }
     default:
       return { ...state }

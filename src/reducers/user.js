@@ -3,7 +3,7 @@ import {
     USER_SUBSCRIBE_NEWSLETTER,
     USER_TURN_NOTIFICATIONS,
     USER_FACEBOOK_LOGIN
-} from "../actions/actions";
+} from "../actions/application";
 
 
 /**

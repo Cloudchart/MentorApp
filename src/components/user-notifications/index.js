@@ -7,7 +7,7 @@ import React, {
   Easing,
   PanResponder
 } from 'react-native';
-import { HIDE_NOTIFICATION } from '../../actions/actions';
+import { HIDE_NOTIFICATION } from '../../actions/application';
 import { EventManager } from '../../event-manager';
 import styles from './style';
 

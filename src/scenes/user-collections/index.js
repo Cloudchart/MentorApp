@@ -13,7 +13,7 @@ import Relay from 'react-relay';
 import { connect } from "react-redux";
 import { ScrollHandler } from "../../utils/animation";
 import { createCollection, removeCollection, addToCollection } from "../../actions/collections";
-import * as actions from '../../actions/actions';
+import * as actions from '../../actions/application';
 import Icon from "react-native-vector-icons/FontAwesome";
 import { EventManager } from "../../event-manager";
 import UserCollectionItem from "./collection-item";

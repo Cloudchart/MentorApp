@@ -5,7 +5,7 @@ import React, {
   TouchableWithoutFeedback
 } from "react-native";
 import { connect } from "react-redux";
-import { ACTION_SHOW_RANDOM_ADVICE } from "../actions/actions";
+import { ACTION_SHOW_RANDOM_ADVICE } from "../actions/application";
 import * as device from "../utils/device";
 import styles from "../styles/base";
 

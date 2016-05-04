@@ -8,7 +8,7 @@ import React, {
 } from "react-native";
 import Relay from 'react-relay';
 import { Button, Boris, TransparentButton } from "../../components";
-import { STORAGE_KEY } from "../../actions/actions";
+import { STORAGE_KEY } from "../../actions/application";
 import { updateUserNotifications } from "../../actions/user";
 import styles from "./style";
 

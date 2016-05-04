@@ -19,7 +19,7 @@ import Settings from './settings'
 import NavLogo from './nav-logo'
 import TrashCounter from './trash-counter'
 import UsefulCounter from './useful-counter'
-import { ACTION_ADD_USER_COLLECTION } from '../actions/actions'
+import { ACTION_ADD_USER_COLLECTION } from '../actions/application'
 
 const showBackIconInScenes = [
   'insights_useless',

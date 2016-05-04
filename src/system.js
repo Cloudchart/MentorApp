@@ -6,7 +6,7 @@ import React, {
   NetInfo
 } from "react-native";
 import Relay from 'react-relay';
-import { STORAGE_KEY } from "./actions/actions";
+import { STORAGE_KEY } from "./actions/application";
 import {
   ActivateUserMutation,
   ResetUserMutation,

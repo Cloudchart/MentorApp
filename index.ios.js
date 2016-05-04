@@ -14,7 +14,7 @@ import store from './src/store'
 import Application from './src/application'
 import NetworkError from './src/scenes/network-error'
 import DeviceInfo from 'react-native-device-info'
-import { SAVE_UNIQUE_ID_AND_DATE } from './src/actions/actions'
+import { SAVE_UNIQUE_ID_AND_DATE } from './src/actions/application'
 import { EventManager } from './src/event-manager'
 
 const networkLayerOptions = {

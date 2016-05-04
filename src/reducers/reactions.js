@@ -1,6 +1,6 @@
 import {
   ACTION_SHOW_RANDOM_ADVICE,
-} from "../actions/actions";
+} from "../actions/application";
 
 
 /**

@@ -20,7 +20,7 @@ import { Button, Loader, ScrollListView, TopicSubscribed } from "../../component
 import { RandomAdvice } from '../../../components/confirmation-screens/insights-parts';
 import * as InsightAnimations from '../../components/insight';
 import * as constant from '../../../components/insight/const';
-import * as actions from '../../../actions/actions';
+import * as actions from '../../../actions/application';
 import * as device from "../../../utils/device";
 import ConfirmationScreens from "./confirmation";
 import Insight from "../../components/insight";

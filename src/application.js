@@ -47,71 +47,78 @@ StatusBar.setBarStyle(1);
 
 class Application extends Component {
 
-  state = {
-    notifications: {
-      network: 'No Internet Connection'
-    },
-    networkNone: false,
-    currentAppState: ''
-  }
-
   constructor(props) {
     super(props)
 
-    PushNotificationIOS.addEventListener('register', this._register.bind(this));
-    PushNotificationIOS.addEventListener('notification', this._notification.bind(this));
+    PushNotificationIOS.addEventListener('register', this.handlePushNotificationsRegister.bind(this))
+    PushNotificationIOS.addEventListener('notification', this.handlePushNotificationsNotification.bind(this))
 
-    AppState.addEventListener('change', this._appStateChange.bind(this))
-    NetInfo.addEventListener('change', this._NetInfo.bind(this));
+    AppState.addEventListener('change', this.handleAppStateChange.bind(this))
+    NetInfo.addEventListener('change', this.handleNetInfoChange.bind(this));
 
-    EventManager.on(actions.HIDE_NOTIFICATION, ()=> {
-      this.setState({networkNone: false})
-    });
+    EventManager.on(actions.HIDE_NOTIFICATION, () => {
+      this.setState({ networkNone: false })
+    })
 
-    checkNET().then((reach)=> {
-      if (reach == 'none') {
-        this.notifyNetworkError();
+    this.state = {
+      notifications: {
+        network: 'No Internet Connection',
+      },
+      networkNone: false,
+      currentAppState: '',
+    }
+
+    checkNET().then(reach => {
+      if (reach === 'none') {
+        this.notifyNetworkError()
       }
-    });
+    })
   }
 
-  _appStateChange(currentAppState) {
-    this.state.currentAppState = currentAppState;
+  handleAppStateChange(currentAppState) {
+    const { networkNone } = this.state
+    console.log('appStateChange: ', currentAppState)
+    this.setState({
+      currentAppState,
+    })
 
-    if (!this.state.networkNone) {
+    if (!networkNone) {
       this._diffTimeStartApp(currentAppState);
     }
 
     if (currentAppState == 'active') {
-      checkNET().then((reach)=> {
+      checkNET().then(reach => {
         if (reach == 'none') {
           this.notifyNetworkError()
         }
       })
-      //checkPermissions();
+      // checkPermissions()
     }
   }
 
   notifyNetworkError() {
+    const { notifications } = this.state
     this.setState({
-      networkNone: this.state.notifications.network
+      networkNone: notifications.network,
     })
   }
 
-  _NetInfo(reach) {
-    if (this.state.currentAppState != 'background' && reach == 'none') {
+  handleNetInfoChange(reach) {
+    const { currentAppState } = this.state
+    if (currentAppState !== 'background' && reach === 'none') {
       this.notifyNetworkError()
     }
   }
 
-  _register(token) {
+  handlePushNotificationsRegister(token) {
+    const { viewer } = this.props
     setUserPushToken({
-      user: this.props.viewer,
+      user: viewer,
       token
     })
   }
 
-  _notification(notification) {
+  handlePushNotificationsNotification(notification) {
     AlertIOS.alert(
       'Notification Received',
       'Alert message: ' + notification.getMessage(),

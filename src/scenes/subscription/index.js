@@ -276,13 +276,12 @@ export default class SubscriptionScene extends Component {
   }
 
   render() {
-    const { isLoading, isRestoring } = this.state
+    const { isLoading, isRestoring, purchasedProducts } = this.state
     if (isLoading || isRestoring) {
       return (
         <Loader />
       )
     }
-    const { purchasedProducts } = this.state
     const hasPurchasedProducts = purchasedProducts && (purchasedProducts.length > 0)
     return (
       <ScrollView>

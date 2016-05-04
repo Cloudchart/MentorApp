@@ -61,6 +61,7 @@ class Application extends Component {
     })
 
     this.state = {
+      appState: null,
       notifications: {
         network: 'No Internet Connection',
       },
@@ -76,16 +77,15 @@ class Application extends Component {
   }
 
   handleAppStateChange(currentAppState) {
-    const { networkNone } = this.state
     console.log('appStateChange: ', currentAppState)
+    const { networkNone } = this.state
+    const prevAppState = this.state.appState
     this.setState({
-      currentAppState,
+      appState: currentAppState,
     })
-
     if (!networkNone) {
-      this._diffTimeStartApp(currentAppState);
+      this._diffTimeStartApp(currentAppState, prevAppState)
     }
-
     if (currentAppState == 'active') {
       checkNET().then(reach => {
         if (reach == 'none') {
@@ -159,28 +159,23 @@ class Application extends Component {
    * @param currentAppState
    * @private
    */
-  _diffTimeStartApp(currentAppState) {
+  _diffTimeStartApp(currentAppState, prevAppState) {
     switch (currentAppState) {
       case 'active':
         AsyncStorage.setItem(actions.UPDATE_APP_START_TIME, this.prepareData(new Date))
+        updateUserNotifications()
         break
       case 'background':
         AsyncStorage.setItem(actions.APP_BACKGROUND_TIME, this.prepareData(new Date))
+        updateUserNotifications(true)
         break
       default:
         break
     }
-
-    if (currentAppState == 'background') {
-      updateUserNotifications(true)
-    } else if (currentAppState == 'active') {
-      updateUserNotifications()
-    }
-
-    if (currentAppState == 'active') {
+    if (currentAppState == 'active' && prevAppState !== 'inactive') {
       const now = moment()
-      AsyncStorage.getItem(actions.APP_BACKGROUND_TIME, (err, result) => {
-        if (err || !result) return
+      AsyncStorage.getItem(actions.APP_BACKGROUND_TIME, (error, result) => {
+        if (error || !result) return
         const backgroundDate = moment(result)
         if (!backgroundDate.diff) {
           return
@@ -192,7 +187,7 @@ class Application extends Component {
             title: '',
           })
         }
-      });
+      })
     }
   }
 

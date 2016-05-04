@@ -7,24 +7,28 @@ import Relay from 'react-relay'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import styles from '../styles/base'
 
-const TrashCounter = ({ navigator, route, node }) => {
+const TrashCounter = ({ navigator, route, node, title, filter }) => {
   const handleUselessPress = () => {
-    const { insights } = node
-    if (insights) {
-      const route = {
-        scene: 'insights',
-        title: route.title,
-        collectionId: node.id,
-        filter: 'USELESS',
-      }
-      navigator.push(route)
+    const scene =
+      (filter === 'USEFUL') ?
+        'user-insights_useful' :
+        'user-insights_useless'
+    const route = {
+      scene,
+      title: title,
+      collectionId: node.id,
+    }
+    navigator.push(route)
+  }
+  let count
+  if (node && node.insights) {
+    if (filter === 'USELESS') {
+      count = node.insights.uselessCount
+    } else {
+      count = node.insights.usefulCount
     }
   }
-  let uselessCount = 0
-  if (node && node.insights) {
-    uselessCount = node.insights.uselessCount
-  }
-  if (!uselessCount || route.showBadAdvice) {
+  if (!count) {
     return (
       <View />
     )
@@ -37,7 +41,7 @@ const TrashCounter = ({ navigator, route, node }) => {
       >
       <Icon name="trash-o" style={styles.crumbIconBasket}/>
       <Text>&nbsp;</Text>
-      <Text style={styles.crumbIconBasketText}>{uselessCount}</Text>
+      <Text style={styles.crumbIconBasketText}>{count}</Text>
     </TouchableOpacity>
   )
 }

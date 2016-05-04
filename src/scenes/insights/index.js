@@ -1,7 +1,6 @@
 import React, { Component } from 'react-native'
 import Relay from 'react-relay'
 import { _ } from 'lodash'
-import LikeInsightInTopic from '../../mutations/like-insight-in-topic'
 import { Loader } from '../../components'
 import {
   TopicFinished,

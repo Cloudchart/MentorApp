@@ -17,7 +17,7 @@ import Relay from 'react-relay'
 import { EventManager } from '../../event-manager'
 import { connect } from 'react-redux'
 import { Boris, Button, ScrollListView, Insight } from '../../components'
-import Advice from './advice'
+import UserInsightCard from './insight-card'
 import Empty from './empty'
 import {
   SET_CURRENT_COLLECTION,
@@ -30,7 +30,6 @@ import styles from './style'
 const DEFAULT_BORIS_NOTE = 'Hello superman! How is going?'
 
 class UserInsightsScene extends Component {
-
   //state = {
   //  listInsights: [],
   //  is_empty: false,
@@ -43,7 +42,6 @@ class UserInsightsScene extends Component {
   //    rowHasChanged: (row1, row2) => row1 !== row2
   //  })
   //}
-
   constructor(props, context) {
     super(props, context)
     this.state = {
@@ -107,13 +105,13 @@ class UserInsightsScene extends Component {
     const { node, navigator, filter } = this.props
     const { edges } = node.insights
     return edges.map((insight, index) => (
-      <Advice
+      <UserInsightCard
         key={index}
-        collection={edges}
+        collection={node}
         opacityOff={this._opacityOff}
         insight={insight.node}
         navigator={navigator}
-        isBadAdviceList={filter === 'USELESS'}
+        type={filter}
         onSwipeStart={(enabled) => this.handleSwipeStart(enabled)}
         forceFetch={() => this._forceFetch}
         />
@@ -156,7 +154,6 @@ const ButtonsBoris = ({ note }) => (
 )
 
 //const ReduxComponent = connect()(UserInsightsUseful)
-
 export default Relay.createContainer(UserInsightsScene, {
   initialVariables: {
     count: 100,

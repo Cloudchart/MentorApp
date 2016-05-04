@@ -3,8 +3,8 @@ import React, {
   Easing,
   Dimensions,
   PanResponder
-} from "react-native";
-import clamp from "clamp";
+} from 'react-native'
+import clamp from 'clamp'
 import {
   SWIPE_THRESHOLD,
   SWIPE_THRESHOLD_MINI,
@@ -13,7 +13,7 @@ import {
   SHARE_CARD_REF,
   CONTROL_PIECE,
   DEVIATION
-} from "../../components/insight/const";
+} from '../../components/insight/const'
 
 /**
  * if a negative number
@@ -26,7 +26,7 @@ function negative (n) {
 
 const dimensions = Dimensions.get('window');
 
-let DO_AN_ACT = '';
+let _whatToDoOnRelease = '';
 
 /**
  *
@@ -57,14 +57,14 @@ function onPanResponderMove (raw, gestureState) {
 
 
   this._showControlPiece()
-
   /**
-   * if advices is negative then swipe right
+   * if it's useful insight then swipe right
    * otherwise swipe left
    */
-  if ( !this.props.isBadAdviceList ) {
+  if (this.props.type === 'USEFUL') {
     this.state.pan.setValue({ x: gestureState.dx, y: 0 });
-  } else if ( this.props.isBadAdviceList && !negative(gestureState.dx) ) {
+  //} else if (this.props.type === 'USELESS' && !negative(gestureState.dx) ) {
+  } else {
     this.state.pan.setValue({ x: gestureState.dx, y: 0 });
   }
 }
@@ -86,10 +86,10 @@ function overControlShare (measure, gestureState) {
     (gestureState.moveX >= area.right && gestureState.moveX <= area.left) ) {
     this.state.shareControl.setValue({ x: CONTROLS_WIDTH, y: 0 })
     this.state.addControl.setValue({ x: CONTROL_PIECE, y: 0 })
-    DO_AN_ACT = 'share';
+    _whatToDoOnRelease = 'share';
   } else {
-    if ( DO_AN_ACT == 'share' ) {
-      DO_AN_ACT = '';
+    if ( _whatToDoOnRelease == 'share' ) {
+      _whatToDoOnRelease = '';
       this.state.shareControl.setValue({ x: CONTROL_PIECE, y: 0 })
     }
   }
@@ -112,10 +112,10 @@ function overControlAdd (measure, gestureState) {
     (gestureState.moveX >= area.right && gestureState.moveX <= area.left) ) {
     this.state.addControl.setValue({ x: CONTROLS_WIDTH, y: 0 })
     this.state.shareControl.setValue({ x: CONTROL_PIECE, y: 0 })
-    DO_AN_ACT = 'add';
+    _whatToDoOnRelease = 'add';
   } else {
-    if ( DO_AN_ACT == 'add' ) {
-      DO_AN_ACT = '';
+    if ( _whatToDoOnRelease == 'add' ) {
+      _whatToDoOnRelease = '';
       this.state.addControl.setValue({ x: CONTROL_PIECE, y: 0 })
     }
   }
@@ -142,14 +142,14 @@ function onPanResponderRelease (e, { vx, vy }) {
    * hence we did swipe right
    */
   if ( negative(this.state.pan.x._value) && Math.abs(this.state.pan.x._value) > SWIPE_THRESHOLD ) {
-    this._onMarkBad({
+    this.handleMarkUseless({
       velocity: { x: velocity, y: vy },
       deceleration: 0.98
     })
     return;
   }
 
-  switch ( DO_AN_ACT ) {
+  switch ( _whatToDoOnRelease ) {
     case 'share':
       this._onShare();
       break;
@@ -157,8 +157,8 @@ function onPanResponderRelease (e, { vx, vy }) {
       this._onMarkGood();
       break;
     default:
-      DO_AN_ACT = '';
-      if ( this.props.isBadAdviceList ) {
+      _whatToDoOnRelease = '';
+      if (this.props.type === 'USELESS') {
         if ( !negative(this.state.pan.x._value) && Math.abs(this.state.pan.x._value) > SWIPE_THRESHOLD_MINI ) {
           this._onMarkGood(true)
         }
@@ -168,10 +168,10 @@ function onPanResponderRelease (e, { vx, vy }) {
   setTimeout(()=> {
 
     this._hideControlShare();
-    if ( !DO_AN_ACT ) {
+    if ( !_whatToDoOnRelease ) {
       this._returnCardToStartingPosition()
     } else {
-      DO_AN_ACT = '';
+      _whatToDoOnRelease = '';
     }
   }, 0)
 }

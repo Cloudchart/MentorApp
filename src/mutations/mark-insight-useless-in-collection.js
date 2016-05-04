@@ -1,41 +1,62 @@
 import Relay from 'react-relay'
 
 class MarkInsightUselessInCollectionMutation extends Relay.Mutation {
-
-  getMutation () {
+  getMutation() {
     return Relay.QL`mutation { markInsightUselessInCollection }`
   }
 
-  getVariables () {
-    const { insight, collection } = this.props;
+  getVariables() {
+    const { insight, collection } = this.props
     return {
       insightID: insight.id,
-      collectionID: collection.id
+      collectionID: collection.id,
     }
   }
 
   getFatQuery () {
     return Relay.QL`
-        fragment on MarkInsightUselessInCollectionMutationPayload {
-            collection
-            insight
-            insightID
-            insightEdge
+      fragment on MarkInsightUselessInCollectionMutationPayload {
+        insight {
+          id
         }
+        collection {
+          id
+          insights(first: 100, filter: ALL) {
+            usefulCount
+            uselessCount
+            edges {
+              node {
+                id
+              }
+            }
+          }
+        }
+        insightEdge
+      }
     `
   }
 
   getConfigs () {
-    const { insight, collection } = this.props;
-    return [ {
+    const { insight, collection } = this.props
+    return [{
       type: 'FIELDS_CHANGE',
       fieldIDs: {
-        insight: insight.id
-      }
-    } ]
+        insight: insight.id,
+        collection: collection.id,
+      },
+    }, {
+      type: 'RANGE_ADD',
+      parentName: 'collection',
+      parentID: collection.id,
+      connectionName: 'insights',
+      edgeName: 'insightEdge',
+      rangeBehaviors: {
+        'filter(USEFUL)': 'remove',
+        'filter(USELESS)': 'append',
+      },
+    }]
   }
 }
 
-
-export default MarkInsightUselessInCollectionMutation;
+export default MarkInsightUselessInCollectionMutation
 

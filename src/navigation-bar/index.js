@@ -111,26 +111,26 @@ export const routeMapper = (viewer) => ({
             Component={TrashCounter}
             route={new NodeRoute({
               nodeID: route.collectionId,
-              filter: 'USEFUL',
-            })}
-            renderFetched={data => (
-              <TrashCounter {...data} navigator={navigator}/>
-            )}
-            />
-        )
-      case 'user-insights_useless':
-        return (
-          <Relay.RootContainer
-            Component={TrashCounter}
-            route={new NodeRoute({
-              nodeID: route.collectionId,
               filter: 'USELESS',
             })}
             renderFetched={data => (
-              <TrashCounter {...data} navigator={navigator}/>
+              <TrashCounter {...route} {...data} navigator={navigator}/>
             )}
             />
         )
+      //case 'user-insights_useless':
+      //  return (
+      //    <Relay.RootContainer
+      //      Component={TrashCounter}
+      //      route={new NodeRoute({
+      //        nodeID: route.collectionId,
+      //        filter: 'USEFUL',
+      //      })}
+      //      renderFetched={data => (
+      //        <TrashCounter {...route} {...data} navigator={navigator}/>
+      //      )}
+      //      />
+      //  )
       case 'follow-up':
         return (
           <Skip navigator={navigator} route={route}/>

@@ -21,7 +21,6 @@ import OnlyAdd from "./only-add";
 import styles from "./style";
 import baseStyles from "../../styles/base";
 
-
 const dataSource = new ListView.DataSource({
   rowHasChanged: (row1, row2) => row1 !== row2
 })
@@ -279,25 +278,16 @@ class UserCollections extends Component {
   }
 
   handlePressRow(collection) {
-    const { navigator } = this.props;
-    //const { insights } = collection;
+    const { navigator } = this.props
     navigator.push({
       scene: 'user-insights_useful',
       title: collection.name,
       collectionId: collection.id,
     })
-    //if (!insights.usefulCount && insights.uselessCount) {
-    //  routeParams = {
-    //    ...routeParams,
-    //    scene: 'user-insights_useless',
-    //    showBadAdvice: true
-    //  }
-    //}
-    //navigator.push(routeParams)
   }
 
-  _addNewItem () {
-    const { collectionName, } = this.state;
+  _renderNewItem () {
+    const { collectionName } = this.state;
     return (
       <View style={ [styles.collectionItem, styles.newCollection] }>
         <View style={ styles.collectionItemInner }>
@@ -317,11 +307,6 @@ class UserCollections extends Component {
     )
   }
 
-  /**
-   * @param props
-   * @returns {XML}
-   * @private
-   */
   _renderCollectionItem (rowData, sectionID, rowID) {
     const collection = rowData;
 
@@ -360,18 +345,14 @@ class UserCollections extends Component {
   }
 
   render () {
-    const { viewer } = this.props;
-    const { isLoadingTail, addControlShow, collections } = this.state;
-
+    const { isLoadingTail, addControlShow, collections } = this.state
     const _scroll = ScrollHandler.bind(this, {
       isLoadingTail,
       callback: !addControlShow ? this._onEndReached : () => {},
-      onEndReachedThreshold: 20
-    });
-
-
+      onEndReachedThreshold: 20,
+    })
     return (
-      <View style={ styles.container } {...this._panResponder.panHandlers}>
+      <View style={styles.container} {...this._panResponder.panHandlers}>
         <ScrollView
           onScroll={_scroll}
           ref="_scrollView"
@@ -389,8 +370,9 @@ class UserCollections extends Component {
             isLoadingTail={isLoadingTail}
             renderHeader={this.renderHeader}
             />
-          {addControlShow || (!collections.length && !this._goBack) ?
-            this._addNewItem() : null  }
+          {(addControlShow || (!collections.length && !this._goBack)) && (
+            this._renderNewItem()
+          )}
           <View ref="newItemInput"></View>
         </ScrollView>
       </View>

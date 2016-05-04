@@ -31,7 +31,7 @@ import {
   ShareCard,
   AddCard
 } from './popup-controls'
-import insightPanResponder from './pan-responder'
+import createInsightCardPanResponder from './pan-responder'
 import Insight, {
   animateEntrance,
   animationCardRight,
@@ -59,7 +59,7 @@ class InsightCard extends Component {
   }
 
   componentWillMount() {
-    this._panResponder = insightPanResponder(this)
+    this._panResponder = createInsightCardPanResponder(this)
   }
 
   componentWillReceiveProps(nextProps) {
@@ -349,13 +349,16 @@ class InsightCard extends Component {
         {isDetailsVisible && (
           <InsightTitle topicName={insight.topic.name ||  '' } />
         )}
-        <Animated.View style={[styles.card, animatedCardStyles]}
-          {...this._panResponder.panHandlers}>
+        <Animated.View
+          style={[styles.card, animatedCardStyles]}
+          {...this._panResponder.panHandlers}
+          >
           <Insight
             style={{alignSelf: 'center'}}
             navigator={navigator}
             insight={insight.node}
-            onPressCard={() => this.handlePressCard()}/>
+            onPressCard={() => this.handlePressCard()}
+            />
         </Animated.View>
         <View style={popupToolbarStyle}>
           <Animated.View style={shareButtonStyle}>
@@ -373,7 +376,8 @@ class InsightCard extends Component {
           <RateButtons
             handlePositive={_.throttle(() => this.handleLikePress(), 700)}
             handleNegative={_.throttle(() => this.handleDislikePress(), 700)}
-            {...{animatedNopeStyles, animatedYupStyles}} />
+            {...{animatedNopeStyles, animatedYupStyles}}
+            />
         )}
       </View>
     )

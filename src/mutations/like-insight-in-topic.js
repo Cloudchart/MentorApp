@@ -1,5 +1,4 @@
 import Relay from 'react-relay'
-import UsefulCounter from '../navigation-bar/useful-counter'
 
 class LikeInsightInTopicMutation extends Relay.Mutation {
   getMutation() {
@@ -39,6 +38,7 @@ class LikeInsightInTopicMutation extends Relay.Mutation {
               node {
                 insights {
                   usefulCount
+                  uselessCount
                 }
               }
             }

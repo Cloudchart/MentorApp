@@ -11,158 +11,132 @@ import React, {
   Easing,
   Dimensions,
   ActionSheetIOS,
-  PanResponder
-} from "react-native";
-import Relay from 'react-relay';
-import { EventManager } from '../../event-manager';
-import { connect } from "react-redux";
-import { Boris, Button, ScrollListView, Insight } from "../../components";
-import Advice from "./advice";
-import Empty from "./empty";
+  PanResponder,
+} from 'react-native'
+import Relay from 'react-relay'
+import { EventManager } from '../../event-manager'
+import { connect } from 'react-redux'
+import { Boris, Button, ScrollListView, Insight } from '../../components'
+import Advice from './advice'
+import Empty from './empty'
 import {
   SET_CURRENT_COLLECTION,
   UPDATE_COLLECTIONS,
   UPDATE_ADVICES_COLLECTIONS,
-} from "../../actions/actions";
+} from '../../actions/actions'
+import { insightFragment } from '../insights/insight-card'
+import styles from './style'
 
-import styles from "./style";
-
-
-const BorisNoteForSubscription = `Grow your business like a bamboo. No, better than a bamboo!`;
+const DEFAULT_BORIS_NOTE = 'Hello superman! How is going?'
 
 class UserInsightsUseful extends Component {
 
-  state = {
-    listInsights: [],
-    is_empty: false,
-    scrollEnabled: true,
-    isLoadingTail: false,
-    addControlShow: false,
-    pan: new Animated.ValueXY(),
-    enter: new Animated.Value(0.9),
-    dataSource: new ListView.DataSource({
-      rowHasChanged: (row1, row2) => row1 !== row2
-    })
-  }
+  //state = {
+  //  listInsights: [],
+  //  is_empty: false,
+  //  isScrollEnabled: true,
+  //  isLoadingTail: false,
+  //  addControlShow: false,
+  //  pan: new Animated.ValueXY(),
+  //  enter: new Animated.Value(0.9),
+  //  dataSource: new ListView.DataSource({
+  //    rowHasChanged: (row1, row2) => row1 !== row2
+  //  })
+  //}
 
-
-  constructor (props) {
-    super(props)
-    this.saveTimeout = null;
-    this._onSwipeStart = this._onSwipeStart.bind(this)
-    this._opacityOff = this._opacityOff.bind(this)
-    this._forceFetch = this._forceFetch.bind(this);
-
-    EventManager.addListener(UPDATE_ADVICES_COLLECTIONS, this._forceFetch)
-  }
-
-  componentWillReceiveProps (nextProps) {
-    const { insightsUseful } = nextProps.node;
-    const thisUseful = this.props.node.insightsUseful;
-
-    if ( insightsUseful.edges.length != thisUseful.edges.length ) {
-      this._updateBasket(nextProps)
-      this.state.listInsights = insightsUseful.edges;
-    }
-    if ( !insightsUseful.edges.length ) {
-      this.setState({ is_empty: true })
-    } else {
-      this.state.is_empty = false;
+  constructor(props, context) {
+    super(props, context)
+    this.state = {
+      isScrollEnabled: true,
     }
   }
+    //this.saveTimeout = null
+    //this._onSwipeStart = this._onSwipeStart.bind(this)
+    //this._opacityOff = this._opacityOff.bind(this)
+    //this._forceFetch = this._forceFetch.bind(this)
 
-  componentWillMount () {
-    const { insightsUseful } = this.props.node;
-    this.state.listInsights = insightsUseful.edges;
-    this.state.dataSource = this.state.dataSource.cloneWithRows(this.state.listInsights);
-    this._updateBasket(this.props)
-  }
+    //EventManager.addListener(UPDATE_ADVICES_COLLECTIONS, this._forceFetch)
+  //}
 
-  componentWillUnmount () {
-    EventManager.removeListener(UPDATE_ADVICES_COLLECTIONS, this._forceFetch);
-    this.saveTimeout = null;
-  }
-
+  //componentWillReceiveProps(nextProps) {
+  //  const { insightsUseful } = nextProps.node
+  //  const thisUseful = this.props.node.insightsUseful
+  //  if (insightsUseful.edges.length != thisUseful.edges.length) {
+  //    this._updateBasket(nextProps)
+  //    this.state.listInsights = insightsUseful.edges
+  //  }
+  //}
+  //
+  //componentWillMount() {
+  //  const { insightsUseful } = this.props.node
+  //  this.state.listInsights = insightsUseful.edges
+  //  this.state.dataSource = this.state.dataSource.cloneWithRows(this.state.listInsights)
+  //  this._updateBasket(this.props)
+  //}
+  //
+  //componentWillUnmount() {
+  //  EventManager.removeListener(UPDATE_ADVICES_COLLECTIONS, this._forceFetch)
+  //  this.saveTimeout = null
+  //}
 
   /**
    * update the basket in navBar
-   * @private
    */
-  _updateBasket (nextProps) {
-    clearTimeout(this.saveTimeout);
-    this.saveTimeout = setTimeout(()=> {
-      const { dispatch } = this.props;
-      dispatch({ type: SET_CURRENT_COLLECTION, collection: nextProps.node })
-    }, 66)
-  }
+  //_updateBasket (nextProps) {
+  //  clearTimeout(this.saveTimeout)
+  //  this.saveTimeout = setTimeout(() => {
+  //    const { dispatch } = this.props
+  //    dispatch({ type: SET_CURRENT_COLLECTION, collection: nextProps.node })
+  //  }, 66)
+  //}
 
-  /**
-   *
-   * @private
-   */
-  _onEndReached () {
-
-  }
-
-  _onSwipeStart (prop) {
+  handleSwipeStart(enabled) {
     this.setState({
-      scrollEnabled: prop
+      isScrollEnabled: enabled,
     })
   }
 
-  _opacityOff () {
-
-  }
-
-
-  _onShare () {}
-
   _forceFetch () {
-    this.props.relay.forceFetch();
+    const { relay } = this.props
+    relay.forceFetch()
     // TODO : update prev screen { user collections }
     EventManager.emit(UPDATE_COLLECTIONS)
   }
 
-  _renderInsight (rowData, sectionID, rowID) {
-    return (
+  _renderList() {
+    const { node, navigator, showBadAdvice } = this.props
+    const { edges } = node.insights
+    return edges.map((insight, index) => (
       <Advice
-        key={rowID}
-        collection={this.props.node}
+        key={index}
+        collection={edges}
         opacityOff={this._opacityOff}
-        insight={rowData.node}
-        navigator={this.props.navigator}
-        isBadAdviceList={this.props.showBadAdvice}
-        onSwipeStart={this._onSwipeStart}
-        forceFetch={this._forceFetch}
-        onShare={this._onShare}/>
-    )
+        insight={insight.node}
+        navigator={navigator}
+        isBadAdviceList={showBadAdvice}
+        onSwipeStart={(enabled) => this.handleSwipeStart(enabled)}
+        forceFetch={() => this._forceFetch}
+        />
+    ))
   }
 
-  _renderList () {
-    const { listInsights } = this.state;
-    if ( !listInsights.length ) return null;
-    return listInsights.map((collection, index)=> {
-      return this._renderInsight(collection, null, index)
-    })
-  }
-
-  /**
-   *s
-   * @returns {XML}
-   */
-  render () {
-    const { scrollEnabled, is_empty } = this.state;
-
-    if ( is_empty ) {
-      return <Empty />
+  render() {
+    const { node } = this.props
+    const { isScrollEnabled } = this.state
+    const { description, insights } = node
+    const note = description || DEFAULT_BORIS_NOTE
+    if (insights.length === 0) {
+      return (
+        <Empty />
+      )
     }
-
     return (
-      <View style={ styles.container }>
+      <View style={styles.container}>
         <ScrollView
-          scrollEnabled={scrollEnabled}
-          showsVerticalScrollIndicator={true}>
-          <ButtonsBoris name={this.props.node.name} />
+          scrollEnabled={isScrollEnabled}
+          showsVerticalScrollIndicator={true}
+          >
+          <ButtonsBoris note={note} />
           <View style={styles.scroll}>
             {this._renderList()}
           </View>
@@ -172,69 +146,43 @@ class UserInsightsUseful extends Component {
   }
 }
 
-const ButtonsBoris = (props) => (
-  <View style={ styles.borisContainer }>
+const ButtonsBoris = ({ note }) => (
+  <View style={styles.borisContainer}>
     <Boris
       mood="positive"
       size="small"
-      note={ props.name.trim() }/>
+      note={note.trim()}
+      />
   </View>
 )
 
-
-
-var insightFragment = Relay.QL`
-    fragment on Insight {
-        id
-        content
-        origin {
-            author
-            url
-            title
-            duration
-        }
-    }
-`;
-
-const ReduxComponent = connect()(UserInsightsUseful);
+const ReduxComponent = connect()(UserInsightsUseful)
 
 export default Relay.createContainer(ReduxComponent, {
   initialVariables: {
-    countInsights: 100
+    count: 100,
+    filter: 'USEFUL',
   },
   fragments: {
-    node : () => Relay.QL`
-        fragment on UserCollection {
-            id
-            name
-            insights(first : 1, filter : ALL) {
-                usefulCount
-                uselessCount
+    node: () => Relay.QL`
+      fragment on UserCollection {
+        id
+        description
+        insights(first: $count, filter: $filter) {
+          usefulCount
+          uselessCount
+          edges {
+            node {
+              ${insightFragment}
             }
-            insightsUseless: insights(first : $countInsights, filter : USELESS) {
-                usefulCount
-                uselessCount
-                edges {
-                    node {
-                        ${insightFragment}
-                    }
-                }
-            }
-            insightsUseful: insights(first : $countInsights, filter : USEFUL) {
-                usefulCount
-                uselessCount
-                edges {
-                    node {
-                        ${insightFragment}
-                    }
-                }
-            }
+          }
         }
+      }
     `,
     viewer: () => Relay.QL`
-        fragment on User {
-            id
-        }
-    `
-  }
-});
+      fragment on User {
+        id
+      }
+    `,
+  },
+})

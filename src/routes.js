@@ -62,7 +62,6 @@ export function renderScreen(params) {
           nodeID: screenParams.collectionId,
           filter: 'USEFUL',
         }),
-        forceFetch: true,
       })
     case 'insights_useless':
       return renderRootContainer(Scenes.UserInsightsUseless, screenParams, {

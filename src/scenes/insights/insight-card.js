@@ -43,7 +43,7 @@ import styles from './styles'
 
 const dimensions = Dimensions.get('window')
 
-class InsightForMe extends Component {
+class InsightCard extends Component {
   constructor(props, context) {
     super(props, context)
     this.state = {
@@ -426,7 +426,20 @@ const RateButtons = props => (
   </View>
 )
 
-const InsightForMeContainer = Relay.createContainer(InsightForMe, {
+export const insightFragment = Relay.QL`
+  fragment on Insight {
+    id
+    content
+    origin {
+      author
+      url
+      title
+      duration
+    }
+  }
+`
+
+const InsightCardContainer = Relay.createContainer(InsightCard, {
   fragments: {
     user: () => Relay.QL`
       fragment on User {
@@ -440,14 +453,7 @@ const InsightForMeContainer = Relay.createContainer(InsightForMe, {
           name
         }
         node {
-          id
-          content
-          origin {
-            author
-            url
-            title
-            duration
-          }
+          ${insightFragment}
           likeReaction {
             content
             mood
@@ -462,4 +468,4 @@ const InsightForMeContainer = Relay.createContainer(InsightForMe, {
   },
 })
 
-export default InsightForMeContainer
+export default InsightCardContainer

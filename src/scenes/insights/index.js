@@ -8,7 +8,7 @@ import {
   AllForNow,
   AllEnded,
 } from '../../components/confirmation-screens/insights-parts'
-import InsightForMeContainer from './insight-for-me'
+import InsightCardContainer from './insight-card'
 import styles from './styles'
 
 class InsightsScene extends Component {
@@ -63,7 +63,7 @@ class InsightsScene extends Component {
     const firstInsight = viewer.insights.edges[0]
     if (firstInsight) {
       return (
-        <InsightForMeContainer
+        <InsightCardContainer
           navigator={navigator}
           insight={firstInsight}
           user={viewer}
@@ -85,11 +85,11 @@ export default Relay.createContainer(InsightsScene, {
   fragments: {
     viewer: () => Relay.QL`
       fragment on User {
-        ${InsightForMeContainer.getFragment('user')}
+        ${InsightCardContainer.getFragment('user')}
 
         insights(first: $count, filter: $filter)  {
           edges {
-            ${InsightForMeContainer.getFragment('insight')}
+            ${InsightCardContainer.getFragment('insight')}
             topic {
               isFinishedByViewer
             }

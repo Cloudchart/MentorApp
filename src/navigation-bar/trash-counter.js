@@ -50,7 +50,7 @@ export default Relay.createContainer(TrashCounter, {
     node: () => Relay.QL`
       fragment on UserCollection {
         id
-        insights(first: 100) {
+        insights(first: 100, filter: ALL) {
           uselessCount
         }
       }

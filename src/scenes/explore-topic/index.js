@@ -23,7 +23,7 @@ class ExploreTopicScene extends Component {
     this.state = {
       isLoadingTail: false,
       dataSource: new ListView.DataSource({
-        rowHasChanged: (row1, row2) => row1 !== row
+        rowHasChanged: (row1, row2) => row1 !== row2
       }),
       showConfirmation: false,
     }

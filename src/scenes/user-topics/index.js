@@ -43,7 +43,7 @@ class UserTopics extends Component {
       closeAllItems: false,
       isLoadingTail: false,
       dataSource: new ListView.DataSource({
-        rowHasChanged: (row1, row2) => row1 !== row
+        rowHasChanged: (row1, row2) => row1 !== row2
       }),
     }
   }
@@ -80,7 +80,6 @@ class UserTopics extends Component {
       navigator.push({
         scene: 'subscription',
         title: 'Subscription',
-        filterUserAddedTopic: true,
       })
     }, 0)
   }
@@ -121,8 +120,6 @@ class UserTopics extends Component {
     const { viewer } = this.props
     const { closeAllItems } = this.state
     const { subscribedTopics } = viewer
-    const isLastTopic = ((parseInt(rowID) + 1) == subscribedTopics.edges.length)
-    const canAddTopic = subscribedTopics.availableSlotsCount > 0 && isLastTopic
     return (
       <View>
         <TopicSubscribed
@@ -131,12 +128,28 @@ class UserTopics extends Component {
           user={viewer}
           subscribedTopics={subscribedTopics}
           unsubscribeFromTopicCallback={() => console.log('UnsubscribeFromTopic')}
-          index={rowID}/>
-        {canAddTopic && (
-          <AddTopicButton onPress={() => this.handleAddTopicPress()} index={rowID + 2}/>
-        )}
+          index={rowID}
+          />
       </View>
     )
+  }
+
+  _renderAddButtons() {
+    const { viewer } = this.props
+    const { subscribedTopics } = viewer
+    if (subscribedTopics.availableSlotsCount === 0) {
+      return null
+    }
+    const result = []
+    for (let index = 0, length = subscribedTopics.availableSlotsCount; index < length; index++) {
+      result.push(
+        <AddTopicButton
+          onPress={() => this.handleAddTopicPress()}
+          index={subscribedTopics.edges.length + index}
+          />
+      )
+    }
+    return result
   }
 
   render () {
@@ -158,9 +171,7 @@ class UserTopics extends Component {
               showsVerticalScrollIndicator={false}
               />
           )}
-          {(subscribedTopics.availableSlotsCount > 0) && (
-            <AddTopicButton onPress={() => this.handleAddTopicPress()} index={0}/>
-          )}
+          {this._renderAddButtons()}
           <SubscribeButton onPress={() => this.handleSubscribePress()}/>
         </ScrollView>
       </View>

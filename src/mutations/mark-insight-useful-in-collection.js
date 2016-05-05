@@ -1,20 +1,19 @@
 import Relay from 'react-relay'
 
-class MarkInsightUsefulInCollectionMutation extends Relay.Mutation {
-
-  getMutation () {
+export default class MarkInsightUsefulInCollectionMutation extends Relay.Mutation {
+  getMutation() {
     return Relay.QL`mutation { markInsightUsefulInCollection }`
   }
 
-  getVariables () {
-    const { insight, collection } = this.props;
+  getVariables() {
+    const { insight, collection } = this.props
     return {
       insightID: insight.id,
-      collectionID: collection.id
+      collectionID: collection.id,
     }
   }
 
-  getFatQuery () {
+  getFatQuery() {
     return Relay.QL`
       fragment on MarkInsightUsefulInCollectionMutationPayload {
         insight {
@@ -43,8 +42,8 @@ class MarkInsightUsefulInCollectionMutation extends Relay.Mutation {
       type: 'FIELDS_CHANGE',
       fieldIDs: {
         insight: insight.id,
-        collection: collection.id
-      }
+        collection: collection.id,
+      },
     }, {
       type: 'RANGE_ADD',
       parentName: 'collection',
@@ -52,12 +51,10 @@ class MarkInsightUsefulInCollectionMutation extends Relay.Mutation {
       connectionName: 'insights',
       edgeName: 'insightEdge',
       rangeBehaviors: {
+        '': 'ignore',
         'filter(USEFUL)': 'append',
         'filter(USELESS)': 'remove',
       },
     }]
   }
 }
-
-export default MarkInsightUsefulInCollectionMutation;
-

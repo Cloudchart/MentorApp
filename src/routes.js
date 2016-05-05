@@ -1,14 +1,14 @@
-import React, { View } from "react-native"
+import React, { View } from 'react-native'
 import Relay, { RootContainer } from 'react-relay'
 import store from '../src/store'
-import _ from 'lodash'
-import { Loader } from "./components"
+import { Loader } from './components'
 import * as Scenes from './scenes'
 import InsightsScene from './scenes/insights'
 import RandomAdviceScene from './scenes/random-advice'
 import SubscriptionScene from './scenes/subscription'
 import UserInsightsScene from './scenes/user-insights'
 import ExploreTopicScene from './scenes/explore-topic'
+import SettingsScene from './scenes/settings'
 
 /**
  * @param {String} scene
@@ -30,7 +30,9 @@ export function renderScreen(scene, screenParams) {
     case 'random_advice':
       return renderRootContainer(RandomAdviceScene, screenParams)
     case 'settings':
-      return renderRootContainer(Scenes.Settings, screenParams);
+      return (
+        <SettingsScene {...screenParams}/>
+      )
     case 'subscription':
       return (
         <SubscriptionScene {...screenParams}/>
@@ -90,12 +92,9 @@ export function renderRootContainer(Component, screenParams, options) {
   const finalParams = screenParams ? screenParams : {}
   const finalRenderFailure = renderFailure ? renderFailure : null
   const finalForceFetch = forceFetch !== undefined ? forceFetch : false
-  //firstEnter = true;
-  //const renderFetched = _.throttle((data, readyState) => {
   const renderFetched = data => (
     <Component {...finalParams} {...data} />
   )
-  //}, 300);
 
   return (
     <RootContainer

@@ -84,7 +84,7 @@ class UserInsightCard extends Component {
     })
     Relay.Store.commitUpdate(mutation, {
       onSuccess: response => {
-        console.log('user-insights: marked as useless', this.props)
+        console.log('user-insights: marked as useless')
       }
     })
   }
@@ -107,7 +107,7 @@ class UserInsightCard extends Component {
     })
     Relay.Store.commitUpdate(mutation, {
       onSuccess: response => {
-        console.log('user-insights: marked as useful', this.props)
+        console.log('user-insights: marked as useful')
       }
     })
 

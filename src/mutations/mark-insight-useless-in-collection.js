@@ -1,6 +1,6 @@
 import Relay from 'react-relay'
 
-class MarkInsightUselessInCollectionMutation extends Relay.Mutation {
+export default class MarkInsightUselessInCollectionMutation extends Relay.Mutation {
   getMutation() {
     return Relay.QL`mutation { markInsightUselessInCollection }`
   }
@@ -13,7 +13,7 @@ class MarkInsightUselessInCollectionMutation extends Relay.Mutation {
     }
   }
 
-  getFatQuery () {
+  getFatQuery() {
     return Relay.QL`
       fragment on MarkInsightUselessInCollectionMutationPayload {
         insight {
@@ -36,7 +36,7 @@ class MarkInsightUselessInCollectionMutation extends Relay.Mutation {
     `
   }
 
-  getConfigs () {
+  getConfigs() {
     const { insight, collection } = this.props
     return [{
       type: 'FIELDS_CHANGE',
@@ -51,12 +51,11 @@ class MarkInsightUselessInCollectionMutation extends Relay.Mutation {
       connectionName: 'insights',
       edgeName: 'insightEdge',
       rangeBehaviors: {
+        '': 'ignore',
         'filter(USEFUL)': 'remove',
         'filter(USELESS)': 'append',
       },
     }]
   }
 }
-
-export default MarkInsightUselessInCollectionMutation
 

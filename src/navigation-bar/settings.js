@@ -1,21 +1,15 @@
 import React, {
-  Component,
-  Image,
-  View,
   TouchableOpacity,
-  TouchableWithoutFeedback
-} from "react-native";
-import { connect } from "react-redux";
-import { ACTION_SHOW_RANDOM_ADVICE } from "../actions/application";
-import Icon from "react-native-vector-icons/FontAwesome";
-import styles from "../styles/base";
+} from 'react-native'
+import Icon from 'react-native-vector-icons/FontAwesome'
+import styles from '../styles/base'
 
 export default ({ navigator }) => {
   const handlePress = () => {
     navigator.push({
       scene: 'settings',
       title: 'Settings',
-      FloatFromBottom: true
+      FloatFromBottom: true,
     })
   }
   return (

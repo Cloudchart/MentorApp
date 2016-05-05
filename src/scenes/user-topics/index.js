@@ -8,179 +8,190 @@ import React, {
   ListView,
   AlertIOS,
   PanResponder
-} from "react-native";
-import Relay from 'react-relay';
+} from 'react-native'
+import Relay from 'react-relay'
 import {
   Boris,
   Button,
   TopicSubscribed,
   ScrollListView
-} from "../../components";
-import styles from "./style";
-import { EventManager } from '../../event-manager';
-import * as device from "../../utils/device";
-import { getGradient } from "../../utils/colors";
-import { TOPICS_FORCE_FETCH } from '../../actions/application';
+} from '../../components'
+import styles from './style'
+import { EventManager } from '../../event-manager'
+import * as device from '../../utils/device'
+import { getGradient } from '../../utils/colors'
+import { TOPICS_FORCE_FETCH } from '../../actions/application'
 
-
-const BorisNoteForSubscription = "Don’t restrain yourself with 3 topics, meatb… Master. Subscribe and unlock the full power of your Virtual Mentor!";
+const BORIS_NOTE =
+  'Don\’t restrain yourself with 3 topics, meatb… Master. ' +
+  'Subscribe and unlock the full power of your Virtual Mentor!'
 
 const dataSource = new ListView.DataSource({
   rowHasChanged: (row1, row2) => row1 !== row2
 })
 
 class UserTopics extends Component {
-
-  state = {
-    isLoadingTail: false,
-    addControlShow: false,
-    closeAllItems: false
-  }
-
-  constructor (props) {
-    super(props)
-
-    this.forceFetch = this.forceFetch.bind(this);
-    EventManager.on(TOPICS_FORCE_FETCH, this.forceFetch);
-
-    this._onEndReached = this._onEndReached.bind(this);
-    this._unsubscribeFromTopicCallback = this._unsubscribeFromTopicCallback.bind(this);
-    this._addTopic = this._addTopic.bind(this);
-
-
+  constructor (props, context) {
+    super(props, context)
     this._panResponder = PanResponder.create({
-      onStartShouldSetPanResponderCapture: (evt, gestureState) => {
+      onStartShouldSetPanResponderCapture: (event, gestureState) => {
         this.setState({ closeAllItems: true })
-        return false;
+        return false
       }
-    });
+    })
+    this.state = {
+      closeAllItems: false,
+      isLoadingTail: false,
+      dataSource: new ListView.DataSource({
+        rowHasChanged: (row1, row2) => row1 !== row
+      }),
+    }
   }
 
-  // TODO not evading from the event
-  componentWillUnmount () {
-    //EventManager.removeListener(TOPICS_FORCE_FETCH, this.forceFetch);
+  componentDidMount() {
+    const { viewer } = this.props
+    this.setState({
+      dataSource: this._getTopicsDataSource(viewer.subscribedTopics),
+    })
   }
 
-  /**
-   *
-   * @private
-   */
-  _onEndReached () {
-
+  componentWillReceiveProps(nextProps) {
+    const { viewer } = this.props
+    if (nextProps.viewer.subscribedTopics !== viewer.subscribedTopics) {
+      const { subscribedTopics } = nextProps.viewer
+      this.setState({
+        dataSource: this._getTopicsDataSource(subscribedTopics),
+      })
+    }
   }
 
-  /**
-   *
-   */
-  subscribeNow () {
-    const { navigator } = this.props;
+  _getTopicsDataSource(topics) {
+    const { dataSource } = this.state
+    const filteredTopics = topics.edges.filter(topic => (
+        !topic.node.isSubscribedByViewer)
+    )
+    this._topicsData = (this._topicsData || []).concat(filteredTopics)
+    return dataSource.cloneWithRows(this._topicsData)
+  }
 
-    setTimeout(()=> {
+  handleSubscribePress() {
+    const { navigator } = this.props
+    setTimeout(() => {
       navigator.push({
         scene: 'subscription',
         title: 'Subscription',
-        filterUserAddedTopic: true
+        filterUserAddedTopic: true,
       })
     }, 0)
   }
 
-  _unsubscribeFromTopicCallback () {
-    this.props.relay.forceFetch();
-  }
-
-  forceFetch () {
-    this.props.relay.forceFetch();
-  }
-
-
-  _addTopic () {
-    const { navigator } = this.props;
-
-    setTimeout(()=> {
+  handleAddTopicPress() {
+    const { navigator } = this.props
+    setTimeout(() => {
       navigator.push({
         scene: 'select_topics',
         title: 'Select up to 3 topics to start:',
-        filterUserAddedTopic: true
+        filterUserAddedTopic: true,
       })
     }, 0)
   }
 
+  handleEndReached() {
+    const { relay, viewer } = this.props
+    const { pageInfo } = viewer.subscribedTopics
+    if (!pageInfo || !pageInfo.hasNextPage) {
+      return
+    }
+    const { count } = relay.variables
+    this.setState({
+      isLoadingTail: true,
+    })
+    relay.setVariables({
+      count: count + PAGE_SIZE,
+    }, transaction => {
+      if (transaction.done) {
+        this.setState({
+          isLoadingTail: false,
+        })
+      }
+    })
+  }
 
-  _renderTopic (rowData, sectionID, rowID) {
-    const { subscribedTopics } = this.props.viewer;
-    const last = (parseInt(rowID) + 1) == subscribedTopics.edges.length;
-    const isShow = subscribedTopics.availableSlotsCount && last;
-
+  _renderTopic(rowData, sectionID, rowID) {
+    const { viewer } = this.props
+    const { closeAllItems } = this.state
+    const { subscribedTopics } = viewer
+    const isLastTopic = ((parseInt(rowID) + 1) == subscribedTopics.edges.length)
+    const canAddTopic = subscribedTopics.availableSlotsCount > 0 && isLastTopic
     return (
       <View>
         <TopicSubscribed
-          topic={ rowData.node }
-          closeAllItems={this.state.closeAllItems}
-          user={ this.props.viewer }
+          topic={rowData.node}
+          closeAllItems={closeAllItems}
+          user={viewer}
           subscribedTopics={subscribedTopics}
-          unsubscribeFromTopicCallback={this._unsubscribeFromTopicCallback}
-          index={ rowID }/>
-        {!isShow ? null :
-          <Add addTopic={this._addTopic} index={ rowID + 2 }/> }
+          unsubscribeFromTopicCallback={() => console.log('UnsubscribeFromTopic')}
+          index={rowID}/>
+        {canAddTopic && (
+          <AddTopicButton onPress={() => this.handleAddTopicPress()} index={rowID + 2}/>
+        )}
       </View>
     )
   }
 
-  /**
-   *s
-   * @returns {XML}
-   */
   render () {
-    const { viewer } = this.props;
-    const { subscribedTopics } = viewer;
-    const { isLoadingTail } = this.state;
-
+    const { viewer } = this.props
+    const { subscribedTopics } = viewer
+    const { isLoadingTail, dataSource } = this.state
     return (
-      <View style={ styles.container } {...this._panResponder.panHandlers}>
+      <View style={styles.container} {...this._panResponder.panHandlers}>
         <ScrollView
           showsVerticalScrollIndicator={true}>
-          {!subscribedTopics.edges.length ? null :
+          {(subscribedTopics.edges.length > 0) && (
             <ListView
-              dataSource={dataSource.cloneWithRows(subscribedTopics.edges)}
+              dataSource={dataSource}
               renderRow={(rowData, sectionID, rowID) => this._renderTopic(rowData, sectionID, rowID)}
               pageSize={14}
               isLoadingTail={isLoadingTail}
-              onEndReached={this._onEndReached}
+              onEndReached={() => this.handleEndReached()}
               onEndReachedThreshold={20}
-              showsVerticalScrollIndicator={false}/>}
-
-          {subscribedTopics.edges.length ? null :
-            <Add addTopic={this._addTopic} index={ 0 }/>}
-
-          <ButtonsBoris subscribeNow={this.subscribeNow.bind(this)}/>
+              showsVerticalScrollIndicator={false}
+              />
+          )}
+          {(subscribedTopics.availableSlotsCount > 0) && (
+            <AddTopicButton onPress={() => this.handleAddTopicPress()} index={0}/>
+          )}
+          <SubscribeButton onPress={() => this.handleSubscribePress()}/>
         </ScrollView>
       </View>
     )
   }
 }
 
-const ButtonsBoris = (props) => (
-  <View style={ {marginTop : device.size(40) } }>
-    <View style={ styles.borisContainer }>
-      <Boris mood="positive" size="small" note={ BorisNoteForSubscription }/>
+const SubscribeButton = ({ onPress }) => (
+  <View style={{ marginTop: device.size(40) }}>
+    <View style={styles.borisContainer}>
+      <Boris mood="positive" size="small" note={BORIS_NOTE}/>
     </View>
     <Button
-      onPress={props.subscribeNow}
+      onPress={onPress}
       label=""
       color="orange"
-      style={ styles.button }>
-      <Text style={ styles.buttonText }>Subscribe now</Text>
+      style={styles.button}>
+      <Text style={styles.buttonText}>
+        Subscribe now
+      </Text>
     </Button>
   </View>
 )
 
-const Add = (props) => (
+const AddTopicButton = ({ onPress, index }) => (
   <TouchableOpacity
-    activeOpacity={ 0.75 }
-    onPress={props.addTopic}
-    style={[styles.item, { backgroundColor: getGradient('green', props.index ) } ]}>
-    <View style={ styles.itemInner }>
-      <Text style={ styles.itemText } numberOfLines={ 1 }>
+    activeOpacity={0.75}
+    onPress={onPress}
+    style={[styles.item, { backgroundColor: getGradient('green', index) }]}>
+    <View style={styles.itemInner}>
+      <Text style={styles.itemText} numberOfLines={1}>
         Add Topic
       </Text>
     </View>
@@ -190,17 +201,17 @@ const Add = (props) => (
 export default Relay.createContainer(UserTopics, {
   fragments: {
     viewer: () => Relay.QL`
-        fragment on User {
-            ${TopicSubscribed.getFragment('user')}
-            subscribedTopics: topics(first: 100, filter: SUBSCRIBED) {
-                availableSlotsCount
-                edges {
-                    node {
-                        ${TopicSubscribed.getFragment('topic')}
-                    }
-                }
+      fragment on User {
+        ${TopicSubscribed.getFragment('user')}
+        subscribedTopics: topics(first: 100, filter: SUBSCRIBED) {
+          availableSlotsCount
+          edges {
+            node {
+              ${TopicSubscribed.getFragment('topic')}
             }
+          }
         }
+      }
     `
   }
-});
+})

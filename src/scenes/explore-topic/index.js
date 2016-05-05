@@ -21,7 +21,6 @@ class ExploreTopicScene extends Component {
   constructor(props, context) {
     super(props, context)
     this.state = {
-      loader: true,
       isLoadingTail: false,
       dataSource: new ListView.DataSource({
         rowHasChanged: (row1, row2) => row1 !== row
@@ -48,11 +47,12 @@ class ExploreTopicScene extends Component {
   }
 
   _getTopicsDataSource(topics) {
+    const { dataSource } = this.state
     const filteredTopics = topics.edges.filter(topic => (
         !topic.node.isSubscribedByViewer)
     )
     this._topicsData = (this._topicsData || []).concat(filteredTopics)
-    return this.state.dataSource.cloneWithRows(this._topicsData)
+    return dataSource.cloneWithRows(this._topicsData)
   }
 
   handleSelectTopic(topic) {

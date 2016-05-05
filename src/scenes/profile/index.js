@@ -3,7 +3,8 @@ import React, {
   Text,
   ScrollView,
   TouchableOpacity,
-  View
+  View,
+  AlertIOS,
 } from 'react-native'
 import Relay from 'react-relay'
 import { Boris, Button, TransparentButton } from '../../components'
@@ -29,8 +30,8 @@ class ProfileScene extends Component {
   constructor (props, context) {
     super(props, context)
     this.state = {
-      email: props.viewer.email || 'test@mail.ru',
-      isSubscribed: props.viewer.isActive || false,
+      email: props.viewer.email,
+      isSubscribed: props.viewer.isSubscribed || false,
     }
     if (!this.state.email) {
       this._tryToLogin()

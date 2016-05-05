@@ -41,6 +41,9 @@ export default class SubscriptionScene extends Component {
       PRODUCT_FULL_ACCESS_YEARLY,
     ]
     InAppUtils.loadProducts(products, (error, products) => {
+      if (this._isUnmounted) {
+        return
+      }
       const loadedProducts = {}
       if (error !== null) {
         AlertIOS.alert(
@@ -72,6 +75,9 @@ export default class SubscriptionScene extends Component {
         isRestoring: true,
       })
       InAppUtils.restorePurchases((error, products) => {
+        if (this._isUnmounted) {
+          return
+        }
         if (error) {
           AlertIOS.alert(
             'In-App Purchases',
@@ -88,6 +94,10 @@ export default class SubscriptionScene extends Component {
         }
       })
     })
+  }
+
+  componentWillUnmount() {
+    this._isUnmounted = true
   }
 
   _handlePurchaseComplete({ productIdentifier, transactionIdentifier }) {

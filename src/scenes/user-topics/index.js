@@ -22,11 +22,12 @@ import * as device from '../../utils/device'
 import { getGradient } from '../../utils/colors'
 import { TOPICS_FORCE_FETCH } from '../../actions/application'
 
-const BORIS_NOTE =
-  'Don\’t restrain yourself with 3 topics, meatb… Master. ' +
+const getBorisNote = ({ availableSlotsCount }) => (
+  `Don\’t restrain yourself with ${availableSlotsCount} topics, meatb… Master. ` +
   'Subscribe and unlock the full power of your Virtual Mentor!'
+)
 
-class UserTopics extends Component {
+class UserTopicsScene extends Component {
   constructor (props, context) {
     super(props, context)
     this._panResponder = PanResponder.create({
@@ -168,17 +169,24 @@ class UserTopics extends Component {
               />
           )}
           {this._renderAddButtons()}
-          <SubscribeButton onPress={() => this.handleSubscribePress()}/>
+          <SubscribeButton
+            availableSlotsCount={subscribedTopics.availableSlotsCount}
+            onPress={() => this.handleSubscribePress()}
+            />
         </ScrollView>
       </View>
     )
   }
 }
 
-const SubscribeButton = ({ onPress }) => (
+const SubscribeButton = ({ onPress, availableSlotsCount }) => (
   <View style={{ marginTop: device.size(40) }}>
     <View style={styles.borisContainer}>
-      <Boris mood="positive" size="small" note={BORIS_NOTE}/>
+      <Boris
+        mood="positive"
+        size="small"
+        note={getBorisNote({ availableSlotsCount })}
+        />
     </View>
     <Button
       onPress={onPress}
@@ -205,7 +213,7 @@ const AddTopicButton = ({ onPress, index }) => (
   </TouchableOpacity>
 )
 
-export default Relay.createContainer(UserTopics, {
+export default Relay.createContainer(UserTopicsScene, {
   fragments: {
     viewer: () => Relay.QL`
       fragment on User {

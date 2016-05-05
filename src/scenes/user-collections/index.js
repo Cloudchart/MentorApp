@@ -7,7 +7,7 @@ import React, {
   View,
   ListView,
   DeviceEventEmitter,
-  PanResponder
+  PanResponder,
 } from 'react-native'
 import Relay from 'react-relay'
 import { connect } from 'react-redux'
@@ -25,7 +25,7 @@ const dataSource = new ListView.DataSource({
   rowHasChanged: (row1, row2) => row1 !== row2
 })
 
-class UserCollections extends Component {
+class UserCollectionsScene extends Component {
 
   state = {
     loader: false,
@@ -377,7 +377,8 @@ class UserCollections extends Component {
   }
 }
 
-const ReduxComponent = connect()(UserCollections)
+const ReduxComponent = connect()(UserCollectionsScene)
+
 export default Relay.createContainer(ReduxComponent, {
   initialVariables: {
     count: 20,

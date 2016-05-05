@@ -4,130 +4,152 @@ import React, {
   ScrollView,
   TouchableOpacity,
   View
-} from "react-native";
-import Relay from 'react-relay';
-import { Boris, Button, TransparentButton } from "../../components";
-import Icon from "react-native-vector-icons/FontAwesome";
-import { connect } from "react-redux";
-import { FBSDKGraphRequest, FBSDKAccessToken } from "react-native-fbsdkcore";
-import { FBSDKLoginManager } from "react-native-fbsdklogin";
-import { USER_SUBSCRIBE_NEWSLETTER, USER_FACEBOOK_LOGIN } from "../../actions/application";
-import { loginAndGetDataFromFB } from "../../actions/user";
-import styles from "./style";
-import baseStyles from "../../styles/base";
+} from 'react-native'
+import Relay from 'react-relay'
+import { Boris, Button, TransparentButton } from '../../components'
+import Icon from 'react-native-vector-icons/FontAwesome'
+import { connect } from 'react-redux'
+import { FBSDKGraphRequest, FBSDKAccessToken } from 'react-native-fbsdkcore'
+import { FBSDKLoginManager } from 'react-native-fbsdklogin'
+import { loginAndGetDataFromFB } from '../../actions/user'
+import styles from './style'
+import baseStyles from '../../styles/base'
 
-class Profile extends Component {
+const BORIS_NOTE_SUBSCRIBED =
+  'This is your profile. You can manage your newsletter subscription below, Master.'
+const BORIS_NOTE_LETS_CONNECT =
+  'Let\s connect with your Facebook profile, Master.'
 
-  state = {
-    userEmail: ''
-  }
+const getBorisNoteForProfile = ({ email }) => (
+  `My sensors detected your email: ${email}, Master. ` +
+  'Would you like me to send you some pleasantly rare emails?'
+)
 
-  constructor (props) {
-    super(props);
-
-    /** trying to get the token */
-    if ( !this.props.viewer.email ) {
-      this._tryLogin();
-    } else {
-      this.state.userEmail = this.props.viewer.email;
+class ProfileScene extends Component {
+  constructor (props, context) {
+    super(props, context)
+    this.state = {
+      email: props.viewer.email || 'test@mail.ru',
+      isSubscribed: props.viewer.isActive || false,
     }
-    this.subscribe = this.subscribe.bind(this)
+    if (!this.state.email) {
+      this._tryToLogin()
+    }
   }
 
-  /**
-   *
-   * @private
-   */
-  _tryLogin () {
-    const { navigator } = this.props;
-
+  _tryToLogin() {
     loginAndGetDataFromFB()
-      .then((data)=> {
-        this.setState({ userEmail: data.email })
+      .then(({ email }) => {
+        this.setState({ email })
       })
-      .catch((err)=> {
-        if ( err.isCancelled ) {
-          navigator.pop();
+      .catch(error => {
+        if (error.isCancelled) {
+          this.props.navigator.pop()
         } else {
-          alert('Error logging in.');
+          AlertIOS.alert(
+            'Connect',
+            'Failed to connect with your Facebook account.'
+          )
         }
       })
   }
 
-  subscribe () {
-    const { dispatch } = this.props;
-    if ( this.state.userEmail ) {
-      dispatch({
-        type: USER_SUBSCRIBE_NEWSLETTER,
-        email: this.state.userEmail
-      })
-    }
+  handleSubscribePress() {
+    // request mutation
+    this.setState({
+      isSubscribed: true,
+    })
   }
 
-  render () {
-    const { user } = this.props;
-    const borisText = `My sensors detected your email: ${this.state.userEmail}, Master. Would you like me to send you some pleasantly rare emails!`;
-    const borisTextSubscribe = `This is your profile. You can manage your newsletter subscription below, Master.`;
+  handleUnsubscribePress() {
+    // request mutation
+    this.setState({
+      isSubscribed: false,
+    })
+  }
 
-    if ( user.subscribeNewsletter ) {
-      return <AllReadySubscribe borisText={borisTextSubscribe}/>
+  render() {
+    const { viewer } = this.props
+    const { email, isSubscribed } = this.state
+    if (isSubscribed) {
+      return (
+        <AlreadySubscribed
+          borisText={BORIS_NOTE_SUBSCRIBED}
+          onPress={() => this.handleUnsubscribePress()}
+          />
+      )
     }
-
+    if (!email) {
+      return (
+        <View style={styles.container}>
+          <View style={styles.borisContainer}>
+            <Boris
+              mood="positive"
+              size="small"
+              note={BORIS_NOTE_LETS_CONNECT}
+              />
+          </View>
+        </View>
+      )
+    }
+    const note = getBorisNoteForProfile({ email })
     return (
-      <View style={ styles.container }>
-        <View style={ styles.borisContainer }>
+      <View style={styles.container}>
+        <View style={styles.borisContainer}>
           <Boris
             mood="positive"
             size="small"
-            note={ borisText }/>
+            note={note}
+            />
         </View>
-
         <Button
           label=""
           color="green"
-          onPress={this.subscribe}
-          style={ styles.button }>
-          <Text style={ styles.buttonText }>Subscribe to newsletter</Text>
+          onPress={() => this.handleSubscribePress()}
+          style={styles.button}
+          >
+          <Text style={styles.buttonText}>
+            Subscribe to Newsletter
+          </Text>
         </Button>
       </View>
     )
   }
 }
 
-
-const AllReadySubscribe = (props) => (
-  <View style={ styles.container }>
-    <View style={ styles.borisContainer }>
+const AlreadySubscribed = ({ borisText, onPress }) => (
+  <View style={styles.container}>
+    <View style={styles.borisContainer}>
       <Boris
         mood="positive"
         size="small"
-        note={ props.borisText }/>
+        note={borisText}
+        />
     </View>
-
     <Button
       label=""
       color="green"
-      style={ styles.button }>
+      onPress={onPress}
+      style={styles.button}>
       <View style={styles.buttonInner}>
-        <Text style={ styles.buttonText }>Subscribe to newsletter</Text>
+        <Text style={styles.buttonText}>
+          Subscribed to newsletter
+        </Text>
         <Icon name="check" style={[baseStyles.crumbIconAngle, styles.selectedIcon]}/>
       </View>
     </Button>
   </View>
 )
 
-const ReduxComponent = connect(state => ({
-  user: state.user
-}))(Profile)
-
-export default Relay.createContainer(ReduxComponent, {
+export default Relay.createContainer(ProfileScene, {
   fragments: {
     viewer: () => Relay.QL`
-        fragment on User {
-            id
-            name
-            email
-        }
+      fragment on User {
+        id
+        name
+        email
+        isActive
+      }
     `
   }
 });

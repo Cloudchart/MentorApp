@@ -6,6 +6,8 @@ import * as Scenes from './scenes'
 import InsightsScene from './scenes/insights'
 import RandomAdviceScene from './scenes/random-advice'
 import SubscriptionScene from './scenes/subscription'
+import UserCollectionsScene from './scenes/user-collections'
+import UserTopicsScene from './scenes/user-topics'
 import UserInsightsScene from './scenes/user-insights'
 import ExploreTopicScene from './scenes/explore-topic'
 import SettingsScene from './scenes/settings'
@@ -38,9 +40,9 @@ export function renderScreen(scene, screenParams) {
         <SubscriptionScene {...screenParams}/>
       )
     case 'user-collections':
-      return renderRootContainer(Scenes.UserCollections, screenParams, { forceFetch: true })
+      return renderRootContainer(UserCollectionsScene, screenParams, { forceFetch: true })
     case 'user-topics':
-      return renderRootContainer(Scenes.UserTopics, screenParams, { forceFetch: true })
+      return renderRootContainer(UserTopicsScene, screenParams, { forceFetch: true })
     case 'explore-topic':
       return renderRootContainer(ExploreTopicScene, screenParams)
     case 'replace-topic':

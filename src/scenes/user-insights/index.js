@@ -90,14 +90,12 @@ class UserInsightsScene extends Component {
   //}
 
   handleSwipeStart() {
-    console.log('onSwipeStart')
     this.setState({
       isScrollEnabled: false,
     })
   }
 
   handleSwipeEnd() {
-    console.log('onSwipeEnd')
     this.setState({
       isScrollEnabled: true,
     })
@@ -118,7 +116,7 @@ class UserInsightsScene extends Component {
         key={index}
         collection={node}
         opacityOff={this._opacityOff}
-        insight={insight}
+        insight={insight.node}
         navigator={navigator}
         type={filter}
         onSwipeStart={() => this.handleSwipeStart()}

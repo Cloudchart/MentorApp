@@ -16,23 +16,46 @@ class MarkInsightUsefulInCollectionMutation extends Relay.Mutation {
 
   getFatQuery () {
     return Relay.QL`
-        fragment on MarkInsightUsefulInCollectionMutationPayload @relay(pattern: true) {
-            collection
-            insight
-            insightID
-            insightEdge
+      fragment on MarkInsightUsefulInCollectionMutationPayload {
+        insight {
+          id
         }
+        collection {
+          id
+          insights(first: 100, filter: ALL) {
+            usefulCount
+            uselessCount
+            edges {
+              node {
+                id
+              }
+            }
+          }
+        }
+        insightEdge
+      }
     `
   }
 
-  getConfigs () {
-    const { insight, collection } = this.props;
-    return [ {
+  getConfigs() {
+    const { insight, collection } = this.props
+    return [{
       type: 'FIELDS_CHANGE',
       fieldIDs: {
-        insight: insight.id
+        insight: insight.id,
+        collection: collection.id
       }
-    } ]
+    }, {
+      type: 'RANGE_ADD',
+      parentName: 'collection',
+      parentID: collection.id,
+      connectionName: 'insights',
+      edgeName: 'insightEdge',
+      rangeBehaviors: {
+        'filter(USEFUL)': 'append',
+        'filter(USELESS)': 'remove',
+      },
+    }]
   }
 }
 

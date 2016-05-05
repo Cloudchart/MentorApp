@@ -28,6 +28,9 @@ const networkLayerOptions = {
 if (process.env['NODE_ENV'] === 'development') {
   class LoggingNetworkLayer extends DefaultNetworkLayer {
     sendMutation(mutation) {
+      const name = mutation._mutation.__concreteNode__.calls[0].name
+      const variables = mutation._mutation.__variables__
+      console.log('GraphQL mutation request: ', name, variables)
       mutation.then(
           response => console.log('GraphQL mutation done: ', response),
           error => console.error('GraphQL mutation failed: ', error)

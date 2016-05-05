@@ -18,7 +18,7 @@ const UsefulCounter = ({ navigator, viewer }) => {
     })
   }
   const count = viewer.collections.edges.reduce((memo, edge) => {
-      return memo + edge.node.insights.usefulCount
+      return memo + (edge.node.insights && edge.node.insights.usefulCount) || 0
     }, 0)
   if (count === 0) {
     return (
@@ -31,7 +31,9 @@ const UsefulCounter = ({ navigator, viewer }) => {
       activeOpacity={0.75}
       onPress={() => handlePress()}
       >
-      <Text style={styles.crumbIconBasketText}>{count}</Text>
+      <Text style={styles.crumbIconBasketText}>
+        {count}
+      </Text>
     </TouchableOpacity>
   )
 }

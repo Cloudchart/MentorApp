@@ -26,10 +26,6 @@ const BORIS_NOTE =
   'Don\’t restrain yourself with 3 topics, meatb… Master. ' +
   'Subscribe and unlock the full power of your Virtual Mentor!'
 
-const dataSource = new ListView.DataSource({
-  rowHasChanged: (row1, row2) => row1 !== row2
-})
-
 class UserTopics extends Component {
   constructor (props, context) {
     super(props, context)
@@ -37,13 +33,13 @@ class UserTopics extends Component {
       onStartShouldSetPanResponderCapture: (event, gestureState) => {
         this.setState({ closeAllItems: true })
         return false
-      }
+      },
     })
     this.state = {
       closeAllItems: false,
       isLoadingTail: false,
       dataSource: new ListView.DataSource({
-        rowHasChanged: (row1, row2) => row1 !== row2
+        rowHasChanged: (row1, row2) => row1 !== row2,
       }),
     }
   }
@@ -75,24 +71,23 @@ class UserTopics extends Component {
   }
 
   handleSubscribePress() {
-    const { navigator } = this.props
-    setTimeout(() => {
-      navigator.push({
-        scene: 'subscription',
-        title: 'Subscription',
-      })
-    }, 0)
+    this.props.navigator.push({
+      scene: 'subscription',
+      title: 'Subscription',
+    })
   }
 
-  handleAddTopicPress() {
-    const { navigator } = this.props
-    setTimeout(() => {
-      navigator.push({
-        scene: 'select_topics',
-        title: 'Select up to 3 topics to start:',
-        filterUserAddedTopic: true,
-      })
-    }, 0)
+  handleAddTopicPress(availableToSelect) {
+    const title =
+      (availableToSelect > 1) ?
+        'Select up to ' + availableToSelect + ' topics to start:' :
+        'Select any one of following topics:'
+    this.props.navigator.push({
+      scene: 'select_topics',
+      title,
+      filterUserAddedTopic: true,
+      availableToSelect,
+    })
   }
 
   handleEndReached() {
@@ -144,7 +139,8 @@ class UserTopics extends Component {
     for (let index = 0, length = subscribedTopics.availableSlotsCount; index < length; index++) {
       result.push(
         <AddTopicButton
-          onPress={() => this.handleAddTopicPress()}
+          key={index}
+          onPress={() => this.handleAddTopicPress(subscribedTopics.availableSlotsCount)}
           index={subscribedTopics.edges.length + index}
           />
       )

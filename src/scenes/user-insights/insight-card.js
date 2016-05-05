@@ -76,12 +76,11 @@ class UserInsightCard extends Component {
     if (type === 'USELESS') {
       return false
     }
-    console.log('handleMarkUseless')
     const { insight, collection } = this.props
     animationCardLeft(params, this._pan, this._resetState.bind(this))
     const mutation = new MarkInsightUselessInCollectionMutation({
       collection,
-      insight,
+      insight: insight,
     })
     Relay.Store.commitUpdate(mutation, {
       onSuccess: response => {
@@ -100,7 +99,6 @@ class UserInsightCard extends Component {
     if (type === 'USEFUL') {
       return false
     }
-    console.log('handleMarkUseful')
     const { insight, collection } = this.props
     animationCardRight(this._pan, this._resetState.bind(this))
     const mutation = new MarkInsightUsefulInCollectionMutation({
@@ -154,11 +152,11 @@ class UserInsightCard extends Component {
   }
 
   handleShareControlPress() {
-    const { node } = this.props.insight
+    const { insight } = this.props
     ActionSheetIOS.showShareActionSheetWithOptions(
       {
-        url: node.origin.url || '',
-        message: node.content,
+        url: insight.origin.url || '',
+        message: insight.content,
         subject: 'a subject to go in the email heading'
       },
         error => {},
@@ -262,7 +260,7 @@ class UserInsightCard extends Component {
           >
           <Animated.View style={animatedCardStyles}>
             <Insight
-              insight={insight.node}
+              insight={insight}
               fontSize={20}
               onCardPress={() => this.handleCardPress()}/>
           </Animated.View>

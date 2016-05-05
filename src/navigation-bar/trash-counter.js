@@ -50,6 +50,11 @@ export default Relay.createContainer(TrashCounter, {
           uselessCount
         }
       }
-    `
+    `,
+    viewer: () => Relay.QL`
+      fragment on User {
+        id
+      }
+    `,
   },
 })

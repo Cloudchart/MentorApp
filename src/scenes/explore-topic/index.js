@@ -23,7 +23,7 @@ class ExploreTopicScene extends Component {
     this.state = {
       isLoadingTail: false,
       dataSource: new ListView.DataSource({
-        rowHasChanged: (row1, row2) => row1 !== row2
+        rowHasChanged: (row1, row2) => row1 !== row2,
       }),
       showConfirmation: false,
     }
@@ -56,15 +56,12 @@ class ExploreTopicScene extends Component {
   }
 
   handleSelectTopic(topic) {
-    const { navigator } = this.props
-    setTimeout(() => {
-      navigator.push({
-        scene: 'insights',
-        title: topic.name,
-        topicId: topic.id,
-        filter: 'PREVIEW',
-      })
-    }, 0)
+    this.props.navigator.push({
+      scene: 'insights',
+      title: topic.name,
+      topicId: topic.id,
+      filter: 'PREVIEW',
+    })
   }
 
   handleEndReached() {

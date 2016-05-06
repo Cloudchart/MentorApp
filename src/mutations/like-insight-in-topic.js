@@ -1,6 +1,7 @@
 import Relay from 'react-relay'
 
 class LikeInsightInTopicMutation extends Relay.Mutation {
+
   getMutation() {
     return Relay.QL`mutation { likeInsightInTopic }`
   }

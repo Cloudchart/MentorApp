@@ -28,6 +28,7 @@ const getBorisNote = ({ availableSlotsCount }) => (
 )
 
 class UserTopicsScene extends Component {
+
   constructor (props, context) {
     super(props, context)
     this._panResponder = PanResponder.create({

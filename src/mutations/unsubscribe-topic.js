@@ -1,6 +1,6 @@
 import Relay from 'react-relay'
 
-class UnsubscribeFromTopicMutation extends Relay.Mutation {
+export default class UnsubscribeFromTopicMutation extends Relay.Mutation {
 
   getMutation() {
     return Relay.QL`mutation { unsubscribeFromTopic }`
@@ -14,19 +14,19 @@ class UnsubscribeFromTopicMutation extends Relay.Mutation {
 
   getFatQuery() {
     return Relay.QL`
-        fragment on UnsubscribeFromTopicMutationPayload {
-            topic {
-                isSubscribedByViewer
-            }
-            topicID
-            user {
-                topics
-            }
+      fragment on UnsubscribeFromTopicMutationPayload {
+        topic {
+          isSubscribedByViewer
         }
+        topicID
+        user {
+          topics
+        }
+      }
     `
   }
 
-  getConfigs () {
+  getConfigs() {
     return [
       {
         type: 'FIELDS_CHANGE',
@@ -36,8 +36,4 @@ class UnsubscribeFromTopicMutation extends Relay.Mutation {
       }
     ]
   }
-
 }
-
-
-export default UnsubscribeFromTopicMutation

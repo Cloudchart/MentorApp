@@ -11,6 +11,7 @@ import InsightCardContainer from './insight-card'
 import styles from './styles'
 
 class InsightsScene extends Component {
+
   constructor(props, context) {
     super(props, context)
     this.state = {

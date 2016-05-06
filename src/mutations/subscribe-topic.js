@@ -1,13 +1,14 @@
 import Relay from 'react-relay'
 
-class SubscribeOnTopicMutation extends Relay.Mutation {
+export default class SubscribeOnTopicMutation extends Relay.Mutation {
+
   getMutation() {
     return Relay.QL`mutation { subscribeOnTopic }`
   }
 
   getVariables () {
     return {
-      topicID: this.props.topic.id
+      topicID: this.props.topic.id,
     }
   }
 
@@ -20,10 +21,11 @@ class SubscribeOnTopicMutation extends Relay.Mutation {
         topicEdge
         user {
           topics
-          insights(first: 100, filter: UNRATED) {
+          insights(first: 1, filter: UNRATED) {
             edges {
               node {
                 id
+                content
               }
             }
           }
@@ -54,5 +56,3 @@ class SubscribeOnTopicMutation extends Relay.Mutation {
     }]
   }
 }
-
-export default SubscribeOnTopicMutation

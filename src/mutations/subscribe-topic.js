@@ -15,12 +15,18 @@ class SubscribeOnTopicMutation extends Relay.Mutation {
     return Relay.QL`
       fragment on SubscribeOnTopicMutationPayload {
         topic {
-          id
           isSubscribedByViewer
         }
         topicEdge
         user {
           topics
+          insights(first: 100, filter: UNRATED) {
+            edges {
+              node {
+                id
+              }
+            }
+          }
         }
       }
     `

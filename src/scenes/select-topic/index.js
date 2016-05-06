@@ -13,21 +13,20 @@ import React, {
   DeviceEventEmitter,
   PushNotificationIOS,
   AsyncStorage
-} from "react-native";
-import Relay from 'react-relay';
-import { checkPermissionsNotification } from "../../system";
-import { Boris, Button, Loader, Topic, ScrollListView, SubscribeTopicAdd } from "../../components";
-import { STORAGE_KEY } from "../../actions/application";
-import * as device from "../../utils/device";
-import styles from "./style";
-import { _flex } from "../../styles/base";
-
+} from 'react-native'
+import Relay from 'react-relay'
+import { checkPermissionsNotification } from '../../system'
+import { Boris, Button, Loader, Topic, ScrollListView, SubscribeTopicAdd } from '../../components'
+import { STORAGE_KEY } from '../../actions/application'
+import * as device from '../../utils/device'
+import styles from './style'
+import { _flex } from '../../styles/base'
 
 const dataSource = new ListView.DataSource({
   rowHasChanged: (row1, row2) => row1 !== row2
 })
 
-class SelectTopic extends Component {
+class SelectTopicScene extends Component {
 
   state = {
     isLoadingTail: false,
@@ -140,6 +139,7 @@ class SelectTopic extends Component {
             navigator.push({ scene: 'notifications', title: 'Notifications' });
           }
         })
+        .catch(err => {})
     } catch ( error ) {
 
     }
@@ -231,40 +231,39 @@ class SelectTopic extends Component {
   }
 }
 
-export default Relay.createContainer(SelectTopic, {
+export default Relay.createContainer(SelectTopicScene, {
   initialVariables: {
-    count: 30
+    count: 30,
   },
   fragments: {
     viewer: () => Relay.QL`
-        fragment on User {
-            id
-            ${Topic.getFragment('user')}
-            topics(first: $count, filter: DEFAULT) {
-                availableSlotsCount
-                edges {
-                    node {
-                        id
-                        isSubscribedByViewer
-                        ${Topic.getFragment('topic')}
-                    }
-                }
-                pageInfo {
-                    hasNextPage
-                }
+      fragment on User {
+        id
+        ${Topic.getFragment('user')}
+        topics(first: $count, filter: DEFAULT) {
+          availableSlotsCount
+          edges {
+            node {
+              id
+              isSubscribedByViewer
+              ${Topic.getFragment('topic')}
             }
-
-            subscribedTopics: topics(first: 3, filter: SUBSCRIBED) {
-                availableSlotsCount
-                edges {
-                    node {
-                        id
-                        isSubscribedByViewer
-                        ${Topic.getFragment('topic')}
-                    }
-                }
-            }
+          }
+          pageInfo {
+            hasNextPage
+          }
         }
+        subscribedTopics: topics(first: 3, filter: SUBSCRIBED) {
+          availableSlotsCount
+          edges {
+            node {
+              id
+              isSubscribedByViewer
+              ${Topic.getFragment('topic')}
+            }
+          }
+        }
+      }
     `
-  }
+  },
 });

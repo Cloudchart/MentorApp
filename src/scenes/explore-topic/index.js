@@ -25,14 +25,13 @@ class ExploreTopicScene extends Component {
       dataSource: new ListView.DataSource({
         rowHasChanged: (row1, row2) => row1 !== row2,
       }),
-      showConfirmation: false,
     }
   }
 
   componentDidMount() {
     const { viewer } = this.props
     this.setState({
-      dataSource: this._getTopicsDataSource(viewer.topics),
+      dataSource: this._getDataSource(viewer.topics),
     })
   }
 
@@ -41,12 +40,12 @@ class ExploreTopicScene extends Component {
     if (nextProps.viewer.topics !== viewer.topics) {
       const { topics } = nextProps.viewer
       this.setState({
-        dataSource: this._getTopicsDataSource(topics),
+        dataSource: this._getDataSource(topics),
       })
     }
   }
 
-  _getTopicsDataSource(topics) {
+  _getDataSource(topics) {
     const { dataSource } = this.state
     const filteredTopics = topics.edges.filter(topic => (
         !topic.node.isSubscribedByViewer)
@@ -105,7 +104,7 @@ class ExploreTopicScene extends Component {
         <ScrollListView
           dataSource={dataSource}
           renderRow={(rowData, sectionID, rowID) => this._renderTopic(rowData, sectionID, rowID)}
-          pageSize={30}
+          pageSize={PAGE_SIZE}
           isLoadingTail={isLoadingTail}
           onEndReached={() => this.handleEndReached()}
           onEndReachedThreshold={20}

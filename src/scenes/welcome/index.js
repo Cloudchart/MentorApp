@@ -2,75 +2,62 @@ import React, {
   Animated,
   Component,
   StyleSheet,
-  View
-} from "react-native";
-import { Boris, Button } from "../../components";
-import Relay, { RootContainer } from 'react-relay';
-import styles from "./style";
+  View,
+} from 'react-native'
+import { Boris, Button } from '../../components'
+import Relay, { RootContainer } from 'react-relay'
+import styles from './style'
 
+const BORIS_NOTE =
+  'Hello, meatb... master! I am Boris, and I will guide you from zero to one, ' +
+  'as Master Thiel said.'
 
-class Welcome extends Component {
-
-  static propTypes = {
-    onForward: React.PropTypes.func
-  };
-
-  state = {
-    buttonOpacity: new Animated.Value(0)
+class WelcomeScene extends Component {
+  constructor(props, context) {
+    super(props, context)
+    this._buttonOpacity = new Animated.Value(0)
   }
 
-  constructor (props) {
-    super(props)
-    this._navigatorReplace = this._navigatorReplace.bind(this)
-  }
-
-
-  componentDidMount () {
-    Animated.timing(this.state.buttonOpacity, {
+  componentDidMount() {
+    Animated.timing(this._buttonOpacity, {
       duration: 1000,
-      toValue: 1
+      toValue: 1,
     }).start()
   }
 
-  _navigatorReplace (evt) {
-    const { navigator } = this.props;
-    let data = { scene: 'connect', title: 'Connect to start' };
-
-    navigator.push({
-      scene: data.scene,
-      title: data.title || '',
-      advice: data.advice || null,
-      sceneConfig: data.conf || null
+  handleConnectPress() {
+    this.props.navigator.push({
+      scene: 'connect',
+      title: 'Connect to start',
     })
   }
 
-  _sendNotification () {
-    require('RCTDeviceEventEmitter').emit('remoteNotificationReceived', {
+  _sendNotification() {
+    const RCTDeviceEventEmitter = require('RCTDeviceEventEmitter')
+    RCTDeviceEventEmitter.emit('remoteNotificationReceived', {
       aps: {
         alert: 'Sample notification',
         badge: '+1',
         sound: 'default',
-        category: 'REACT_NATIVE'
+        category: 'REACT_NATIVE',
       }
-    });
+    })
   }
 
-  render () {
-    const { buttonOpacity } = this.state;
-    const styleButton = [ styles.continue, { opacity: buttonOpacity } ];
+  render() {
+    const styleButton = [styles.continue, { opacity: this._buttonOpacity }]
     return (
-      <View style={ styles.container }>
+      <View style={styles.container}>
         <Boris
           mood="positive"
           size="big"
-          note="Hello, meatb... master! I am Boris, and I will guide you from zero to one, as Master Thiel said."
-          style={ styles.boris }
+          note={BORIS_NOTE}
+          style={styles.boris}
         />
-
         <Animated.View style={styleButton}>
           <Button
             label="Continue"
-            onPress={this._navigatorReplace}
+            onPress={() => this.handleConnectPress()}
             color="blue"
           />
         </Animated.View>
@@ -79,22 +66,21 @@ class Welcome extends Component {
   }
 }
 
-
-export default Relay.createContainer(Welcome, {
+export default Relay.createContainer(WelcomeScene, {
   fragments: {
     viewer: () => Relay.QL`
-        fragment on User {
-            reactions(first: 1, scope: "greetings") {
-                edges {
-                    node {
-                        mood
-                        content
-                        weight
-                    }
-                }
+      fragment on User {
+        reactions(first: 1, scope: "greetings") {
+          edges {
+            node {
+              mood
+              content
+              weight
             }
+          }
         }
+      }
     `
-  }
-});
+  },
+})
 

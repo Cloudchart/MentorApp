@@ -11,6 +11,8 @@ import UserTopicsScene from './scenes/user-topics'
 import UserInsightsScene from './scenes/user-insights'
 import ExploreTopicScene from './scenes/explore-topic'
 import SettingsScene from './scenes/settings'
+import QuestionnaireScene from './scenes/questionnaire'
+import WelcomeScene from './scenes/welcome'
 
 /**
  * @param {String} scene
@@ -20,11 +22,11 @@ import SettingsScene from './scenes/settings'
 export function renderScreen(scene, screenParams) {
   switch (scene) {
     case 'welcome':
-      return renderRootContainer(Scenes.Welcome, screenParams)
+      return renderRootContainer(WelcomeScene, screenParams)
     case 'connect':
       return renderRootContainer(Scenes.Connect, screenParams)
     case 'questionnaire':
-      return renderRootContainer(Scenes.Questionnaire, screenParams)
+      return renderRootContainer(QuestionnaireScene, screenParams)
     case 'select_topics':
       return renderRootContainer(Scenes.SelectTopic, screenParams)
     case 'insights':

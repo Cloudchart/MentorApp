@@ -62,7 +62,9 @@ export default Relay.createContainer(ExploreInsightsScene, {
       fragment on Topic {
         insights(first: $count, filter: $filter)  {
           edges {
-            ${InsightCardContainer.getFragment('insight')}
+            node {
+              ${InsightCardContainer.getFragment('insight')}
+            }
           }
         }
       }

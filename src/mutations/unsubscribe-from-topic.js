@@ -50,7 +50,7 @@ export default class UnsubscribeFromTopicMutation extends Relay.Mutation {
       edgeName: 'topicEdge',
       rangeBehaviors: {
         'filter(DEFAULT)': 'append',
-        'filter(SUBSCRIBED)': 'removed',
+        'filter(SUBSCRIBED)': 'remove',
       },
     }]
   }

@@ -15,6 +15,7 @@ import QuestionnaireScene from './scenes/questionnaire'
 import WelcomeScene from './scenes/welcome'
 import SelectTopicScene from './scenes/select-topic'
 import ConnectScene from './scenes/connect'
+import ExploreInsightsScene from './scenes/insights/explore'
 
 /**
  * @param {String} scene
@@ -49,6 +50,16 @@ export function renderScreen(scene, screenParams) {
       return renderRootContainer(UserTopicsScene, screenParams, { forceFetch: true })
     case 'explore-topic':
       return renderRootContainer(ExploreTopicScene, screenParams)
+    case 'explore-insights':
+      return renderRootContainer(ExploreInsightsScene, {
+        filter: 'PREVIEW',
+        ...screenParams,
+      }, {
+        route: new NodeRoute({
+          nodeID: screenParams.topicID,
+          filter: 'PREVIEW',
+        }),
+      })
     case 'replace-topic':
       return renderRootContainer(Scenes.ReplaceTopic, screenParams)
     case 'follow-up':

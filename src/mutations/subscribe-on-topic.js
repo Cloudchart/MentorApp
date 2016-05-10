@@ -50,7 +50,7 @@ export default class SubscribeOnTopicMutation extends Relay.Mutation {
       edgeName: 'topicEdge',
       rangeBehaviors: {
         'filter(DEFAULT)': 'append',
-        'filter(SUBSCRIBED)': 'append'
+        'filter(SUBSCRIBED)': 'append',
       },
     }]
   }

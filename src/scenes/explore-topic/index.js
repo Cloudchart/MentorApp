@@ -56,10 +56,9 @@ class ExploreTopicScene extends Component {
 
   handleSelectTopic(topic) {
     this.props.navigator.push({
-      scene: 'insights',
+      scene: 'explore-insights',
       title: topic.name,
-      topicId: topic.id,
-      filter: 'PREVIEW',
+      topicID: topic.id,
     })
   }
 
@@ -139,6 +138,6 @@ export default Relay.createContainer(ExploreTopicScene, {
           }
         }
       }
-    `
+    `,
   },
 })

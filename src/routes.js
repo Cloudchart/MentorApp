@@ -13,6 +13,8 @@ import ExploreTopicScene from './scenes/explore-topic'
 import SettingsScene from './scenes/settings'
 import QuestionnaireScene from './scenes/questionnaire'
 import WelcomeScene from './scenes/welcome'
+import SelectTopicScene from './scenes/select-topic'
+import ConnectScene from './scenes/connect'
 
 /**
  * @param {String} scene
@@ -24,11 +26,11 @@ export function renderScreen(scene, screenParams) {
     case 'welcome':
       return renderRootContainer(WelcomeScene, screenParams)
     case 'connect':
-      return renderRootContainer(Scenes.Connect, screenParams)
+      return renderRootContainer(ConnectScene, screenParams)
     case 'questionnaire':
       return renderRootContainer(QuestionnaireScene, screenParams)
     case 'select_topics':
-      return renderRootContainer(Scenes.SelectTopic, screenParams)
+      return renderRootContainer(SelectTopicScene, screenParams)
     case 'insights':
       return renderRootContainer(InsightsScene, screenParams)
     case 'random_advice':

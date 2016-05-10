@@ -1,6 +1,6 @@
 import Relay from 'react-relay'
 
-class LikeInsightInTopicMutation extends Relay.Mutation {
+export default class LikeInsightInTopicMutation extends Relay.Mutation {
 
   getMutation() {
     return Relay.QL`mutation { likeInsightInTopic }`
@@ -79,4 +79,3 @@ class LikeInsightInTopicMutation extends Relay.Mutation {
   }
 }
 
-export default LikeInsightInTopicMutation

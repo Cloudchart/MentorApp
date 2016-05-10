@@ -9,7 +9,6 @@ import TopicEmpty from './topic/topic-empty';
 import AnimateSequences from './animate-sequences';
 import Insight from './insight';
 import InsightRate from './insight/insight-rate';
-import SubscribeTopicAdd from './confirmation-screens/subscribe-topic';
 import FBLoginButton from './fb-login';
 import UserNotifications from './user-notifications';
 
@@ -28,5 +27,4 @@ export {
   Topic,
   TopicSubscribed,
   TopicEmpty,
-  SubscribeTopicAdd
 }

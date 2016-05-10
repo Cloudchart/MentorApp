@@ -97,7 +97,6 @@ export class AllForNow extends Component {
         <View style={ allForNowStyle.borisContainer }>
           <Boris mood="positive" size="small" note={ALL_FOR_NOW_MESSAGE}/>
         </View>
-
         <Button
           onPress={this.subscribeNow}
           label=""
@@ -105,7 +104,6 @@ export class AllForNow extends Component {
           style={ allForNowStyle.button }>
           <Text style={ allForNowStyle.buttonText }>Subscribe now</Text>
         </Button>
-
       </View>
     )
   }
@@ -129,7 +127,6 @@ export class AllEnded extends Component {
         <View style={ allForNowStyle.borisContainer }>
           <Boris mood="positive" size="small" note={ALL_ENDED_MESSAGE}/>
         </View>
-
         <Button
           onPress={this.subscribeNow}
           label=""
@@ -137,15 +134,12 @@ export class AllEnded extends Component {
           style={ allForNowStyle.button }>
           <Text style={ allForNowStyle.buttonText }>Okay</Text>
         </Button>
-
       </View>
     )
   }
 }
 
 export class TopicFinished extends Component {
-
-  state = {}
 
   constructor(props) {
     super(props)
@@ -157,43 +151,35 @@ export class TopicFinished extends Component {
     navigator.push({
       scene: 'select_topics',
       title: 'Select up to 3 topics to start:',
-      filterUserAddedTopic: true
+      excludeUserTopics: true,
     })
   }
 
-  /**
-   *s
-   * @returns {XML}
-   */
   render() {
     return (
-      <View style={ allForNowStyle.container }>
+      <View style={allForNowStyle.container}>
         <View>
           <Text style={topicFinished.text}>{`You're done!`}</Text>
         </View>
         <View style={topicFinished.star}>
           <Icon name="star" style={styles.crumbIconStar}/>
         </View>
-
-        <View style={ allForNowStyle.borisContainer }>
+        <View style={allForNowStyle.borisContainer}>
           <Boris mood="positive" size="small" note={TOPIC_FINISHED_MESSAGE}/>
         </View>
-
         <Button
           onPress={this.exploreTopic}
           label=""
           color="green"
-          style={ allForNowStyle.button }>
-          <Text style={ allForNowStyle.buttonText }>Add another topic </Text>
+          style={allForNowStyle.button}>
+          <Text style={allForNowStyle.buttonText}>Add another topic </Text>
         </Button>
-
         <TransparentButton
           style={{paddingVertical: 20, marginTop: 5}}
           label="Continue learning"
           onPress={this.props.continueLearning}
           color="green"
           />
-
       </View>
     )
   }

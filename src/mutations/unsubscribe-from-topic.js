@@ -1,9 +1,9 @@
 import Relay from 'react-relay'
 
-export default class SubscribeOnTopicMutation extends Relay.Mutation {
+export default class UnsubscribeFromTopicMutation extends Relay.Mutation {
 
   getMutation() {
-    return Relay.QL`mutation { subscribeOnTopic }`
+    return Relay.QL`mutation { unsubscribeFromTopic }`
   }
 
   getVariables () {
@@ -14,13 +14,13 @@ export default class SubscribeOnTopicMutation extends Relay.Mutation {
 
   getFatQuery() {
     return Relay.QL`
-      fragment on SubscribeOnTopicMutationPayload {
+      fragment on UnsubscribeFromTopicMutationPayload {
         topic {
           isSubscribedByViewer
         }
+        topicID
         topicEdge
         user {
-          topics
           insights(first: 1, filter: UNRATED) {
             edges {
               node {
@@ -34,14 +34,14 @@ export default class SubscribeOnTopicMutation extends Relay.Mutation {
     `
   }
 
-  getConfigs () {
+  getConfigs() {
     const { user, topic } = this.props
     return [{
       type: 'FIELDS_CHANGE',
       fieldIDs: {
         topic: topic.id,
         user: user.id,
-      },
+      }
     }, {
       type: 'RANGE_ADD',
       parentName: 'user',
@@ -49,9 +49,8 @@ export default class SubscribeOnTopicMutation extends Relay.Mutation {
       connectionName: 'topics',
       edgeName: 'topicEdge',
       rangeBehaviors: {
-        '': 'append',
-        'filter(DEFAULT)': 'remove',
-        'filter(SUBSCRIBED)': 'append'
+        'filter(DEFAULT)': 'append',
+        'filter(SUBSCRIBED)': 'removed',
       },
     }]
   }

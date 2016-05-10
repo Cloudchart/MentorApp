@@ -12,98 +12,94 @@ import React, {
   ListView,
   DeviceEventEmitter,
   PushNotificationIOS,
-  AsyncStorage
+  AsyncStorage,
 } from 'react-native'
 import Relay from 'react-relay'
 import { checkPermissionsNotification } from '../../system'
-import { Boris, Button, Loader, Topic, ScrollListView, SubscribeTopicAdd } from '../../components'
+import { Boris, Button, Loader, Topic, ScrollListView } from '../../components'
+import SubscribeTopicAdd from '../../components/confirmation-screens/subscribe-topic-add'
 import { STORAGE_KEY } from '../../actions/application'
 import * as device from '../../utils/device'
 import styles from './style'
 import { _flex } from '../../styles/base'
 
-const dataSource = new ListView.DataSource({
-  rowHasChanged: (row1, row2) => row1 !== row2
-})
+const PAGE_SIZE = 30
 
 class SelectTopicScene extends Component {
 
-  state = {
-    isLoadingTail: false,
-    showConfirmation: false,
-    topicConfirmationSave: null
+  constructor(props, context) {
+    super(props, context)
+    this.state = {
+      isLoadingTail: false,
+      dataSource: new ListView.DataSource({
+        rowHasChanged: (row1, row2) => row1 !== row2,
+      }),
+    }
   }
 
-  constructor (props) {
-    super(props)
-    this.PAGE_SIZE = 30;
-    this._onEndReached = this._onEndReached.bind(this);
-    this._undoConfirmation = this._undoConfirmation.bind(this);
-    this._onEndReached = this._onEndReached.bind(this);
-    this._pressContinue = this._pressContinue.bind(this);
+  componentDidMount() {
+    const { viewer } = this.props
+    this.setState({
+      dataSource: this._getDataSource(viewer.topics),
+    })
   }
 
+  componentWillReceiveProps(nextProps) {
+    const { viewer } = this.props
+    if (nextProps.viewer.topics !== viewer.topics) {
+      this.setState({
+        dataSource: this._getDataSource(nextProps.viewer.topics),
+      })
+    }
+  }
 
-  /**
-   * this.props.viewer.topics.edges;
-   * @returns {*}
-   */
-  getTopicList () {
-    const { viewer, filterUserAddedTopic } = this.props;
-    const { topics } = viewer;
-    if ( filterUserAddedTopic ) {
-      return topics.edges.filter((topic) => !topic.node.isSubscribedByViewer)
+  _getDataSource(topics) {
+    const { excludeUserTopics } = this.props
+    const { dataSource } = this.state
+    let finalTopics;
+    if (excludeUserTopics) {
+      finalTopics = topics.edges.filter(topic =>
+        !topic.node.isSubscribedByViewer
+      )
     } else {
-      return this.props.viewer.topics.edges;
+      finalTopics = topics.edges
     }
+    this._topicsData = (this._topicsData || []).concat(finalTopics)
+    return dataSource.cloneWithRows(this._topicsData)
   }
 
-
-  /**
-   *
-   * @param params
-   * @param evt
-   * @private
-   */
-  _undoConfirmation (params, evt) {
-    switch ( params ) {
-      case 'not_now':
-        this.setState({ showConfirmation: false })
-      default:
+  handleEndReached() {
+    const { relay, viewer } = this.props
+    const { pageInfo } = viewer.topics
+    if (!pageInfo || !pageInfo.hasNextPage) {
+      return
     }
+    const { count } = relay.variables
+    this.setState({
+      isLoadingTail: true,
+    })
+    relay.setVariables({
+      count: count + PAGE_SIZE,
+    }, transaction => {
+      if (transaction.done) {
+        this.setState({
+          isLoadingTail: false,
+        })
+      }
+    })
   }
 
-  /**
-   *
-   * @private
-   */
-  _onEndReached () {
-    const { relay, viewer } = this.props;
-    let count = relay.variables.count;
-    let pageNext = viewer.pageInfo;
-
-    if ( !pageNext || !pageNext.hasNextPage ) {
-      return;
-    }
-
-    this.setState({ isLoadingTail: true })
-    relay.setVariables({ count: count * this.PAGE_SIZE }, (transaction) => {
-      if ( transaction.done ) this.setState({ isLoadingTail: false })
-    });
+  handleTopicPress(topic) {
+    //this.props.relay.forceFetch()
   }
 
-  _onPress (topic) {
-    this.props.relay.forceFetch();
-  }
-
-  _checkPress (topic) {
-    const { filterUserAddedTopic, viewer, navigator } = this.props;
-    const { availableSlotsCount } = viewer.subscribedTopics;
-
-    if ( filterUserAddedTopic ) {
-      this.props.navigator.pop();
+  handleTopicPressBefore(topic) {
+    //const { excludeUserTopics, viewer, navigator } = this.props
+    const { excludeUserTopics } = this.props
+    //const { availableSlotsCount } = viewer.subscribedTopics
+    if (excludeUserTopics) {
+      this.props.navigator.pop()
     }
-
     /*if ( filterUserAddedTopic && !availableSlotsCount ) {
      this.setState({
      topicConfirmationSave: {
@@ -115,117 +111,122 @@ class SelectTopicScene extends Component {
      }*/
   }
 
-  /**
-   * @private
-   */
-  async _pressContinue () {
-    const { navigator } = this.props;
-
+  async handleContinuePress() {
+    const { navigator } = this.props
+    let notificationsStatus
     try {
-      let isConfirm = await AsyncStorage.getItem(STORAGE_KEY);
-
-      if ( isConfirm || isConfirm == 'already_request_permissions' ) {
+      notificationsStatus = await AsyncStorage.getItem(STORAGE_KEY)
+    } catch (e) {
+      // nothing
+    }
+    if (notificationsStatus && notificationsStatus == 'already_request_permissions') {
+      navigator.resetTo({
+        scene: 'insights',
+        filter: 'UNRATED',
+        title: '',
+      })
+      return
+    }
+    try {
+      const permissions = checkPermissionsNotification()
+      if (permissions === 'on') {
         navigator.resetTo({
           scene: 'insights',
           filter: 'UNRATED',
-          title: ''
-        });
-        return;
-      }
-
-      checkPermissionsNotification()
-        .then((data)=> {
-          if ( data == 'off' ) {
-            navigator.push({ scene: 'notifications', title: 'Notifications' });
-          }
+          title: '',
         })
-        .catch(err => {})
-    } catch ( error ) {
-
+        return
+      }
+    } catch (error) {
+      // nothing
     }
+    navigator.push({
+      scene: 'notifications',
+      title: 'Notifications',
+    })
   }
 
-  _buttons () {
-    const { filterUserAddedTopic, viewer } = this.props;
-
-    if ( filterUserAddedTopic ) return;
-
-    if ( !viewer.subscribedTopics.edges.length ) {
+  _renderButton() {
+    const { excludeUserTopics, viewer } = this.props
+    if (excludeUserTopics) {
+      return
+    }
+    if (viewer.subscribedTopics.edges.length === 0) {
       return (
-        <View style={ styles.containerBoris }>
+        <View style={styles.containerBoris}>
           <Boris
             mood="positive"
             size="small"
             animate={ true }
-            style={ styles.boris }
+            style={styles.boris}
           />
           <Text style={styles.textBoris}>
             Yoy can always change them later, Master!
           </Text>
         </View>
       )
-    } else {
-      return (
-        <View style={styles.button}>
-          <Button
-            label="Continue"
-            onPress={this._pressContinue}
-            color="green"
-            style={{marginHorizontal: device.size(18)}}
-          />
-        </View>
-      )
     }
+    return (
+      <View style={styles.button}>
+        <Button
+          label="Continue"
+          onPress={() => this.handleContinuePress()}
+          color="green"
+          style={{marginHorizontal: device.size(18)}}
+        />
+      </View>
+    )
   }
 
-  _renderTopic (rowData, sectionID, rowID) {
-    const { subscribedTopics } = this.props.viewer;
-    const topic = rowData.node;
-
+  _renderTopic(rowData, sectionID, rowID) {
+    const { viewer } = this.props
+    const { subscribedTopics } = viewer
+    const topic = rowData.node
     return (
       <Topic
-        topic={ topic }
-        user={ this.props.viewer }
+        topic={topic}
+        user={viewer}
         subscribedTopics={subscribedTopics}
-        index={ rowID }
-        onPressBefore={this._checkPress.bind(this, topic)}
-        onPress={this._onPress.bind(this, topic)}
+        index={rowID}
+        onPressBefore={() => this.handleTopicPressBefore(topic)}
+        onPress={() => this.handleTopicPress(topic)}
       />
     )
   }
 
-  render () {
-    const { isLoadingTail, topicConfirmationSave, showConfirmation } = this.state;
-    const { filterUserAddedTopic, viewer, navigator } = this.props;
-    const topicCount = viewer.subscribedTopics.edges.length;
-    const { availableSlotsCount } = viewer.subscribedTopics;
-    const styleScroll = { marginBottom: !topicCount ? device.size(120) : device.size(80) };
-
-    if ( !availableSlotsCount && filterUserAddedTopic && showConfirmation ) {
+  render() {
+    const { isLoadingTail, dataSource, topicConfirmationSave, showConfirmation } = this.state
+    const { excludeUserTopics, viewer, navigator } = this.props
+    const { subscribedTopics } = viewer
+    if (subscribedTopics.availableSlotsCount === 0 &&
+      excludeUserTopics &&
+      showConfirmation) {
       return (
         <SubscribeTopicAdd
           navigator={navigator}
-          popToTop='pop'
-          undo={this._undoConfirmation}
+          popToTop="pop"
+          onNotNowPress={() =>  this.setState({ showConfirmation: false })}
           subscribedTopics={viewer.subscribedTopics}
-          {...topicConfirmationSave}  />
+          {...topicConfirmationSave}
+          />
       )
     }
-
+    const scrollListStyle = {
+      marginBottom: (subscribedTopics.edges.length === 0) ? device.size(120) : device.size(80),
+    }
     return (
       <View style={styles.container}>
         <ScrollListView
-          dataSource={dataSource.cloneWithRows(this.getTopicList())}
+          dataSource={dataSource}
           renderRow={(rowData, sectionID, rowID) => this._renderTopic(rowData, sectionID, rowID)}
           pageSize={30}
           isLoadingTail={isLoadingTail}
-          onEndReached={this._onEndReached}
+          onEndReached={() => this.handleEndReached()}
           onEndReachedThreshold={20}
           showsVerticalScrollIndicator={true}
-          style={[_flex, styleScroll]}
+          style={[_flex, scrollListStyle]}
         />
-
-        {this._buttons()}
+        {this._renderButton()}
       </View>
     )
   }
@@ -253,17 +254,15 @@ export default Relay.createContainer(SelectTopicScene, {
             hasNextPage
           }
         }
-        subscribedTopics: topics(first: 3, filter: SUBSCRIBED) {
+        subscribedTopics: topics(first: 100, filter: SUBSCRIBED) {
           availableSlotsCount
           edges {
             node {
               id
-              isSubscribedByViewer
-              ${Topic.getFragment('topic')}
             }
           }
         }
       }
-    `
+    `,
   },
-});
+})

@@ -1,6 +1,10 @@
 import Relay from 'react-relay'
 
-class AddInsightToCollectionMutation extends Relay.Mutation {
+export default class AddInsightToCollectionMutation extends Relay.Mutation {
+
+  getMutation () {
+    return Relay.QL`mutation { addInsightToCollection }`
+  }
 
   getVariables () {
     const { insight, collection } = this.props;
@@ -9,11 +13,6 @@ class AddInsightToCollectionMutation extends Relay.Mutation {
       collectionID: collection.id
     }
   }
-
-  getMutation () {
-    return Relay.QL`mutation { addInsightToCollection }`
-  }
-
   getFatQuery () {
     return Relay.QL`
         fragment on AddInsightToCollectionMutationPayload {
@@ -36,5 +35,3 @@ class AddInsightToCollectionMutation extends Relay.Mutation {
       } ];
   }
 }
-
-export default AddInsightToCollectionMutation;

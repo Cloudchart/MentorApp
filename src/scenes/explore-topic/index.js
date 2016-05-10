@@ -47,8 +47,8 @@ class ExploreTopicScene extends Component {
 
   _getDataSource(topics) {
     const { dataSource } = this.state
-    const filteredTopics = topics.edges.filter(topic => (
-        !topic.node.isSubscribedByViewer)
+    const filteredTopics = topics.edges.filter(topic =>
+        !topic.node.isSubscribedByViewer
     )
     this._topicsData = (this._topicsData || []).concat(filteredTopics)
     return dataSource.cloneWithRows(this._topicsData)

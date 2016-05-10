@@ -1,11 +1,10 @@
 import React, {
   Animated,
   Component,
-  StyleSheet,
   View,
 } from 'react-native'
 import { Boris, Button } from '../../components'
-import Relay, { RootContainer } from 'react-relay'
+import Relay from 'react-relay'
 import styles from './style'
 
 const BORIS_NOTE =
@@ -13,6 +12,7 @@ const BORIS_NOTE =
   'as Master Thiel said.'
 
 class WelcomeScene extends Component {
+
   constructor(props, context) {
     super(props, context)
     this._buttonOpacity = new Animated.Value(0)
@@ -32,17 +32,17 @@ class WelcomeScene extends Component {
     })
   }
 
-  _sendNotification() {
-    const RCTDeviceEventEmitter = require('RCTDeviceEventEmitter')
-    RCTDeviceEventEmitter.emit('remoteNotificationReceived', {
-      aps: {
-        alert: 'Sample notification',
-        badge: '+1',
-        sound: 'default',
-        category: 'REACT_NATIVE',
-      }
-    })
-  }
+  //_sendNotification() {
+  //  const RCTDeviceEventEmitter = require('RCTDeviceEventEmitter')
+  //  RCTDeviceEventEmitter.emit('remoteNotificationReceived', {
+  //    aps: {
+  //      alert: 'Sample notification',
+  //      badge: '+1',
+  //      sound: 'default',
+  //      category: 'REACT_NATIVE',
+  //    },
+  //  })
+  //}
 
   render() {
     const styleButton = [styles.continue, { opacity: this._buttonOpacity }]
@@ -80,7 +80,7 @@ export default Relay.createContainer(WelcomeScene, {
           }
         }
       }
-    `
+    `,
   },
 })
 

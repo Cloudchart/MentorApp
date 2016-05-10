@@ -1,13 +1,11 @@
 import React, {
   Component,
   Text,
-  ScrollView,
-  TouchableOpacity,
   View,
   AlertIOS,
 } from 'react-native'
 import Relay from 'react-relay'
-import { Boris, Button, TransparentButton } from '../../components'
+import { Boris, Button } from '../../components'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import { connect } from 'react-redux'
 import { FBSDKGraphRequest, FBSDKAccessToken } from 'react-native-fbsdkcore'
@@ -27,12 +25,17 @@ const getBorisNoteForProfile = ({ email }) => (
 )
 
 class ProfileScene extends Component {
+
   constructor (props, context) {
     super(props, context)
+    const { viewer } = props
     this.state = {
-      email: props.viewer.email,
-      isSubscribed: props.viewer.isSubscribed || false,
+      email: viewer.email,
+      isSubscribed: viewer.isSubscribed || false,
     }
+  }
+
+  componentDidMount() {
     if (!this.state.email) {
       this._tryToLogin()
     }
@@ -56,21 +59,18 @@ class ProfileScene extends Component {
   }
 
   handleSubscribePress() {
-    // request mutation
     this.setState({
       isSubscribed: true,
     })
   }
 
   handleUnsubscribePress() {
-    // request mutation
     this.setState({
       isSubscribed: false,
     })
   }
 
   render() {
-    const { viewer } = this.props
     const { email, isSubscribed } = this.state
     if (isSubscribed) {
       return (
@@ -151,7 +151,6 @@ export default Relay.createContainer(ProfileScene, {
         email
         isActive
       }
-    `
-  }
-});
-
+    `,
+  },
+})

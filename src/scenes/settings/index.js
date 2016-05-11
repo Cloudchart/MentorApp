@@ -11,6 +11,7 @@ import styles from './style'
 import { getGradient } from '../../utils/colors'
 import { resetUser } from '../../actions/user'
 import { ViewerRoute } from '../../routes'
+import ResetUserMutation from '../../mutations/reset-user'
 
 export default class SettingsScene extends Component {
   static defaultProps = {
@@ -47,16 +48,29 @@ export default class SettingsScene extends Component {
     }
   }
 
-  handleItemPress(menuItem) {
-    const { navigator, viewer } = this.props
-    if (menuItem.name == 'resetUser') {
-      resetUser({ user: viewer })
-        .then(() => {
-          navigator.replace({
-            scene: 'welcome',
-            title: 'Virtual Mentor',
-          })
+  handleResetUserSuccess() {
+    const { relay, navigator } = this.props
+    relay.forceFetch(null, readyState => {
+      if (readyState.done) {
+        navigator.replace({
+          scene: 'welcome',
+          title: 'Virtual Mentor',
         })
+      }
+    })
+  }
+
+  handleItemPress(menuItem, viewer) {
+    const { navigator } = this.props
+    if (menuItem.name == 'Reset settings') {
+      if (viewer) {
+        const mutation = new ResetUserMutation({
+          user: viewer,
+        })
+        Relay.Store.commitUpdate(mutation, {
+          onSuccess: () => this.handleResetUserSuccess(),
+        })
+      }
       return
     }
     navigator.push({
@@ -77,13 +91,12 @@ export default class SettingsScene extends Component {
       <SettingsMenuItem
         {...rowData}
         rowID={rowID}
-        onPress={() => this.handleItemPress(rowData)}
+        onPress={() => this.handleItemPress(rowData, this.state.viewer)}
         />
     )
   }
 
   render() {
-    const { viewer } = this.props
     const { menuDataSource } = this.state
     return (
       <View style={styles.container}>
@@ -97,14 +110,19 @@ export default class SettingsScene extends Component {
         <Relay.RootContainer
           Component={ProfileLoginLogoutButton}
           route={new ViewerRoute()}
-          onLogout={() => this.handleLogout()}
+          renderFetched={props => (
+            <ProfileLoginLogoutButton
+              {...props}
+              onLogout={() => this.handleLogout()}
+              />
+          )}
           />
       </View>
     )
   }
 }
 
-const SettingsMenuItem = ({ rowID, name, onPress }) => (
+const SettingsMenuItem = ({ rowID, name, onPress, viewer }) => (
   <TouchableOpacity
     onPress={onPress}
     activeOpacity={0.75}
@@ -116,13 +134,15 @@ const SettingsMenuItem = ({ rowID, name, onPress }) => (
   </TouchableOpacity>
 )
 
-const LoginLogoutButton = ({ viewer, onLogout }) => (
-  <FBLoginButton
-    viewer={viewer}
-    style={styles.button}
-    onLogout={() => onLogout && onLogout()}
-    />
-)
+const LoginLogoutButton = ({ viewer, onLogout, onViewerReady }) => {
+  return (
+    <FBLoginButton
+      viewer={viewer}
+      style={styles.button}
+      onLogout={() => onLogout && onLogout()}
+      />
+  )
+}
 
 const ProfileLoginLogoutButton = Relay.createContainer(LoginLogoutButton, {
   fragments: {

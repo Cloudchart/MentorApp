@@ -6,7 +6,7 @@ export default class UnsubscribeFromTopicMutation extends Relay.Mutation {
     return Relay.QL`mutation { unsubscribeFromTopic }`
   }
 
-  getVariables () {
+  getVariables() {
     return {
       topicID: this.props.topic.id,
     }
@@ -18,16 +18,9 @@ export default class UnsubscribeFromTopicMutation extends Relay.Mutation {
         topic {
           isSubscribedByViewer
         }
-        topicID
-        topicEdge
         user {
-          insights(first: 1, filter: UNRATED) {
-            edges {
-              node {
-                id
-                content
-              }
-            }
+          topics {
+            availableSlotsCount
           }
         }
       }
@@ -41,16 +34,6 @@ export default class UnsubscribeFromTopicMutation extends Relay.Mutation {
       fieldIDs: {
         topic: topic.id,
         user: user.id,
-      }
-    }, {
-      type: 'RANGE_ADD',
-      parentName: 'user',
-      parentID: user.id,
-      connectionName: 'topics',
-      edgeName: 'topicEdge',
-      rangeBehaviors: {
-        'filter(DEFAULT)': 'append',
-        'filter(SUBSCRIBED)': 'remove',
       },
     }]
   }

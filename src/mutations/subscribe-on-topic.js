@@ -18,16 +18,9 @@ export default class SubscribeOnTopicMutation extends Relay.Mutation {
         topic {
           isSubscribedByViewer
         }
-        topicID
-        topicEdge
         user {
-          insights(first: 1, filter: UNRATED) {
-            edges {
-              node {
-                id
-                content
-              }
-            }
+          topics {
+            availableSlotsCount
           }
         }
       }
@@ -35,22 +28,11 @@ export default class SubscribeOnTopicMutation extends Relay.Mutation {
   }
 
   getConfigs() {
-    const { user, topic } = this.props
     return [{
       type: 'FIELDS_CHANGE',
       fieldIDs: {
-        topic: topic.id,
-        user: user.id,
-      },
-    }, {
-      type: 'RANGE_ADD',
-      parentName: 'user',
-      parentID: user.id,
-      connectionName: 'topics',
-      edgeName: 'topicEdge',
-      rangeBehaviors: {
-        'filter(DEFAULT)': 'append',
-        'filter(SUBSCRIBED)': 'append',
+        topic: this.props.topic.id,
+        user: this.props.user.id,
       },
     }]
   }

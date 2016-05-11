@@ -23,8 +23,8 @@ export default function SubscribeTopicAdd(props) {
       })
     onSubscribePress && onSubscribePress()
   }
-  const { subscribedTopics } = props
-  if (subscribedTopics.availableSlotsCount === 0) {
+  const { availableSlotsCount } = props
+  if (availableSlotsCount === 0) {
     return (
       <ExploreTopicSubscribe {...props} />
     )

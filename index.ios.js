@@ -48,34 +48,39 @@ if (process.env['NODE_ENV'] === 'development') {
 }
 
 class Mentor extends Component {
-  constructor (props) {
-    super(props)
+  constructor (props, context) {
+    super(props, context)
     this.state = {
-      enable: null
+      enable: null,
     }
     store.dispatch({
       type: SAVE_UNIQUE_ID_AND_DATE,
       id: DeviceInfo.getUniqueID(),
       appStart: moment(),
     })
-    EventManager.on('enable:network', () => {
-      this.setState({
-        enable: true
-      })
+    EventManager.on('enable:network', () => this.handleNetworkEnable())
+  }
+
+  handleNetworkEnable() {
+    this.setState({
+      enable: true,
     })
   }
 
-  render () {
-    const renderFailure = (error) => {
-      if (error && (error == 'TypeError: Network request failed')) {
-        return (
-          <NetworkError />
-        )
-      }
+  _renderFailure(error) {
+    if (error && error == 'TypeError: Network request failed') {
+      return (
+        <NetworkError />
+      )
     }
+  }
+
+  render() {
     return (
       <Provider store={store}>
-        {renderRootContainer(Application, null, { renderFailure })}
+        {renderRootContainer(Application, null, {
+          renderFailure: this._renderFailure,
+        })}
       </Provider>
     )
   }

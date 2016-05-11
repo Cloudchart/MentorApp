@@ -40,7 +40,7 @@ const showSettingsIconInScenes = [
 
 export const routeMapper = (viewer) => ({
   LeftButton: (route, navigator) => {
-    const { scene } = route;
+    const { scene } = route
     switch (scene) {
       case 'insights':
         if (route.filter !== 'UNRATED') {
@@ -50,7 +50,7 @@ export const routeMapper = (viewer) => ({
         }
         break
       case 'select_topics':
-        if (route.filterUserAddedTopic) {
+        if (route.excludeUserTopics) {
           return (
             <ArrowLeft navigator={navigator}/>
           )
@@ -189,7 +189,7 @@ const AngleLeftReplace = ({ back, navigator, scene, title }) => {
     } else {
       navigator.replace({
         scene: scene,
-        title: title || ''
+        title: title || '',
       })
     }
   }

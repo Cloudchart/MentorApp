@@ -20,20 +20,24 @@ class InsightsScene extends Component {
   }
 
   handleTopicFinish() {
+    // Sometimes we can submit mutation and change scene immediately
     try {
-      this.setState({ isTopicFinished: true })
+      this.setState({
+        isTopicFinished: true,
+      })
     } catch (e) {
-      // Sometimes we can submit mutation and change scene
+      // nothing
     }
   }
 
   render() {
     const { viewer, navigator } = this.props
     const { isTopicFinished } = this.state
-    console.log('insights-scene: found ' + viewer.insights.edges.length + ' available insights.')
+    const { subscribedTopics, insights } = viewer
+    console.log('insights-scene: found ' + insights.edges.length + ' available insights.', { insights, subscribedTopics })
     let isAllEnded = true
-    viewer.subscribedTopics.edges.forEach(edge => {
-      if (!edge.node.isTopicFinished) {
+    subscribedTopics.edges.forEach(({ node }) => {
+      if (!node.isTopicFinished) {
         isAllEnded = false
       }
     })
@@ -52,7 +56,7 @@ class InsightsScene extends Component {
           />
       )
     }
-    const isAllForNow = (viewer.insights.edges.length === 0)
+    const isAllForNow = (insights.edges.length === 0)
     if (isAllForNow) {
       return (
         <AllForNow
@@ -60,8 +64,9 @@ class InsightsScene extends Component {
           />
       )
     }
-    const firstInsight = viewer.insights.edges[0]
+    const firstInsight = insights.edges[0]
     if (firstInsight) {
+      console.log({ firstInsight })
       return (
         <InsightCardContainer
           navigator={navigator}

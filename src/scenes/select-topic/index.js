@@ -34,6 +34,7 @@ class SelectTopicScene extends Component {
       dataSource: new ListView.DataSource({
         rowHasChanged: (row1, row2) => row1 !== row2,
       }),
+      subscribedTopicsCount: 0,
     }
   }
 
@@ -56,16 +57,27 @@ class SelectTopicScene extends Component {
   _getDataSource(topics) {
     const { excludeUserTopics } = this.props
     const { dataSource } = this.state
-    let finalTopics;
+    let finalTopics
+    let subscribedTopicsCount = 0
     if (excludeUserTopics) {
-      finalTopics = topics.edges.filter(topic =>
-        !topic.node.isSubscribedByViewer
-      )
+      finalTopics = topics.edges.filter(({ node }) => {
+        if (node.isSubscribedByViewer) {
+          subscribedTopicsCount++
+        }
+        return !node.isSubscribedByViewer
+      })
     } else {
       finalTopics = topics.edges
+      topics.edges.forEach(({ node }) => {
+        if (node.isSubscribedByViewer) {
+          subscribedTopicsCount++
+        }
+      })
     }
-    this._topicsData = (this._topicsData || []).concat(finalTopics)
-    return dataSource.cloneWithRows(this._topicsData)
+    this.setState({
+      subscribedTopicsCount,
+    })
+    return dataSource.cloneWithRows(finalTopics)
   }
 
   handleEndReached() {
@@ -120,6 +132,7 @@ class SelectTopicScene extends Component {
       // nothing
     }
     if (notificationsStatus && notificationsStatus == 'already_request_permissions') {
+      console.log('already requested permissions, move to insights')
       navigator.resetTo({
         scene: 'insights',
         filter: 'UNRATED',
@@ -130,6 +143,7 @@ class SelectTopicScene extends Component {
     try {
       const permissions = checkPermissionsNotification()
       if (permissions === 'on') {
+        console.log('requested permissions granted, move to insights')
         navigator.resetTo({
           scene: 'insights',
           filter: 'UNRATED',
@@ -148,10 +162,11 @@ class SelectTopicScene extends Component {
 
   _renderButton() {
     const { excludeUserTopics, viewer } = this.props
+    const { subscribedTopicsCount } = this.state
     if (excludeUserTopics) {
       return
     }
-    if (viewer.subscribedTopics.edges.length === 0) {
+    if (subscribedTopicsCount === 0) {
       return (
         <View style={styles.containerBoris}>
           <Boris
@@ -180,13 +195,11 @@ class SelectTopicScene extends Component {
 
   _renderTopic(rowData, sectionID, rowID) {
     const { viewer } = this.props
-    const { subscribedTopics } = viewer
     const topic = rowData.node
     return (
       <Topic
         topic={topic}
         user={viewer}
-        subscribedTopics={subscribedTopics}
         index={rowID}
         onPressBefore={() => this.handleTopicPressBefore(topic)}
         onPress={() => this.handleTopicPress(topic)}
@@ -195,10 +208,14 @@ class SelectTopicScene extends Component {
   }
 
   render() {
-    const { isLoadingTail, dataSource, topicConfirmationSave, showConfirmation } = this.state
+    const {
+      isLoadingTail, dataSource, topicConfirmationSave, showConfirmation,
+      subscribedTopicsCount,
+      } = this.state
     const { excludeUserTopics, viewer, navigator } = this.props
-    const { subscribedTopics } = viewer
-    if (subscribedTopics.availableSlotsCount === 0 &&
+    const { topics } = viewer
+    const { availableSlotsCount } = topics
+    if (availableSlotsCount === 0 &&
       excludeUserTopics &&
       showConfirmation) {
       return (
@@ -206,13 +223,13 @@ class SelectTopicScene extends Component {
           navigator={navigator}
           popToTop="pop"
           onNotNowPress={() =>  this.setState({ showConfirmation: false })}
-          subscribedTopics={viewer.subscribedTopics}
+          availableSlotsCount={availableSlotsCount}
           {...topicConfirmationSave}
           />
       )
     }
     const scrollListStyle = {
-      marginBottom: (subscribedTopics.edges.length === 0) ? device.size(120) : device.size(80),
+      marginBottom: (subscribedTopicsCount === 0) ? device.size(120) : device.size(80),
     }
     return (
       <View style={styles.container}>
@@ -234,7 +251,7 @@ class SelectTopicScene extends Component {
 
 export default Relay.createContainer(SelectTopicScene, {
   initialVariables: {
-    count: 30,
+    count: 100,
   },
   fragments: {
     viewer: () => Relay.QL`
@@ -252,14 +269,6 @@ export default Relay.createContainer(SelectTopicScene, {
           }
           pageInfo {
             hasNextPage
-          }
-        }
-        subscribedTopics: topics(first: 100, filter: SUBSCRIBED) {
-          availableSlotsCount
-          edges {
-            node {
-              id
-            }
           }
         }
       }

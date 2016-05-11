@@ -33,6 +33,7 @@ export function renderScreen(scene, screenParams) {
     case 'select_topics':
       return renderRootContainer(SelectTopicScene, screenParams)
     case 'insights':
+      console.log('insights route', Object.keys(screenParams))
       return renderRootContainer(InsightsScene, screenParams)
     case 'random_advice':
       return renderRootContainer(RandomAdviceScene, screenParams)
@@ -85,11 +86,11 @@ export function renderScreen(scene, screenParams) {
         })
       })
     case 'notifications':
-      return renderRootContainer(Scenes.NotificationsScreen, screenParams);
+      return renderRootContainer(Scenes.NotificationsScreen, screenParams)
     case 'profile':
-      return renderRootContainer(Scenes.Profile, screenParams);
+      return renderRootContainer(Scenes.Profile, screenParams)
     case 'return_in_app':
-      return renderRootContainer(Scenes.ReturnInApp, screenParams);
+      return renderRootContainer(Scenes.ReturnInApp, screenParams)
     default:
       return null
   }

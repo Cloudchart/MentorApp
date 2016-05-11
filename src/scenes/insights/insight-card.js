@@ -372,7 +372,7 @@ class InsightCard extends Component {
             </View>
           </Animated.View>
         </View>
-        {isDetailsVisible && (
+        {(isDetailsVisible === false) && (
           <RateButtons
             handlePositive={_.throttle(() => this.handleLikePress(), 700)}
             handleNegative={_.throttle(() => this.handleDislikePress(), 700)}

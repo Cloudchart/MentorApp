@@ -1,38 +1,31 @@
 import Relay from 'react-relay'
 
-class ResetUserMutation extends Relay.Mutation {
+export default class ResetUserMutation extends Relay.Mutation {
 
-  getMutation () {
+  getMutation() {
     return Relay.QL`mutation { resetUser }`
   }
 
-  getVariables () {
+  getVariables() {
     return {
-      userId: this.props.user.id
+      userId: this.props.user.id,
     }
   }
 
-  getFatQuery () {
+  getFatQuery() {
     return Relay.QL`
-        fragment on ResetUserPayload {
-            user
-        }
+      fragment on ResetUserPayload {
+        user
+      }
     `
   }
 
-  getConfigs () {
-    return [
-      {
-        type: 'FIELDS_CHANGE',
-        fieldIDs: {
-          user: this.props.user
-        }
-      }
-    ]
+  getConfigs() {
+    return [{
+      type: 'FIELDS_CHANGE',
+      fieldIDs: {
+        user: this.props.user.id,
+      },
+    }]
   }
-
 }
-
-
-export default ResetUserMutation
-

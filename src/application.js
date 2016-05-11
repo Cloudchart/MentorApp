@@ -51,19 +51,37 @@ StatusBar.setBarStyle(1);
 
 class Application extends Component {
 
-  constructor(props) {
-    super(props)
-
-    PushNotificationIOS.addEventListener('register', this.handlePushNotificationsRegister.bind(this))
-    PushNotificationIOS.addEventListener('notification', this.handlePushNotificationsNotification.bind(this))
-
-    AppState.addEventListener('change', this.handleAppStateChange.bind(this))
-    NetInfo.addEventListener('change', this.handleNetInfoChange.bind(this));
-
+  constructor(props, context) {
+    super(props, context)
+    // Bind event handlers to component instance
+    this._handlePushNotificationsRegister = this.handlePushNotificationsRegister.bind(this)
+    this._handlePushNotificationsNotification = this.handlePushNotificationsNotification.bind(this)
+    this._handleAppStateChange = this.handleAppStateChange.bind(this)
+    this._handleNetInfoChange = this.handleNetInfoChange.bind(this)
+    // Attach event handlers
+    PushNotificationIOS.addEventListener('register', this._handlePushNotificationsRegister)
+    PushNotificationIOS.addEventListener('notification', this._handlePushNotificationsNotification)
+    AppState.addEventListener('change', this._handleAppStateChange)
+    NetInfo.addEventListener('change', this._handleNetInfoChange)
+    // @todo remove EventManager
     EventManager.on(HIDE_NOTIFICATION, () => {
       this.setState({ networkNone: false })
     })
-
+    // Build initial route according to fetched data
+    let initialRoute
+    const { subscribedTopics } = props.viewer
+    console.log('Application constructor')
+    if (subscribedTopics.edges.length === 0) {
+      initialRoute = {
+        scene: 'welcome',
+        title: 'Virtual Mentor',
+      }
+    } else {
+      initialRoute = {
+        scene: 'insights',
+        filter: 'UNRATED',
+      }
+    }
     this.state = {
       appState: null,
       notifications: {
@@ -71,8 +89,8 @@ class Application extends Component {
       },
       networkNone: false,
       currentAppState: '',
+      initialRoute,
     }
-
     checkNET().then(reach => {
       if (reach === 'none') {
         this.notifyNetworkError()
@@ -215,20 +233,7 @@ class Application extends Component {
 
   render() {
     const { viewer } = this.props
-    const { networkNone } = this.state
-    const { subscribedTopics } = viewer
-    let initialRoute;
-    if(subscribedTopics.edges.length === 0) {
-      initialRoute = {
-        scene: 'welcome',
-        title: 'Virtual Mentor',
-      }
-    } else {
-      initialRoute = {
-        scene: 'insights',
-        filter: 'UNRATED',
-      }
-    }
+    const { initialRoute, networkNone } = this.state
     return (
       <View style={styles.scene}>
         <Navigator

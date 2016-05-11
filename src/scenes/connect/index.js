@@ -54,6 +54,7 @@ class ConnectScene extends Component {
     const { navigator, viewer } = this.props
     const { questions, topics } = viewer
     if (questions.edges.length === 0) {
+      console.log('connect / handleNextPress()')
       navigator.push({
         scene: 'select_topics',
         title: `Select up to ${topics.availableSlotsCount} topics to start:`,

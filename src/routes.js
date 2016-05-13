@@ -41,7 +41,15 @@ export function renderScene(route, navigator) {
     case 'select_topics':
       return renderRootContainer(SelectTopicScene, screenParams)
     case 'insights':
-      return renderRootContainer(InsightsScene, screenParams)
+      // Hack to fix issue when renderScene is being called twice
+      // @see https://github.com/facebook/react-native/pull/3016
+      if (global.isNotFirstInsightsRequest) {
+        return renderRootContainer(InsightsScene, screenParams)
+      }
+      global.isNotFirstInsightsRequest = true
+      return (
+        <Loader />
+      )
     case 'random_advice':
       return renderRootContainer(RandomAdviceScene, screenParams)
     case 'settings':
@@ -112,15 +120,17 @@ export function renderScene(route, navigator) {
  * @param {Boolean} [options.forceFetch]
  */
 export function renderRootContainer(Component, screenParams, options) {
-  const { route, renderFailure, forceFetch } = options || {}
+  const { route, forceFetch, renderFailure, renderFetched } = options || {}
   const finalRoute = route ? route : new ViewerRoute()
   const finalParams = screenParams ? screenParams : {}
   const finalRenderFailure = renderFailure ? renderFailure : null
   const finalForceFetch = forceFetch !== undefined ? forceFetch : false
-  const renderFetched = data => (
-    <Component {...finalParams} {...data} />
-  )
-
+  const finalRenderFetched =
+    (renderFetched !== undefined) ?
+      renderFetched :
+        data => (
+          <Component {...finalParams} {...data} />
+        )
   return (
     <RootContainer
       store={store}
@@ -131,7 +141,7 @@ export function renderRootContainer(Component, screenParams, options) {
         <Loader />
       )}
       renderFailure={finalRenderFailure}
-      renderFetched={renderFetched}
+      renderFetched={finalRenderFetched}
     />
   )
 }

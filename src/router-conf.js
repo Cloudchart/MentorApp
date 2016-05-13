@@ -1,20 +1,21 @@
-import React, { Component, Navigator, Dimensions, PixelRatio } from "react-native";
-var buildStyleInterpolator = require('buildStyleInterpolator');
-const SCREEN_WIDTH = Dimensions.get('window').width;
-const BaseConfig = Navigator.SceneConfigs.FloatFromRight;
-BaseConfig.gestures = {};
-
 /**
- *
- * @type {{snapVelocity: number, edgeHitWidth: *}}
+ * Warning! This config doesn't work properly and can cause some issues with renderScene
  */
-const CustomLeftToRightGesture = {
-  ...BaseConfig.gestures,
-  snapVelocity: 8,
-  edgeHitWidth: SCREEN_WIDTH
+import React, { Component, Navigator, Dimensions, PixelRatio } from 'react-native'
+
+const buildStyleInterpolator = require('buildStyleInterpolator')
+const SCREEN_WIDTH = Dimensions.get('window').width
+const sourceConfig = Navigator.SceneConfigs.FloatFromRight
+const baseConfig = {
+  gestures: {},
+  ...sourceConfig,
 }
 
-var FadeToTheLeft = {
+const customLeftToRightGesture = {
+  snapVelocity: 8,
+  edgeHitWidth: SCREEN_WIDTH,
+}
+const fadeToTheLeft = {
   // Rotate *requires* you to break out each individual component of
   // rotation (x, y, z, w)
   transformTranslate: {
@@ -43,7 +44,7 @@ var FadeToTheLeft = {
     min: 0,
     max: 1,
     type: 'linear',
-    extrapolate: true
+    extrapolate: true,
   },
   opacity: {
     from: 1,
@@ -52,7 +53,7 @@ var FadeToTheLeft = {
     max: 1,
     type: 'linear',
     extrapolate: false,
-    round: 100
+    round: 100,
   },
   translateX: {
     from: 0,
@@ -63,13 +64,12 @@ var FadeToTheLeft = {
     extrapolate: true,
     round: PixelRatio.get(),
   }
-};
-var FromTheRight = {
+}
+const fromTheRight = {
   opacity: {
     value: 1.0,
     type: 'constant',
   },
-
   transformTranslate: {
     from: { x: Dimensions.get('window').width, y: 0, z: 0 },
     to: { x: 0, y: 0, z: 0 },
@@ -79,7 +79,6 @@ var FromTheRight = {
     extrapolate: true,
     round: PixelRatio.get(),
   },
-
   translateX: {
     from: Dimensions.get('window').width,
     to: 0,
@@ -89,7 +88,6 @@ var FromTheRight = {
     extrapolate: true,
     round: PixelRatio.get(),
   },
-
   scaleX: {
     value: 1,
     type: 'constant',
@@ -98,27 +96,22 @@ var FromTheRight = {
     value: 1,
     type: 'constant',
   },
-};
+}
 
-/**
- *
- * @type {{springTension: number, springFriction: number, gestures: {pop: {snapVelocity: number, edgeHitWidth: *}}}}
- */
 export const CustomSceneConfig = {
-  ...BaseConfig,
+  ...baseConfig,
   springTension: 70,
   springFriction: 1,
   // Velocity to start at when transitioning without gesture
   defaultTransitionVelocity: 1.5,
-
   // Animation interpolators for horizontal transitioning:
   animationInterpolators: {
-    into: buildStyleInterpolator(FromTheRight),
-    out: buildStyleInterpolator(FadeToTheLeft),
+    into: buildStyleInterpolator(fromTheRight),
+    out: buildStyleInterpolator(fadeToTheLeft),
   },
   gestures: {
-    pop: CustomLeftToRightGesture
-  }
+    pop: customLeftToRightGesture,
+  },
 }
 
 

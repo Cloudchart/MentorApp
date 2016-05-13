@@ -76,7 +76,6 @@ class Mentor extends Component {
   }
 
   render() {
-    console.log('index.ios / render')
     return (
       <Provider store={store}>
         <Application />

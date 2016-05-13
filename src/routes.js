@@ -23,15 +23,8 @@ import ExploreInsightsScene from './scenes/insights/explore'
  * @returns {*}
  */
 export function renderScene(route, navigator) {
-  const currentRoutes = navigator.getCurrentRoutes()
-  // Hack to fix issue when renderScene is being called twice
-  // @see https://github.com/facebook/react-native/pull/3016
-  const finalRoute =
-    (currentRoutes && currentRoutes[currentRoutes.length - 1]) ||
-    route
-  const { scene, props } = finalRoute
-  console.log('routes: renderScene()', { route, currentRoutes, finalRoute })
-  // Display calculated route
+  const { scene, props } = route
+  console.log('routes: renderScene()', { route })
   const routeProps = props || {}
   const screenParams = {
     navigator,

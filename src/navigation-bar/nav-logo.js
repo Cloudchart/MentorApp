@@ -13,6 +13,7 @@ export default ({ navigator }) => {
   const handlePress = () => {
     navigator.push({
       scene: 'random_advice',
+      FloatFromLeft: true,
     })
   }
   return (

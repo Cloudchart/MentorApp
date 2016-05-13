@@ -14,7 +14,6 @@ import React, {
 } from 'react-native'
 import Relay from 'react-relay'
 import styles from './styles/base'
-import { CustomSceneConfig } from './router-conf'
 import { renderScene } from './routes'
 import { UserNotifications } from './components'
 import moment from 'moment'
@@ -188,32 +187,6 @@ export default class Application extends Component {
     }
   }
 
-  /**
-   * @param route
-   * @param navigator
-   * @returns {*}
-   * @private
-   */
-  _renderScene(route, navigator) {
-    const props = route.props || {}
-    props.navigator = navigator
-    const currentRoutes = navigator.getCurrentRoutes()
-    console.log('Application._renderScene()', { route, currentRoutes })
-    // const firstRoute = currentRoutes && currentRoutes[0]
-    // if (route.scene === 'select_topic' && firstRoute.scene === 'insights') {
-    //   return renderScreen(firstRoute.scene, {
-    //     navigator,
-    //     ...firstRoute,
-    //     ...props
-    //   })
-    // }
-    return renderScreen(route.scene, {
-      navigator,
-      ...route,
-      ...props
-    })
-  }
-
   render() {
     //const { viewer } = this.props
     console.log('Application.render()')
@@ -231,7 +204,10 @@ export default class Application extends Component {
             if (route.FloatFromBottom) {
               return Navigator.SceneConfigs.FloatFromBottom
             }
-            return CustomSceneConfig
+            if (route.FloatFromLeft) {
+              return Navigator.SceneConfigs.FloatFromLeft
+            }
+            return Navigator.SceneConfigs.FloatFromRight
           }}
           sceneStyle={styles.sceneStyle}
         />

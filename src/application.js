@@ -10,22 +10,23 @@ import React, {
   AppState,
   AlertIOS,
   AsyncStorage,
-  NetInfo
+  NetInfo,
 } from 'react-native'
 import Relay from 'react-relay'
 import styles from './styles/base'
-import { renderScene } from './routes'
+import renderScene from './render-scene'
+import { CustomFloatFromRight } from './scene-configs'
 import { UserNotifications } from './components'
 import moment from 'moment'
 import { EventManager } from './event-manager'
 import { NavigationBar, routeMapper } from './navigation-bar'
 import {
-  updateUserNotifications
+  updateUserNotifications,
 } from './actions/user'
 import {
   checkPermissions,
   NETAlert,
-  checkNET
+  checkNET,
 } from './system'
 import {
   HIDE_NOTIFICATION,
@@ -207,7 +208,7 @@ export default class Application extends Component {
             if (route.FloatFromLeft) {
               return Navigator.SceneConfigs.FloatFromLeft
             }
-            return Navigator.SceneConfigs.FloatFromRight
+            return CustomFloatFromRight
           }}
           sceneStyle={styles.sceneStyle}
         />

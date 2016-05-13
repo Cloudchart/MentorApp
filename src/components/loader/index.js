@@ -1,17 +1,18 @@
-import React, { View, Component } from "react-native";
-import Progress from "react-native-progress";
-import styles from "./style";
+import React from 'react'
+import { View } from 'react-native'
+import Progress from 'react-native-progress'
+import styles from './style'
 
-export const LoaderMini = (props) => {
-  return <View style={styles.loaderMini}></View>
+export function LoaderMini() {
+  return (
+    <View style={styles.loaderMini} />
+  )
 }
 
-const Loader = (props) => {
+export default function Loader() {
   return (
     <View style={styles.loader}>
       <Progress.Circle size={60} indeterminate={true}/>
     </View>
   )
 }
-
-export default Loader;

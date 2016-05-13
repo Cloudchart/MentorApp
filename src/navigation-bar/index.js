@@ -8,7 +8,8 @@ import React, {
   View,
 } from 'react-native'
 import Relay from 'react-relay'
-import { ViewerRoute, NodeRoute } from '../routes.js'
+import ViewerRoute from '../routes/viewer'
+import NodeRoute from '../routes/node'
 import { EventManager } from '../event-manager'
 import * as device from '../utils/device'
 import Icon from 'react-native-vector-icons/FontAwesome'

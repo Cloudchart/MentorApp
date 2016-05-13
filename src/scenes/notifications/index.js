@@ -8,13 +8,13 @@ import React, {
 } from "react-native";
 import Relay from 'react-relay';
 import { Button, Boris, TransparentButton } from "../../components";
-import { STORAGE_KEY } from "../../actions/application";
+import { NOTIFICATIONS_PERMISSION_STATUS } from "../../actions/application";
 import { updateUserNotifications } from "../../actions/user";
 import styles from "./style";
 
 const NOTIFICATION_TEXT = 'I will send you advices during the day. Does it suit you?';
 
-class NotificationsScreen extends Component {
+class NotificationsScene extends Component {
 
   constructor (props) {
     super(props)
@@ -38,8 +38,8 @@ class NotificationsScreen extends Component {
    */
   async checkPermission () {
     try {
-      let permission = await AsyncStorage.getItem(STORAGE_KEY);
-      if ( permission ) {
+      let permission = await AsyncStorage.getItem(NOTIFICATIONS_PERMISSION_STATUS);
+      if (permission) {
         clearInterval(this.intervalId)
         this._navigatorReplace({
           scene: 'insights',
@@ -58,7 +58,7 @@ class NotificationsScreen extends Component {
   async _requestPermissions () {
     try {
       PushNotificationIOS.requestPermissions();
-      await AsyncStorage.setItem(STORAGE_KEY, 'already_request_permissions');
+      await AsyncStorage.setItem(NOTIFICATIONS_PERMISSION_STATUS, 'already_request_permissions');
     } catch ( error ) {
     }
   }
@@ -116,7 +116,7 @@ class NotificationsScreen extends Component {
   }
 }
 
-export default Relay.createContainer(NotificationsScreen, {
+export default Relay.createContainer(NotificationsScene, {
   fragments: {
     viewer: () => Relay.QL`
         fragment on User {

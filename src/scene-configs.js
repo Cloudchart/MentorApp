@@ -98,7 +98,7 @@ const fromTheRight = {
   },
 }
 
-export const CustomSceneConfig = {
+export const CustomFloatFromRight = {
   ...baseConfig,
   springTension: 70,
   springFriction: 1,

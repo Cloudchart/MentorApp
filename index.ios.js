@@ -6,7 +6,7 @@ import React, {
   Text
 } from 'react-native'
 import Relay, { DefaultNetworkLayer } from 'react-relay'
-import { renderRootContainer } from './src/routes'
+import { renderRootContainer } from './src/render-scene'
 import { GraphQLServerURL } from './config'
 import moment from 'moment'
 import { Provider } from 'react-redux'

@@ -10,7 +10,7 @@ import styles from "./style";
 import { fragments } from "./fragments";
 
 
-class ReturnInApp extends Component {
+class ReturnToAppScene extends Component {
 
   state = {
     buttonOpacity: new Animated.Value(0)
@@ -111,7 +111,7 @@ class ReturnInApp extends Component {
 }
 
 
-export default Relay.createContainer(ReturnInApp, {
+export default Relay.createContainer(ReturnToAppScene, {
   initialVariables: {
     count: 1,
     countInsights: 1,

@@ -10,7 +10,7 @@ import { Button, FBLoginButton, Loader } from '../../components'
 import styles from './style'
 import { getGradient } from '../../utils/colors'
 import { resetUser } from '../../actions/user'
-import { ViewerRoute } from '../../routes'
+import ViewerRoute from '../../routes/viewer'
 import ResetUserMutation from '../../mutations/reset-user'
 
 export default class SettingsScene extends Component {

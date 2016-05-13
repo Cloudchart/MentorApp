@@ -15,10 +15,10 @@ import React, {
   AsyncStorage,
 } from 'react-native'
 import Relay from 'react-relay'
-import { checkPermissionsNotification } from '../../system'
+import { getNotificationsPermission } from '../../system'
 import { Boris, Button, Loader, Topic, ScrollListView } from '../../components'
 import SubscribeTopicAdd from '../../components/confirmation-screens/subscribe-topic-add'
-import { STORAGE_KEY } from '../../actions/application'
+import { NOTIFICATIONS_PERMISSION_STATUS } from '../../actions/application'
 import * as device from '../../utils/device'
 import styles from './style'
 import { _flex } from '../../styles/base'
@@ -127,7 +127,7 @@ class SelectTopicScene extends Component {
     const { navigator } = this.props
     let notificationsStatus
     try {
-      notificationsStatus = await AsyncStorage.getItem(STORAGE_KEY)
+      notificationsStatus = await AsyncStorage.getItem(NOTIFICATIONS_PERMISSION_STATUS)
     } catch (e) {
       // nothing
     }
@@ -141,8 +141,8 @@ class SelectTopicScene extends Component {
       return
     }
     try {
-      const permissions = checkPermissionsNotification()
-      if (permissions === 'on') {
+      const allowed = await getNotificationsPermission()
+      if (allowed) {
         console.log('requested permissions granted, move to insights')
         navigator.resetTo({
           scene: 'insights',

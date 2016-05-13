@@ -1,7 +1,6 @@
 import React, { Component } from 'react-native'
 import Relay from 'react-relay'
-import { _ } from 'lodash'
-import { Loader } from '../../components'
+import Loader from '../../components/loader'
 import {
   TopicFinished,
   AllForNow,
@@ -35,7 +34,10 @@ class InsightsScene extends Component {
     const { viewer, navigator } = this.props
     const { isTopicFinished } = this.state
     const { subscribedTopics, insights } = viewer
-    console.log('insights-scene: found ' + insights.edges.length + ' available insights.', { insights, subscribedTopics })
+    console.log('insights-scene: found ' + insights.edges.length + ' available insights.', {
+      insights,
+      subscribedTopics,
+    })
     let isAllEnded = true
     subscribedTopics.edges.forEach(({ node }) => {
       if (!node.isTopicFinished) {

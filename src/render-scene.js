@@ -1,8 +1,8 @@
-import React, { View } from 'react-native'
-import Relay, { RootContainer } from 'react-relay'
-import store from '../src/store'
-import { Loader } from './components'
-import * as Scenes from './scenes'
+import React from 'react'
+import renderRootContainer from './render-root-container'
+import Loader from './components/loader'
+import NodeRoute from './routes/node'
+import ViewerRoute from './routes/viewer'
 import InsightsScene from './scenes/insights'
 import RandomAdviceScene from './scenes/random-advice'
 import SubscriptionScene from './scenes/subscription'
@@ -16,13 +16,18 @@ import WelcomeScene from './scenes/welcome'
 import SelectTopicScene from './scenes/select-topic'
 import ConnectScene from './scenes/connect'
 import ExploreInsightsScene from './scenes/insights/explore'
+import ReplaceTopicScene from './scenes/replace-topic'
+import FollowUpScene from './scenes/follow-up'
+import NotificationsScene from './scenes/notifications'
+import ProfileScene from './scenes/profile'
+import ReturnToApp from './scenes/return-to-app'
 
 /**
  * @param {String} scene
  * @param {Object} screenParams
  * @returns {*}
  */
-export function renderScene(route, navigator) {
+export default function renderScene(route, navigator) {
   const { scene, props } = route
   console.log('routes: renderScene()', { route })
   const routeProps = props || {}
@@ -78,9 +83,9 @@ export function renderScene(route, navigator) {
         }),
       })
     case 'replace-topic':
-      return renderRootContainer(Scenes.ReplaceTopic, screenParams)
+      return renderRootContainer(ReplaceTopicScene, screenParams)
     case 'follow-up':
-      return renderRootContainer(Scenes.FollowUp, screenParams)
+      return renderRootContainer(FollowUpScene, screenParams)
     case 'user-insights_useful':
       return renderRootContainer(UserInsightsScene, {
         filter: 'USEFUL',
@@ -102,74 +107,12 @@ export function renderScene(route, navigator) {
         })
       })
     case 'notifications':
-      return renderRootContainer(Scenes.NotificationsScreen, screenParams)
+      return renderRootContainer(NotificationsScene, screenParams)
     case 'profile':
-      return renderRootContainer(Scenes.Profile, screenParams)
+      return renderRootContainer(ProfileScene, screenParams)
     case 'return_in_app':
-      return renderRootContainer(Scenes.ReturnInApp, screenParams)
+      return renderRootContainer(ReturnToApp, screenParams)
     default:
       return null
-  }
-}
-
-/**
- * @param {Function} Component
- * @param {Object} [screenParams]
- * @param {Object} [options]
- * @param {Object} [options.route]
- * @param {Function} [options.renderFailure]
- * @param {Boolean} [options.forceFetch]
- */
-export function renderRootContainer(Component, screenParams, options) {
-  const { route, forceFetch, renderFailure, renderFetched } = options || {}
-  const finalRoute = route ? route : new ViewerRoute()
-  const finalParams = screenParams ? screenParams : {}
-  const finalRenderFailure = renderFailure ? renderFailure : null
-  const finalForceFetch = forceFetch !== undefined ? forceFetch : false
-  const finalRenderFetched =
-    (renderFetched !== undefined) ?
-      renderFetched :
-        data => (
-          <Component {...finalParams} {...data} />
-        )
-  return (
-    <RootContainer
-      store={store}
-      Component={Component}
-      route={finalRoute}
-      forceFetch={finalForceFetch}
-      renderLoading={() => (
-        <Loader />
-      )}
-      renderFailure={finalRenderFailure}
-      renderFetched={finalRenderFetched}
-    />
-  )
-}
-
-export class ViewerRoute extends Relay.Route {
-  static routeName = 'ViewerRoute'
-  static queries = {
-    viewer: () => Relay.QL`query { viewer }`,
-  };
-}
-
-export class NodeRoute extends Relay.Route {
-  static routeName = 'NodeRoute'
-  static paramDefinitions = {
-    nodeID: { required: true },
-    filter: { required: true },
-  }
-  static queries = {
-    node: () => Relay.QL`
-      query {
-        node(id: $nodeID)
-      }
-    `,
-    viewer: () => Relay.QL`
-      query {
-        viewer
-      }
-    `,
   }
 }

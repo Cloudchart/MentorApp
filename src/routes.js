@@ -43,10 +43,11 @@ export function renderScene(route, navigator) {
     case 'insights':
       // Hack to fix issue when renderScene is being called twice
       // @see https://github.com/facebook/react-native/pull/3016
-      if (global.isNotFirstInsightsRequest) {
+      if (global.isFirstInsightsRequestDone) {
         return renderRootContainer(InsightsScene, screenParams)
+        global.isFirstInsightsRequestDone = null
       }
-      global.isNotFirstInsightsRequest = true
+      global.isFirstInsightsRequestDone = true
       return (
         <Loader />
       )

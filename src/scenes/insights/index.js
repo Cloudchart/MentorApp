@@ -17,7 +17,7 @@ class InsightsScene extends Component {
     this.state = {
       isTopicFinished: null,
     }
-    console.log('InsightsScene scene')
+    console.log('InsightsScene.constructor()')
   }
 
   handleTopicFinish() {

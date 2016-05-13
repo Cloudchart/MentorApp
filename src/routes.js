@@ -41,7 +41,6 @@ export function renderScene(route, navigator) {
     case 'select_topics':
       return renderRootContainer(SelectTopicScene, screenParams)
     case 'insights':
-      console.log('renderScreen insights', Object.keys(screenParams))
       return renderRootContainer(InsightsScene, screenParams)
     case 'random_advice':
       return renderRootContainer(RandomAdviceScene, screenParams)

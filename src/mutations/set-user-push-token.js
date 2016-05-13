@@ -1,41 +1,32 @@
 import Relay from 'react-relay'
 
-class SetUserPushTokenMutation extends Relay.Mutation {
+export default class SetUserPushTokenMutation extends Relay.Mutation {
 
-  getMutation () {
+  getMutation() {
     return Relay.QL`mutation { setUserPushToken }`
   }
 
-  getVariables () {
-    const { token, user } = this.props;
+  getVariables() {
     return {
-      token: token,
-      userId : user.id
+      token: this.props.token,
+      userId: this.props.user.id,
     }
   }
 
-  getFatQuery () {
+  getFatQuery() {
     return Relay.QL`
-        fragment on SetUserPushTokenPayload {
-            user
-        }
+      fragment on SetUserPushTokenPayload {
+        user
+      }
     `
   }
 
-  getConfigs () {
-    const { token, user } = this.props;
-    return [
-      {
-        type: 'FIELDS_CHANGE',
-        fieldIDs: {
-          user: user.id
-        }
-      }
-    ]
+  getConfigs() {
+    return [{
+      type: 'FIELDS_CHANGE',
+      fieldIDs: {
+        user: this.props.user.id,
+      },
+    }]
   }
-
 }
-
-
-export default SetUserPushTokenMutation
-

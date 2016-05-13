@@ -76,11 +76,10 @@ class Mentor extends Component {
   }
 
   render() {
+    console.log('index.ios / render')
     return (
       <Provider store={store}>
-        {renderRootContainer(Application, null, {
-          renderFailure: this._renderFailure,
-        })}
+        <Application />
       </Provider>
     )
   }

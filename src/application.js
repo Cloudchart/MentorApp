@@ -15,15 +15,12 @@ import React, {
 import Relay from 'react-relay'
 import styles from './styles/base'
 import { CustomSceneConfig } from './router-conf'
-import { renderScreen } from './routes'
+import { renderScene } from './routes'
 import { UserNotifications } from './components'
 import moment from 'moment'
 import { EventManager } from './event-manager'
 import { NavigationBar, routeMapper } from './navigation-bar'
 import {
-  setUserPushToken,
-  activateUser,
-  resetUser,
   updateUserNotifications
 } from './actions/user'
 import {
@@ -36,6 +33,7 @@ import {
   UPDATE_APP_START_TIME,
   UPDATE_APP_BACKGROUND_TIME,
 } from './actions/application'
+import SetUserPushTokenMutation from './mutations/set-user-push-token'
 
 
 moment.createFromInputFallback = function (config) {
@@ -45,11 +43,11 @@ moment.createFromInputFallback = function (config) {
 /**
  * Repaint white StatusBar
  * Do not forget to add in the info.plist:
- * UIViewControllerBasedStatusBarAppearance : NO
+ * - UIViewControllerBasedStatusBarAppearance : NO
  */
 StatusBar.setBarStyle(1);
 
-class Application extends Component {
+export default class Application extends Component {
 
   constructor(props, context) {
     super(props, context)
@@ -69,9 +67,10 @@ class Application extends Component {
     })
     // Build initial route according to fetched data
     let initialRoute
-    const { subscribedTopics } = props.viewer
+    //const { subscribedTopics } = props.viewer
     console.log('Application constructor')
-    if (subscribedTopics.edges.length === 0) {
+    //if (subscribedTopics.edges.length === 0) {
+    if (true) {
       initialRoute = {
         scene: 'welcome',
         title: 'Virtual Mentor',
@@ -133,11 +132,11 @@ class Application extends Component {
   }
 
   handlePushNotificationsRegister(token) {
-    const { viewer } = this.props
-    setUserPushToken({
-      user: viewer,
-      token,
-    })
+    //const mutation = new SetUserPushTokenMutation({
+    //  user: viewer,
+    //  token,
+    //})
+    //Relay.Store.commitUpdate(mutation)
   }
 
   handlePushNotificationsNotification(notification) {
@@ -151,31 +150,6 @@ class Application extends Component {
     );
   }
 
-  _activateUser() {
-    activateUser({ user: this.props.viewer })
-  }
-
-  _resetUser() {
-    resetUser({ user: this.props.viewer })
-      .then(() => {
-        this._activateUser()
-      })
-      .catch(() => {
-        this._activateUser()
-      })
-  }
-
-  prepareData(item) {
-    if (_.isDate(item)) {
-      item = item.toString();
-    } else if (_.isObject(item)) {
-      item = JSON.stringify(item);
-    } else {
-      item = String(item);
-    }
-    return item;
-  }
-
   /**
    * comparing the time re-entry application
    * @param currentAppState
@@ -184,11 +158,11 @@ class Application extends Component {
   _diffTimeStartApp(currentAppState, prevAppState) {
     switch (currentAppState) {
       case 'active':
-        AsyncStorage.setItem(UPDATE_APP_START_TIME, this.prepareData(new Date))
+        AsyncStorage.setItem(UPDATE_APP_START_TIME, (new Date()).toString())
         updateUserNotifications()
         break
       case 'background':
-        AsyncStorage.setItem(UPDATE_APP_BACKGROUND_TIME, this.prepareData(new Date))
+        AsyncStorage.setItem(UPDATE_APP_BACKGROUND_TIME, (new Date()).toString())
         updateUserNotifications(true)
         break
       default:
@@ -223,7 +197,16 @@ class Application extends Component {
   _renderScene(route, navigator) {
     const props = route.props || {}
     props.navigator = navigator
-    console.log('renderScene', { route })
+    const currentRoutes = navigator.getCurrentRoutes()
+    console.log('Application._renderScene()', { route, currentRoutes })
+    // const firstRoute = currentRoutes && currentRoutes[0]
+    // if (route.scene === 'select_topic' && firstRoute.scene === 'insights') {
+    //   return renderScreen(firstRoute.scene, {
+    //     navigator,
+    //     ...firstRoute,
+    //     ...props
+    //   })
+    // }
     return renderScreen(route.scene, {
       navigator,
       ...route,
@@ -232,7 +215,8 @@ class Application extends Component {
   }
 
   render() {
-    const { viewer } = this.props
+    //const { viewer } = this.props
+    console.log('Application.render()')
     const { initialRoute, networkNone } = this.state
     return (
       <View style={styles.scene}>
@@ -240,9 +224,9 @@ class Application extends Component {
           ref={navigator => this._navigator = navigator}
           initialRoute={initialRoute}
           navigationBar={
-            <NavigationBar routeMapper={routeMapper(viewer)} />
+            <NavigationBar routeMapper={routeMapper()} />
           }
-          renderScene={(route, navigator) => this._renderScene(route, navigator)}
+          renderScene={(route, navigator) => renderScene(route, navigator)}
           configureScene={route => {
             if (route.FloatFromBottom) {
               return Navigator.SceneConfigs.FloatFromBottom
@@ -259,26 +243,26 @@ class Application extends Component {
   }
 }
 
-export default Relay.createContainer(Application, {
-  fragments: {
-    viewer: () => Relay.QL`
-      fragment on User {
-        email
-        notificationsSettings {
-          startAt
-          finishAt
-          utcOffset
-          timesToSend
-        }
-        subscribedTopics: topics(first: 1, filter: SUBSCRIBED) {
-          availableSlotsCount
-          edges {
-            node {
-              id
-            }
-          }
-        }
-      }
-    `
-  }
-})
+//Relay.createContainer(Application, {
+//  fragments: {
+//    viewer: () => Relay.QL`
+//      fragment on User {
+//        email
+//        notificationsSettings {
+//          startAt
+//          finishAt
+//          utcOffset
+//          timesToSend
+//        }
+//        subscribedTopics: topics(first: 1, filter: SUBSCRIBED) {
+//          availableSlotsCount
+//          edges {
+//            node {
+//              id
+//            }
+//          }
+//        }
+//      }
+//    `
+//  }
+//})

@@ -22,7 +22,22 @@ import ExploreInsightsScene from './scenes/insights/explore'
  * @param {Object} screenParams
  * @returns {*}
  */
-export function renderScreen(scene, screenParams) {
+export function renderScene(route, navigator) {
+  const currentRoutes = navigator.getCurrentRoutes()
+  // Hack to fix issue when renderScene is being called twice
+  // @see https://github.com/facebook/react-native/pull/3016
+  const finalRoute =
+    (currentRoutes && currentRoutes[currentRoutes.length - 1]) ||
+    route
+  const { scene, props } = finalRoute
+  console.log('routes: renderScene()', { route, currentRoutes, finalRoute })
+  // Display calculated route
+  const routeProps = props || {}
+  const screenParams = {
+    navigator,
+    ...route,
+    ...routeProps,
+  }
   switch (scene) {
     case 'welcome':
       return renderRootContainer(WelcomeScene, screenParams)
@@ -33,7 +48,7 @@ export function renderScreen(scene, screenParams) {
     case 'select_topics':
       return renderRootContainer(SelectTopicScene, screenParams)
     case 'insights':
-      console.log('insights route', Object.keys(screenParams))
+      console.log('renderScreen insights', Object.keys(screenParams))
       return renderRootContainer(InsightsScene, screenParams)
     case 'random_advice':
       return renderRootContainer(RandomAdviceScene, screenParams)

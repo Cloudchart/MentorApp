@@ -8,11 +8,12 @@ import store from '../src/store'
  * @param {Function} Component
  * @param {Object} [screenParams]
  * @param {Object} [options]
- * @param {Object} [options.route]
- * @param {Function} [options.renderFailure]
+ * @param {Object} [options.route] RelayRoute
  * @param {Boolean} [options.forceFetch]
+ * @param {Function} [options.renderFailure]
+ * @param {Function} [options.renderFetched]
  */
-export default function renderRootContainer(Component, screenParams, options) {
+export default function renderSceneContainer(Component, screenParams, options) {
   const { route, forceFetch, renderFailure, renderFetched } = options || {}
   const finalRoute = route ? route : new ViewerRoute()
   const finalParams = screenParams ? screenParams : {}

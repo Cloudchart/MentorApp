@@ -97,7 +97,6 @@ class NotificationsScene extends Component {
           note={NOTIFICATION_TEXT}
           style={ styles.boris }
         />
-
         <View style={ styles.containerButtons }>
           <Button
             label="Turn on notifications"

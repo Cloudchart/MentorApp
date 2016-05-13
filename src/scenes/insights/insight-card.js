@@ -119,7 +119,7 @@ class InsightCard extends Component {
       return
     }
     if (reaction.type === 'like') {
-      this._requestLikeMutation()
+      this._requestLikeMutation(true)
     } else {
       this._requestDislikeMutation()
     }
@@ -399,10 +399,10 @@ class InsightCard extends Component {
   }
 }
 
-const InsightTitle = props => (
+const InsightTitle = ({ topicName }) => (
   <View style={styles.titleAdvice}>
     <Text style={styles.titleAdviceText}>
-      {props.topicName}
+      {topicName}
     </Text>
   </View>
 )
@@ -443,7 +443,7 @@ export const insightFragment = Relay.QL`
   }
 `
 
-const InsightCardContainer = Relay.createContainer(InsightCard, {
+export default Relay.createContainer(InsightCard, {
   fragments: {
     user: () => Relay.QL`
       fragment on User {
@@ -471,5 +471,3 @@ const InsightCardContainer = Relay.createContainer(InsightCard, {
     `,
   },
 })
-
-export default InsightCardContainer

@@ -7,7 +7,7 @@ import Relay from 'react-relay'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import styles from '../styles/base'
 
-const TrashCounter = ({ navigator, route, node, title, filter }) => {
+function TrashCounter({ navigator, route, node, title, filter }) {
   const handleUselessPress = () => {
     const route = {
       scene: 'user-insights_useless',
@@ -33,7 +33,9 @@ const TrashCounter = ({ navigator, route, node, title, filter }) => {
       >
       <Icon name="trash-o" style={styles.crumbIconBasket}/>
       <Text>&nbsp;</Text>
-      <Text style={styles.crumbIconBasketText}>{count}</Text>
+      <Text style={styles.crumbIconBasketText}>
+        {count}
+      </Text>
     </TouchableOpacity>
   )
 }

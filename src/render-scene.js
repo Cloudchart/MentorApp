@@ -1,8 +1,9 @@
 import React from 'react'
-import renderRootContainer from './render-root-container'
-import Loader from './components/loader'
+import { RootContainer } from 'react-relay'
+import store from '../src/store'
 import NodeRoute from './routes/node'
 import ViewerRoute from './routes/viewer'
+import Loader from './components/loader'
 import InsightsScene from './scenes/insights'
 import RandomAdviceScene from './scenes/random-advice'
 import SubscriptionScene from './scenes/subscription'
@@ -23,8 +24,46 @@ import ProfileScene from './scenes/profile'
 import ReturnToApp from './scenes/return-to-app'
 
 /**
- * @param {String} scene
- * @param {Object} screenParams
+ * @param {Function} Component
+ * @param {Object} [screenParams]
+ * @param {Object} [options]
+ * @param {Object} [options.route] RelayRoute
+ * @param {Boolean} [options.forceFetch]
+ * @param {Function} [options.renderFailure]
+ * @param {Function} [options.renderFetched]
+ */
+export default function renderSceneContainer(Component, screenParams, options) {
+  const { route, forceFetch, renderFailure, renderFetched } = options || {}
+  const finalRoute = route ? route : new ViewerRoute()
+  const finalParams = screenParams ? screenParams : {}
+  const finalRenderFailure = renderFailure ? renderFailure : null
+  const finalForceFetch = forceFetch !== undefined ? forceFetch : false
+  const finalRenderFetched =
+    (renderFetched !== undefined) ?
+      renderFetched :
+        data => (
+      <Component {...finalParams} {...data} />
+    )
+  return (
+    <RootContainer
+      store={store}
+      Component={Component}
+      route={finalRoute}
+      forceFetch={finalForceFetch}
+      renderLoading={() => (
+        <Loader />
+      )}
+      renderFailure={finalRenderFailure}
+      renderFetched={finalRenderFetched}
+      />
+  )
+}
+
+/**
+ * @param {Object} route
+ * @param {String} route.scene
+ * @param {Object} route.props
+ * @param {Object} navigator
  * @returns {*}
  */
 export default function renderScene(route, navigator) {
@@ -38,26 +77,26 @@ export default function renderScene(route, navigator) {
   }
   switch (scene) {
     case 'welcome':
-      return renderRootContainer(WelcomeScene, screenParams)
+      return renderSceneContainer(WelcomeScene, screenParams)
     case 'connect':
-      return renderRootContainer(ConnectScene, screenParams)
+      return renderSceneContainer(ConnectScene, screenParams)
     case 'questionnaire':
-      return renderRootContainer(QuestionnaireScene, screenParams)
+      return renderSceneContainer(QuestionnaireScene, screenParams)
     case 'select_topics':
-      return renderRootContainer(SelectTopicScene, screenParams)
+      return renderSceneContainer(SelectTopicScene, screenParams)
     case 'insights':
       // Hack to fix issue when renderScene is being called twice
       // @see https://github.com/facebook/react-native/pull/3016
       if (global.isFirstInsightsRequestDone) {
-        return renderRootContainer(InsightsScene, screenParams)
         global.isFirstInsightsRequestDone = null
+        return renderSceneContainer(InsightsScene, screenParams)
       }
       global.isFirstInsightsRequestDone = true
       return (
         <Loader />
       )
     case 'random_advice':
-      return renderRootContainer(RandomAdviceScene, screenParams)
+      return renderSceneContainer(RandomAdviceScene, screenParams)
     case 'settings':
       return (
         <SettingsScene {...screenParams}/>
@@ -67,13 +106,13 @@ export default function renderScene(route, navigator) {
         <SubscriptionScene {...screenParams}/>
       )
     case 'user-collections':
-      return renderRootContainer(UserCollectionsScene, screenParams, { forceFetch: true })
+      return renderSceneContainer(UserCollectionsScene, screenParams, { forceFetch: true })
     case 'user-topics':
-      return renderRootContainer(UserTopicsScene, screenParams, { forceFetch: true })
+      return renderSceneContainer(UserTopicsScene, screenParams, { forceFetch: true })
     case 'explore-topic':
-      return renderRootContainer(ExploreTopicScene, screenParams)
+      return renderSceneContainer(ExploreTopicScene, screenParams)
     case 'explore-insights':
-      return renderRootContainer(ExploreInsightsScene, {
+      return renderSceneContainer(ExploreInsightsScene, {
         filter: 'PREVIEW',
         ...screenParams,
       }, {
@@ -83,11 +122,11 @@ export default function renderScene(route, navigator) {
         }),
       })
     case 'replace-topic':
-      return renderRootContainer(ReplaceTopicScene, screenParams)
+      return renderSceneContainer(ReplaceTopicScene, screenParams)
     case 'follow-up':
-      return renderRootContainer(FollowUpScene, screenParams)
+      return renderSceneContainer(FollowUpScene, screenParams)
     case 'user-insights_useful':
-      return renderRootContainer(UserInsightsScene, {
+      return renderSceneContainer(UserInsightsScene, {
         filter: 'USEFUL',
         ...screenParams,
       }, {
@@ -97,7 +136,7 @@ export default function renderScene(route, navigator) {
         }),
       })
     case 'user-insights_useless':
-      return renderRootContainer(UserInsightsScene, {
+      return renderSceneContainer(UserInsightsScene, {
         filter: 'USELESS',
         ...screenParams,
       }, {
@@ -107,11 +146,11 @@ export default function renderScene(route, navigator) {
         })
       })
     case 'notifications':
-      return renderRootContainer(NotificationsScene, screenParams)
+      return renderSceneContainer(NotificationsScene, screenParams)
     case 'profile':
-      return renderRootContainer(ProfileScene, screenParams)
-    case 'return_in_app':
-      return renderRootContainer(ReturnToApp, screenParams)
+      return renderSceneContainer(ProfileScene, screenParams)
+    case 'return_to_app':
+      return renderSceneContainer(ReturnToApp, screenParams)
     default:
       return null
   }

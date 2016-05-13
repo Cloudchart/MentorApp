@@ -9,7 +9,7 @@ import React, {
 import Relay from 'react-relay'
 import styles from '../styles/base';
 
-const UsefulCounter = ({ navigator, viewer }) => {
+function UsefulCounter({ navigator, viewer }) {
   const handlePress = () => {
     navigator.push({
       scene: 'user-collections',
@@ -27,7 +27,7 @@ const UsefulCounter = ({ navigator, viewer }) => {
   }
   return (
     <TouchableOpacity
-      style={[styles.crumbIconWrapperGreen, {bottom : 1}]}
+      style={[styles.crumbIconWrapperGreen, { bottom: 1 }]}
       activeOpacity={0.75}
       onPress={() => handlePress()}
       >

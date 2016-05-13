@@ -1,8 +1,8 @@
-import React, { Component, Image, LayoutAnimation, Text, TouchableOpacity, View } from "react-native";
-import Icon from "react-native-vector-icons/FontAwesome";
-import styles from "../styles/base";
+import React, { TouchableOpacity } from 'react-native'
+import Icon from 'react-native-vector-icons/FontAwesome'
+import styles from '../styles/base'
 
-export default ({ back, navigator }) => {
+export default function ArrowLeft({ back, navigator }) {
   const handlePress = () => {
     if (back) {
       back()

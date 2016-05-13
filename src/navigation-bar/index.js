@@ -39,115 +39,117 @@ const showSettingsIconInScenes = [
   'all_for_now',
 ]
 
-export const routeMapper = (viewer) => ({
-  LeftButton: (route, navigator) => {
-    const { scene } = route
-    switch (scene) {
-      case 'insights':
-        if (route.filter !== 'UNRATED') {
-          return (
-            <ArrowLeft navigator={navigator}/>
-          )
-        }
-        break
-      case 'select_topics':
-        if (route.excludeUserTopics) {
-          return (
-            <ArrowLeft navigator={navigator}/>
-          )
-        }
-      default:
-        break
-    }
-    if (showBackIconInScenes.indexOf(scene) >= 0) {
+export function routeMapper() {
+  return {
+    LeftButton: (route, navigator) => {
+      const { scene } = route
+      switch (scene) {
+        case 'insights':
+          if (route.filter !== 'UNRATED') {
+            return (
+              <ArrowLeft navigator={navigator}/>
+            )
+          }
+          break
+        case 'select_topics':
+          if (route.excludeUserTopics) {
+            return (
+              <ArrowLeft navigator={navigator}/>
+            )
+          }
+        default:
+          break
+      }
+      if (showBackIconInScenes.indexOf(scene) >= 0) {
+        return (
+          <ArrowLeft navigator={navigator}/>
+        )
+      }
+      if (showSettingsIconInScenes.indexOf(scene) >= 0) {
+        return (
+          <Settings navigator={navigator}/>
+        )
+      }
       return (
-        <ArrowLeft navigator={navigator}/>
+        <View />
       )
-    }
-    if (showSettingsIconInScenes.indexOf(scene) >= 0) {
+    },
+
+    Title: (route, navigator) => {
+      switch (route.scene) {
+        case 'insights':
+          if (route.filter !== 'UNRATED') {
+            return (
+              <LaunchTitle title={route.title}/>
+            )
+          }
+          return (
+            <NavLogo navigator={navigator}/>
+          )
+        case 'all_for_now':
+          return (
+            <NavLogo navigator={navigator}/>
+          )
+        case 'user-insights_useless':
+          return (
+            <LaunchTitle title={route.title} textStyle={styles.title_itemForDeleted}/>
+          )
+        default:
+          break;
+      }
       return (
-        <Settings navigator={navigator}/>
+        <LaunchTitle title={route.title}/>
       )
-    }
-    return (
-      <View />
-    )
-  },
+    },
 
-  Title: (route, navigator) => {
-    switch (route.scene) {
-      case 'insights':
-        if (route.filter !== 'UNRATED') {
-          return (
-            <LaunchTitle title={route.title}/>
-          )
-        }
-        return (
-          <NavLogo navigator={navigator}/>
-        )
-      case 'all_for_now':
-        return (
-          <NavLogo navigator={navigator}/>
-        )
-      case 'user-insights_useless':
-        return (
-          <LaunchTitle title={route.title} textStyle={styles.title_itemForDeleted} />
-        )
-      default:
-        break;
-    }
-    return (
-      <LaunchTitle title={route.title}/>
-    )
-  },
-
-  RightButton: (route, navigator) => {
-    switch (route.scene) {
-      case 'user-collections':
-        if (route.add !== 'no') {
-          return (
-            <Add />
-          )
-        }
-        break
-      case 'user-insights_useful':
-        return (
-          <Relay.RootContainer
-            Component={TrashCounter}
-            route={new NodeRoute({
-              nodeID: route.collectionId,
-              filter: 'USELESS',
-            })}
-            renderFetched={data => (
-              <TrashCounter {...route} {...data} navigator={navigator}/>
-            )}
-            />
-        )
-      case 'follow-up':
-        return (
-          <Skip navigator={navigator} route={route}/>
-        )
-      case 'insights':
-        if (route.filter === 'UNRATED') {
+    RightButton: (route, navigator) => {
+      switch (route.scene) {
+        case 'user-collections':
+          if (route.add !== 'no') {
+            return (
+              <Add />
+            )
+          }
+          break
+        case 'user-insights_useful':
           return (
             <Relay.RootContainer
-              Component={UsefulCounter}
-              route={new ViewerRoute()}
+              Component={TrashCounter}
+              route={new NodeRoute({
+                nodeID: route.collectionId,
+                filter: 'USELESS',
+              })}
               renderFetched={data => (
-                <UsefulCounter {...data} navigator={navigator}/>
-              )}
+              <TrashCounter {...route} {...data} navigator={navigator}/>
+            )}
               />
           )
-        }
-        break
-      default:
-        break
+        case 'follow-up':
+          return (
+            <Skip navigator={navigator} route={route}/>
+          )
+        case 'insights':
+          if (route.filter === 'UNRATED') {
+            return (
+              <Relay.RootContainer
+                Component={UsefulCounter}
+                route={new ViewerRoute()}
+                renderFetched={data => (
+                  <UsefulCounter {...data} navigator={navigator}/>
+                )}
+                />
+            )
+          }
+          break
+        default:
+          break
+      }
+      return (
+        <View />
+      )
     }
-    return (
-      <View />
-    )
   }
-})
+}
 
 const Add = () => {
   return (
@@ -172,7 +174,7 @@ const Skip = ({ navigator, route, title }) => {
   }
   return (
     <TouchableOpacity
-      activeOpacity={ 0.75 }
+      activeOpacity={0.75}
       style={styles.crumbIconPlaceholder}
       onPress={() => handleSkipPress()}
       >
@@ -220,7 +222,7 @@ const LaunchTitle = ({ title, textStyle }) => {
   )
 }
 
-export class NavigationBar extends Navigator.NavigationBar {
+export default class NavigationBar extends Navigator.NavigationBar {
   render() {
     const { navState } = this.props
     const routes = navState.routeStack

@@ -13,13 +13,13 @@ import React, {
   NetInfo,
 } from 'react-native'
 import Relay from 'react-relay'
+import moment from 'moment'
 import styles from './styles/base'
 import renderScene from './render-scene'
 import { CustomFloatFromRight } from './scene-configs'
 import { UserNotifications } from './components'
-import moment from 'moment'
 import { EventManager } from './event-manager'
-import { NavigationBar, routeMapper } from './navigation-bar'
+import NavigationBar, { routeMapper } from './navigation-bar'
 import {
   updateUserNotifications,
 } from './actions/user'
@@ -180,7 +180,7 @@ export default class Application extends Component {
         const hours = Math.abs(backgroundDate.diff(now, 'hour'))
         if (hours >= 24) {
           this._navigator.resetTo({
-            scene: 'return_in_app',
+            scene: 'return_to_app',
             title: '',
           })
         }

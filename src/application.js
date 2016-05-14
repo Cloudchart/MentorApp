@@ -17,7 +17,7 @@ import moment from 'moment'
 import styles from './styles/base'
 import renderScene from './render-scene'
 import { CustomFloatFromRight } from './scene-configs'
-import { UserNotifications } from './components'
+import BannerNotification from './components/banner-notification'
 import { EventManager } from './event-manager'
 import NavigationBar, { routeMapper } from './navigation-bar'
 import {
@@ -29,23 +29,21 @@ import {
   checkNET,
 } from './system'
 import {
-  HIDE_NOTIFICATION,
   UPDATE_APP_START_TIME,
   UPDATE_APP_BACKGROUND_TIME,
 } from './actions/application'
 import SetUserPushTokenMutation from './mutations/set-user-push-token'
 
-
 moment.createFromInputFallback = function (config) {
-  config._d = new Date(config._i);
-};
+  config._d = new Date(config._i)
+}
 
 /**
  * Repaint white StatusBar
  * Do not forget to add in the info.plist:
  * - UIViewControllerBasedStatusBarAppearance : NO
  */
-StatusBar.setBarStyle(1);
+StatusBar.setBarStyle(1)
 
 export default class Application extends Component {
 
@@ -53,18 +51,14 @@ export default class Application extends Component {
     super(props, context)
     // Bind event handlers to component instance
     this._handlePushNotificationsRegister = this.handlePushNotificationsRegister.bind(this)
-    this._handlePushNotificationsNotification = this.handlePushNotificationsNotification.bind(this)
+    this._handlePushNotificationReceived = this.handlePushNotificationReceived.bind(this)
     this._handleAppStateChange = this.handleAppStateChange.bind(this)
     this._handleNetInfoChange = this.handleNetInfoChange.bind(this)
     // Attach event handlers
     PushNotificationIOS.addEventListener('register', this._handlePushNotificationsRegister)
-    PushNotificationIOS.addEventListener('notification', this._handlePushNotificationsNotification)
+    PushNotificationIOS.addEventListener('notification', this._handlePushNotificationReceived)
     AppState.addEventListener('change', this._handleAppStateChange)
     NetInfo.addEventListener('change', this._handleNetInfoChange)
-    // @todo remove EventManager
-    EventManager.on(HIDE_NOTIFICATION, () => {
-      this.setState({ networkNone: false })
-    })
     // Build initial route according to fetched data
     let initialRoute
     //const { subscribedTopics } = props.viewer
@@ -83,71 +77,64 @@ export default class Application extends Component {
     }
     this.state = {
       appState: null,
-      notifications: {
-        network: 'No Internet Connection',
-      },
-      networkNone: false,
+      notificationMessage: null,
+      errorMessage: null,
       currentAppState: '',
       initialRoute,
     }
     checkNET().then(reach => {
       if (reach === 'none') {
-        this.notifyNetworkError()
+        this._displayNetworkError()
       }
     })
+    setTimeout(() => this.setState({ notificationMessage: 'Push message test' }))
   }
 
   handleAppStateChange(currentAppState) {
     console.log('appStateChange: ', currentAppState)
-    const { networkNone } = this.state
+    const { networkErrorMessage } = this.state
     const prevAppState = this.state.appState
     this.setState({
       appState: currentAppState,
     })
-    if (!networkNone) {
+    if (!networkErrorMessage) {
       this._diffTimeStartApp(currentAppState, prevAppState)
     }
     if (currentAppState == 'active') {
       checkNET().then(reach => {
         if (reach == 'none') {
-          this.notifyNetworkError()
+          this._displayNetworkError()
         }
       })
       // checkPermissions()
     }
   }
 
-  notifyNetworkError() {
-    const { notifications } = this.state
-    this.setState({
-      networkNone: notifications.network,
-    })
-  }
-
   handleNetInfoChange(reach) {
     const { currentAppState } = this.state
     if (currentAppState !== 'background' && reach === 'none') {
-      this.notifyNetworkError()
+      this._displayNetworkError()
     }
   }
 
   handlePushNotificationsRegister(token) {
-    //const mutation = new SetUserPushTokenMutation({
-    //  user: viewer,
-    //  token,
-    //})
-    //Relay.Store.commitUpdate(mutation)
+    const mutation = new SetUserPushTokenMutation({
+      user: this.props.viewer,
+      token,
+    })
+    Relay.Store.commitUpdate(mutation)
   }
 
-  handlePushNotificationsNotification(notification) {
-    AlertIOS.alert(
-      'Notification Received',
-      'Alert message: ' + notification.getMessage(),
-      [{
-        text: 'Dismiss',
-        onPress: null
-      }]
-    );
+  handlePushNotificationReceived(notification) {
+    this.setState({
+      notificationMessage: notification && notification.getMessage(),
+    })
+  }
+
+  _displayNetworkError() {
+    this.setState({
+      errorMessage: 'No Internet Connection',
+    })
   }
 
   /**
@@ -189,9 +176,8 @@ export default class Application extends Component {
   }
 
   render() {
-    //const { viewer } = this.props
     console.log('Application.render()')
-    const { initialRoute, networkNone } = this.state
+    const { initialRoute, notificationMessage, errorMessage } = this.state
     return (
       <View style={styles.scene}>
         <Navigator
@@ -212,34 +198,34 @@ export default class Application extends Component {
           }}
           sceneStyle={styles.sceneStyle}
         />
-        {networkNone && (
-          <UserNotifications notification={networkNone}/>
+        {notificationMessage && (
+          <BannerNotification
+            style={styles.pushNotification}
+            timeout={30000}
+            onHide={() => this.setState({ notificationMessage: null })}
+            >
+            {notificationMessage}
+          </BannerNotification>
+        )}
+        {errorMessage && (
+          <BannerNotification
+            style={styles.errorNotification}
+            onHide={() => this.setState({ errorMessage: null })}
+            >
+            {errorMessage}
+          </BannerNotification>
         )}
       </View>
     )
   }
 }
 
-//Relay.createContainer(Application, {
-//  fragments: {
-//    viewer: () => Relay.QL`
-//      fragment on User {
-//        email
-//        notificationsSettings {
-//          startAt
-//          finishAt
-//          utcOffset
-//          timesToSend
-//        }
-//        subscribedTopics: topics(first: 1, filter: SUBSCRIBED) {
-//          availableSlotsCount
-//          edges {
-//            node {
-//              id
-//            }
-//          }
-//        }
-//      }
-//    `
-//  }
-//})
+Relay.createContainer(Application, {
+  fragments: {
+    viewer: () => Relay.QL`
+      fragment on User {
+        id
+      }
+    `,
+  },
+})

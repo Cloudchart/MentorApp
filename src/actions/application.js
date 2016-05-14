@@ -24,8 +24,6 @@ export const UPDATE_APP_BACKGROUND_TIME = '@AsyncStorage:APP_BACKGROUND_TIME'
 export const UPDATE_APP_INACTIVE_TIME = '@AsyncStorage:APP_INACTIVE_TIME'
 export const NOTIFICATIONS_PERMISSION_STATUS = '@AsyncStorage:notification'
 
-export const HIDE_NOTIFICATION = 'HIDE_NOTIFICATION'
-
 export function setUsefulAction(data) {
   return {
     type: SET_INSIGHTS_USEFUL,

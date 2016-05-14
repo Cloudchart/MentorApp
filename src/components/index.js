@@ -10,10 +10,8 @@ import AnimateSequences from './animate-sequences';
 import Insight from './insight';
 import InsightRate from './insight/insight-rate';
 import FBLoginButton from './fb-login';
-import UserNotifications from './user-notifications';
 
 export {
-  UserNotifications,
   FBLoginButton,
   Insight,
   InsightRate,

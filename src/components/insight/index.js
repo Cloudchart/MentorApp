@@ -8,16 +8,17 @@ import React, {
   View,
   Linking,
   PanResponder,
-  Animated
-} from "react-native";
-import Icon from "react-native-vector-icons/FontAwesome";
-import Filters from "../../utils/filters";
-import { Presets } from "../../utils/animation";
-import Url from 'url';
-import styles from "./style";
-import clamp from "clamp";
-import * as device from "../../utils/device";
-
+  Animated,
+  Dimensions,
+} from 'react-native'
+import Icon from 'react-native-vector-icons/FontAwesome'
+import Filters from '../../utils/filters'
+import { Presets } from '../../utils/animation'
+import Url from 'url'
+import styles from './style'
+import clamp from 'clamp'
+import * as device from '../../utils/device'
+import AutoText from '../../components/auto-text'
 
 export function animationCardLeft(params, animateProps, callback) {
   let setting = {
@@ -265,16 +266,23 @@ class Insight extends Component {
         duration = `${diffMinute} ${Filters.filterPlural(diffMinute, [ 'minute', 'minutes', 'minutes' ])}`;
       }
     }
-
+    const maxContentHeight = Dimensions.get('window').height - 350
+    const baseContentHeight = Dimensions.get('window').height - 500
     return (
       <TouchableOpacity
-        activeOpacity={ 0.75 }
+        activeOpacity={0.75}
         style={[styles.item, this.props.style]}
-        onPress={this._onCardPress}>
-        <View style={ styles.itemInner }>
-          <Text style={[styles.itemText, this.calculateContentFontSize(content)]}>
+        onPress={this._onCardPress}
+        >
+        <View style={[styles.itemInner]}>
+          <AutoText
+            style={styles.itemText}
+            scalingStyle={{ color: '#aaaaaa' }}
+            maxHeight={maxContentHeight}
+            initialFontSize={34}
+            >
             {content.length ? content.trim() : content}
-          </Text>
+          </AutoText>
         </View>
 
         {!origin ? null :

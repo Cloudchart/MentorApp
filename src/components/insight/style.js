@@ -19,7 +19,7 @@ const itemInner = {
 const itemText = {
   color: '#000',
   flex: 1,
-  lineHeight: device.fontSize(40),
+  //lineHeight: device.fontSize(40),
   fontSize: device.fontSize(34),
   fontWeight: '500',
   overflow: 'hidden'

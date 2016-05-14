@@ -1,7 +1,6 @@
 import React, { StyleSheet } from "react-native";
 import * as device from "../utils/device";
 
-
 export const root_view = {
   flex: 1,
   position: 'relative',
@@ -169,5 +168,13 @@ export default StyleSheet.create({
 
   folderIcon: {
     color: '#00af58'
-  }
+  },
+
+  pushNotification: {
+    backgroundColor: 'hsl(137, 54%, 50%)',
+    opacity: 1,
+  },
+  errorNotification: {
+    backgroundColor: '#fa3d39',
+  },
 })

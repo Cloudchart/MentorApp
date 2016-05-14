@@ -76,6 +76,10 @@ export function routeMapper() {
 
     Title: (route, navigator) => {
       switch (route.scene) {
+        case 'starter':
+          return (
+            <View />
+          )
         case 'insights':
           if (route.filter !== 'UNRATED') {
             return (

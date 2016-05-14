@@ -36,6 +36,13 @@ export default StyleSheet.create({
   itemInner: {
     ...itemInner
   },
+  itemInnerScaling: {
+    ...itemInner,
+    position: 'absolute',
+    left: device.size(10),
+    right: device.size(10),
+    opacity: 0,
+  },
 
   itemInnerLike: {
     ...itemInner,
@@ -44,6 +51,9 @@ export default StyleSheet.create({
 
   itemText: {
     ...itemText
+  },
+  itemTextScaling: {
+    color: '#aaaaaa',
   },
 
   itemTextLike : {

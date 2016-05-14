@@ -29,8 +29,6 @@ import {
   APPLICATION__BACKGROUND_TIME,
 } from './storage'
 
-const ONE_DAY = 24 * 60 * 60 * 1000
-
 /**
  * Repaint white StatusBar
  * Do not forget to add in the info.plist:
@@ -87,6 +85,7 @@ export default class Application extends Component {
       })
     })
     AsyncStorage.getItem(APPLICATION__BACKGROUND_TIME, (error, result) => {
+      console.log('APPLICATION__BACKGROUND_TIME: ', result)
       if (result) {
         try {
           const backgroundTime = JSON.stringify(result)
@@ -189,21 +188,10 @@ export default class Application extends Component {
         <Loader />
       )
     }
-    let initialRoute
-    if (isFirstLaunch) {
-      initialRoute = {
-        scene: 'welcome',
-        title: 'Virtual Mentor',
-      }
-    } else if (Date.now() - previousBackgroundTime > ONE_DAY) {
-      initialRoute = {
-        scene: 'return-to-app',
-        title: '',
-      }
-    } else {
-      initialRoute = {
-        scene: 'starter',
-      }
+    const initialRoute = {
+      scene: 'starter',
+      isFirstLaunch,
+      previousBackgroundTime,
     }
     return (
       <View style={styles.scene}>

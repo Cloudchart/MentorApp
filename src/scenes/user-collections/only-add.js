@@ -15,7 +15,8 @@ const OnlyAdd = ({ collection, pressRow }) => {
     <TouchableOpacity
       style={styles.collectionItem}
       activeOpacity={0.75}
-      onPress={pressRow}>
+      onPress={pressRow}
+      >
       <View style={styles.collectionItemInner}>
         <Icon name="folder-open-o" style={[baseStyles.crumbIcon, {color : '#00af58'}]}/>
         <Text style={styles.collectionText} numberOfLines={1}>
@@ -35,6 +36,6 @@ export default Relay.createContainer(OnlyAdd, {
       fragment on User {
         id
       }
-    `
+    `,
   },
 })

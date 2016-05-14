@@ -33,7 +33,7 @@ import StarterScene from './scenes/starter'
  * @param {Function} [options.renderFailure]
  * @param {Function} [options.renderFetched]
  */
-export default function renderSceneContainer(Component, screenParams, options) {
+export function renderSceneContainer(Component, screenParams, options) {
   const { route, forceFetch, renderFailure, renderFetched } = options || {}
   const finalRoute = route ? route : new ViewerRoute()
   const finalParams = screenParams ? screenParams : {}
@@ -90,11 +90,13 @@ export default function renderScene(route, navigator) {
     case 'insights':
       // Hack to fix issue when renderScene is being called twice
       // @see https://github.com/facebook/react-native/pull/3016
-      if (global.isFirstInsightsRequestDone) {
+      console.log('found isFirstInsightsRenderDone', global.isFirstInsightsRequestDone)
+      const { skipFirstRender } = screenParams.renderOptions || {}
+      if (skipFirstRender !== true || global.isFirstInsightsRenderDone) {
         global.isFirstInsightsRequestDone = null
         return renderSceneContainer(InsightsScene, screenParams)
       }
-      global.isFirstInsightsRequestDone = true
+      global.isFirstInsightsRenderDone = true
       return (
         <Loader />
       )

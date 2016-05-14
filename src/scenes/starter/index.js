@@ -1,12 +1,27 @@
 import React, { Component } from 'react-native'
 import Relay from 'react-relay'
-import Loader  from '../components/loader'
+import Loader  from '../../components/loader'
+
+const ONE_DAY = 24 * 60 * 60 * 1000
 
 class StarterScene extends Component {
 
   componentDidMount() {
-    const { viewer, navigator } = this.props
+    const { isFirstLaunch, previousBackgroundTime, viewer, navigator } = this.props
     const { followups, questions } = viewer
+    if (isFirstLaunch) {
+      navigator.push({
+        scene: 'welcome',
+        title: 'Virtual Mentor',
+      })
+      return
+    }
+    if (previousBackgroundTime && Date.now() - previousBackgroundTime > ONE_DAY) {
+      navigator.push({
+        scene: 'return-to-app',
+      })
+      return
+    }
     if (followups.edges.length > 0) {
       navigator.push({
         scene: 'follow-up',
@@ -17,13 +32,12 @@ class StarterScene extends Component {
     if (questions.edges.length > 0) {
       navigator.push({
         scene: 'questionnaire',
-        title: '',
       })
       return
     }
-    navigator.push({
+    // Default route
+    navigator.resetTo({
       scene: 'insights',
-      title: '',
       filter: 'UNRATED',
     })
   }
@@ -34,11 +48,8 @@ class StarterScene extends Component {
     )
   }
 }
+
 export default Relay.createContainer(StarterScene, {
-  initialVariables: {
-    count: 100,
-    filter: 'FOLLOWUPS',
-  },
   fragments: {
     viewer: () => Relay.QL`
       fragment on User {

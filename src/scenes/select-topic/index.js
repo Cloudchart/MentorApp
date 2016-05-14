@@ -136,7 +136,9 @@ class SelectTopicScene extends Component {
       navigator.resetTo({
         scene: 'insights',
         filter: 'UNRATED',
-        title: '',
+        renderOptions: {
+          skipFirstRender: true,
+        },
       })
       return
     }
@@ -147,7 +149,9 @@ class SelectTopicScene extends Component {
         navigator.resetTo({
           scene: 'insights',
           filter: 'UNRATED',
-          title: '',
+          renderOptions: {
+            skipFirstRender: true,
+          },
         })
         return
       }

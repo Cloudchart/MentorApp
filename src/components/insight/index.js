@@ -20,6 +20,57 @@ import clamp from 'clamp'
 import * as device from '../../utils/device'
 import AutoText from '../../components/auto-text'
 
+const BASIC_CONTENT_LENGTH = 120
+const BASIC_FONT_SIZE = 34
+
+function getAdjustedFontSize(content, baseContentLength, fontSize) {
+  const minFontSize = 14;
+  console.log(content.length)
+  if (content.length > baseContentLength) {
+    let ratio = content.length / baseContentLength;
+    let percentFontSize = Math.ceil(fontSize / ratio);
+    percentFontSize =
+      percentFontSize < minFontSize ?
+        minFontSize :
+        percentFontSize
+    const { length } = content
+    if (length > 100 && length < 140) {
+      percentFontSize += 4
+    }
+    if (length >= 140 && length < 165) {
+      percentFontSize += 3.8
+    }
+    if (length >= 165 && length < 200) {
+      percentFontSize += 3
+    }
+    if (length > 200 && length < 300) {
+      percentFontSize += 6
+    }
+    if (length >= 300 && length < 350) {
+      percentFontSize += 2
+    }
+    if (length >= 350 && length < 400) {
+      percentFontSize += 8
+    }
+    if (length > 400) {
+      percentFontSize += 7
+    }
+    return device.fontSize(percentFontSize);
+  }
+  return fontSize
+}
+
+function getScalingText(content) {
+  if (typeof content === 'string') {
+    let result = content.trim().substr(0, 100)
+    if (content.length > 100) {
+      result += '...'
+    }
+    return result
+  }
+  return ''
+}
+
 export function animationCardLeft(params, animateProps, callback) {
   let setting = {
     velocity: { x: clamp(100 * -1, 3, 5) * -3, y: 0 },
@@ -59,18 +110,10 @@ export function animateEntrance(animateProps) {
 
 class Insight extends Component {
 
-  state = {
-    rowHeight: 0,
-    visibility: 0,
-    update: 0
-  }
-
-  constructor (props) {
-    super(props)
-
-    this._openWebView = this._openWebView.bind(this);
+  constructor(props, context) {
+    super(props, context)
+    this._openWebView = this._openWebView.bind(this)
     this._onCardPress = this._onCardPress.bind(this)
-
     this._panResponder = PanResponder.create({
       onStartShouldSetPanResponder: (evt, gestureState) => true,
       onStartShouldSetPanResponderCapture: (evt, gestureState) => true,
@@ -101,7 +144,7 @@ class Insight extends Component {
         // responder. Returns true by default. Is currently only supported on android.
         return true;
       }
-    });
+    })
     this._panResponderStop = PanResponder.create({
       onStartShouldSetPanResponder: (evt, gestureState) => true,
       onStartShouldSetPanResponderCapture: (evt, gestureState) => true,
@@ -131,8 +174,30 @@ class Insight extends Component {
         // responder. Returns true by default. Is currently only supported on android.
         return true;
       }
-    });
-    this._isLayoutAnimationRun = false;
+    })
+    this._isLayoutAnimationRun = false
+    this.state = {
+      isScaling: null,
+      scaledFontSize: null,
+      rowHeight: 0,
+      visibility: 0,
+      update: 0,
+    }
+  }
+
+  componentDidMount() {
+    this.setState({
+      isScaling: true,
+    })
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.insight !== this.props.insight) {
+      this.setState({
+        isScaling: true,
+        scaledFontSize: null,
+      })
+    }
   }
 
   /**
@@ -184,139 +249,111 @@ class Insight extends Component {
     };
   }
 
-  calculateContentFontSize (content) {
-    const baseContentSize = device.isIphone5() ? 75 : 100;
-    const baseFontSize = 34;
-    const minFontSize = 14;
-    let conf = {};
-
-    if(this.props.fontSize){
-      conf.fontSize = device.fontSize(this.props.fontSize);
-      conf.lineHeight = device.fontSize(this.props.fontSize * 1.2);
+  handleScaleComplete({ fontSize }) {
+    try {
+      this.setState({
+        scaledFontSize: fontSize,
+        isScaling: false,
+      })
+    } catch (e) {
+      // nothing
     }
-
-    if (!this.props.fontSize && content.length > baseContentSize ) {
-      let ratio = content.length / baseContentSize;
-      let percentFontSize = Math.ceil(baseFontSize / ratio);
-      percentFontSize = percentFontSize < minFontSize ? minFontSize : percentFontSize;
-
-      if ( content.length > 100 && content.length < 140 ) {
-        percentFontSize += 3;
-      }
-
-      if ( content.length >= 140 && content.length < 165 ) {
-        percentFontSize += 3.8;
-      }
-
-      if ( content.length >= 165 && content.length < 200 ) {
-        percentFontSize += 3;
-      }
-
-      if ( content.length > 200 && content.length < 300 ) {
-        percentFontSize += 6;
-      }
-
-      if ( content.length >= 300 && content.length < 350 ) {
-        percentFontSize += 2;
-      }
-
-      if ( content.length >= 350 && content.length < 400 ) {
-        percentFontSize += 8;
-      }
-
-      if ( content.length > 400 ) {
-        percentFontSize += 7;
-      }
-
-      conf.fontSize = device.fontSize(percentFontSize);
-      conf.lineHeight = device.fontSize(percentFontSize * 1.2)
-    }
-
-    return conf;
   }
 
-  render () {
-    const { content, origin } = this.props.insight;
-    const { visibility } = this.state;
-
-    let url = origin && origin.url ? origin.url : '';
-    let parseUrl = '';
-    let duration = '';
-    if ( isUrl(url) ) {
-      parseUrl = Url.parse(url).host;
-      parseUrl = parseUrl.indexOf('www') == 0 ?
-        parseUrl.substr(4, url.length - 1) :
-        parseUrl;
+  render() {
+    const { content, origin } = this.props.insight
+    const { visibility, isScaling, scaledFontSize } = this.state
+    const finalContent = (typeof content === 'string') ? content : ''
+    const sourceURL = origin && origin.url ? origin.url : ''
+    let finalURL = ''
+    if (Filters.reWeburl.test(sourceURL)) {
+      const parsedURL = Url.parse(sourceURL).host
+      finalURL =
+        parsedURL.indexOf('www') == 0 ?
+        parsedURL.substr(4, sourceURL.length - 1) :
+          parsedURL
     }
-
-    if ( origin.duration ) {
-      const dtn = origin.duration;
-      const dm = Math.floor(dtn / 60);
-      const dh = Math.floor(dtn / 3600);
-      const diffMinute = dm ? dm : null;
-      const diffHour = dh ? dh : null;
-      const lessMinute = dtn < 60 ? 1 : null;
-
-
+    let finalDuration = ''
+    if (origin.duration) {
+      const dtn = origin.duration
+      const dm = Math.floor(dtn / 60)
+      const dh = Math.floor(dtn / 3600)
+      const diffMinute = dm ? dm : null
+      const diffHour = dh ? dh : null
+      const lessMinute = dtn < 60 ? 1 : null
       if ( lessMinute ) {
-        duration = `less than a ${lessMinute} minute`;
+        finalDuration = `less than a ${lessMinute} minute`
       } else if ( diffHour ) {
-        duration = `${diffHour} ${Filters.filterPlural(diffHour, [ 'hour', 'hours', 'hours' ])}`;
+        finalDuration = `${diffHour} ${Filters.filterPlural(diffHour, [ 'hour', 'hours', 'hours' ])}`
       } else if ( diffMinute ) {
-        duration = `${diffMinute} ${Filters.filterPlural(diffMinute, [ 'minute', 'minutes', 'minutes' ])}`;
+        finalDuration = `${diffMinute} ${Filters.filterPlural(diffMinute, [ 'minute', 'minutes', 'minutes' ])}`
       }
     }
     const maxContentHeight = Dimensions.get('window').height - 350
-    const baseContentHeight = Dimensions.get('window').height - 500
+    // const baseContentHeight = Dimensions.get('window').height - 500
+    const basicFontSize = getAdjustedFontSize(finalContent, BASIC_CONTENT_LENGTH, BASIC_FONT_SIZE)
+    const insightTextStyle = [
+      styles.itemText,
+      isScaling && styles.itemTextScaling,
+      { fontSize: scaledFontSize || basicFontSize },
+    ]
     return (
       <TouchableOpacity
         activeOpacity={0.75}
         style={[styles.item, this.props.style]}
         onPress={this._onCardPress}
         >
+        {isScaling && (
+          <View style={[styles.itemInnerScaling]}>
+            <AutoText
+              style={styles.itemText}
+              maxHeight={maxContentHeight}
+              initialFontSize={scaledFontSize || BASIC_FONT_SIZE}
+              onComplete={({ fontSize }) => this.handleScaleComplete({ fontSize })}
+              >
+              {finalContent}
+            </AutoText>
+          </View>
+        )}
         <View style={[styles.itemInner]}>
-          <AutoText
-            style={styles.itemText}
-            scalingStyle={{ color: '#aaaaaa' }}
-            maxHeight={maxContentHeight}
-            initialFontSize={34}
-            >
-            {content.length ? content.trim() : content}
-          </AutoText>
+          <Text style={insightTextStyle}>
+            {finalContent}
+          </Text>
         </View>
-
-        {!origin ? null :
+        {origin && (
           <View style={[styles.itemMore, this.getStyle()]}>
-            {!visibility ? null :
+            {visibility === 1 && (
               <View style={styles.itemMoreInner}>
                 <View
-                  style={{alignSelf: 'flex-start'}} {...this._panResponder.panHandlers}>
-                  <Text style={ styles.itemMoreText }>
+                  style={{alignSelf: 'flex-start'}}
+                  {...this._panResponder.panHandlers}
+                  >
+                  <Text style={styles.itemMoreText}>
                     {origin.author}
                   </Text>
-                  <Text style={ styles.itemMoreText }>
-                    {parseUrl}
+                  <Text style={styles.itemMoreText}>
+                    {finalURL}
                   </Text>
                 </View>
-
-                {!origin.duration ? null :
+                {finalDuration !== '' && (
                   <View {...this._panResponderStop.panHandlers}>
-                    <Text style={ styles.itemMoreTextTime }>
+                    <Text style={styles.itemMoreTextTime}>
                       <Icon name="clock-o" style={styles.crumbIcon}/>
                       <Text>&nbsp;</Text>
-                      <Text numberOfLines={1} style={ styles.itemTime }>{duration.trim()}</Text>
+                      <Text numberOfLines={1} style={styles.itemTime}>
+                        {finalDuration.trim()}
+                      </Text>
                     </Text>
-                  </View>}
-              </View>}
-          </View>}
+                  </View>
+                )}
+              </View>
+            )}
+          </View>
+        )}
       </TouchableOpacity>
 
     )
   }
-}
-
-function isUrl (url) {
-  return Filters.reWeburl.test(url)
 }
 
 export default Insight;

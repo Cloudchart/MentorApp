@@ -49,7 +49,7 @@ class QuestionnaireScene extends Component {
         })
         return
       }
-      navigator.push({
+      navigator.resetTo({
         scene: 'insights',
         title: '',
         filter: 'UNRATED',
@@ -106,10 +106,9 @@ class QuestionnaireScene extends Component {
   }
 
   handleSelect(questionID, answerID) {
-    const { navigator, goAfterFinish, goAfterFinishProps } = this.props
     this.setState({
       isAnswerPending: true,
-      answerReaction: null,
+      lastAnswerReaction: null,
     })
     const mutation = new AnswerTheQuestionMutation({
       questionID,

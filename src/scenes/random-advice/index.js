@@ -32,10 +32,7 @@ class RandomAdviceScene extends Component {
 
   handleGotItPress() {
     const { navigator } = this.props
-    navigator.push({
-      scene: 'insights',
-      filter: 'UNRATED',
-    })
+    navigator.pop()
   }
 
   render() {

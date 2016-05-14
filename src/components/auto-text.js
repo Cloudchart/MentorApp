@@ -66,30 +66,46 @@ export default class AutoText extends Component {
     if (this.props.maxHeight !== undefined) {
       if (height > this.props.maxHeight) {
         if (fontSize == 0.5) {
-          this.setState({
-            isScalingComplete: true,
-          }, () => {
+          try {
+            this.setState({
+              isScalingComplete: true,
+            }, () => {
+              if (onComplete) {
+                onComplete(height)
+              }
+            })
+          } catch (e) {
             if (onComplete) {
               onComplete(height)
             }
-          })
+          }
         } else {
-          this.setState({
-            fontSize: fontSize - 0.5,
-            //isScalingComplete: true,
-          })
+          try {
+            this.setState({
+              fontSize: fontSize - 0.5,
+              //isScalingComplete: true,
+            })
+          } catch (e) {
+            // nothing
+          }
           this._tryNewSize()
         }
       } else if (this.state.isScalingComplete === false) {
-        this.setState({
-          //fontSize: fontSize + 0.5,
-          isScalingComplete: true,
-        }, () => {
+        try {
+          this.setState({
+            //fontSize: fontSize + 0.5,
+            isScalingComplete: true,
+          }, () => {
+            if (onComplete) {
+              onComplete({fontSize, height})
+            }
+          })
+          //this._tryNewSize()
+        } catch (e) {
           if (onComplete) {
-            onComplete(height)
+            onComplete({fontSize, height})
           }
-        })
-        //this._tryNewSize()
+        }
       }
     }
   }

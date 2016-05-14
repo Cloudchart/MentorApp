@@ -1,128 +1,95 @@
 import React, {
   Animated,
   Component,
-  StyleSheet,
-  View
-} from "react-native";
-import Relay from 'react-relay';
-import { Boris, Button } from "../../components";
-import styles from "./style";
-import { fragments } from "./fragments";
-
+  View,
+} from 'react-native'
+import Relay from 'react-relay'
+import { Boris, Button } from '../../components'
+import styles from './style'
 
 class ReturnToAppScene extends Component {
 
-  state = {
-    buttonOpacity: new Animated.Value(0)
+  constructor(props, context) {
+    super(props, context)
+    this.state = {
+      buttonOpacity: new Animated.Value(0),
+    }
   }
 
-  constructor (props) {
-    super(props)
-    this._navigatorReplace = this._navigatorReplace.bind(this);
-  }
-
-
-  componentDidMount () {
-    const { reactions } = this.props.viewer;
-    const r = reactions && reactions.edges.length;
-
-    if ( !r ) {
-      this._navigatorReplace();
-    } else {
+  componentDidMount() {
+    const { viewer } = this.props
+    const { edges } = viewer.greetings
+    if (edges.length > 0) {
       Animated.timing(this.state.buttonOpacity, {
         duration: 1000,
-        toValue: 1
+        toValue: 1,
       }).start()
     }
   }
 
-  _navigatorReplace () {
-    const { viewer, navigator } = this.props;
-    const { questions, insights } = viewer;
-    let routerConf
-    if ( questions && questions.edges.length ) {
-      routerConf = {
-        scene: 'questionnaire',
-        title: '',
-        goAfterFinish: 'insights',
-        goAfterFinishProps: {
-          filter: 'UNRATED',
-        },
-      }
-    } else if ( insights && insights.edges.length ) {
-      routerConf = {
-        scene: 'follow-up',
-        title: 'Rate used advice',
-        goAfterFinish: 'insights',
-        goAfterFinishProps: {
-          filter: 'UNRATED',
-        },
-        buttonSkip: 'insights',
-        buttonSkipProps: {
-          filter: 'UNRATED',
-        }
-      }
-    } else {
-      routerConf = {
-        scene: 'insights',
-        filter: 'UNRATED',
-      }
-    }
-    navigator.resetTo(routerConf);
+  handleNextStepPress() {
+    this.props.navigator.replace({
+      scene: 'follow-up',
+      title: 'Rate used advice',
+    })
   }
 
-
-  _showBoris (reactions) {
-    const { buttonOpacity } = this.state;
-    const styleButton = [ styles.continue, { opacity: buttonOpacity } ];
-
+  render() {
+    const { viewer } = this.props
+    const { buttonOpacity } = this.state
+    const { edges } = viewer.greetings
+    if (edges.length === 0) {
+      return (
+        <Loader />
+      )
+    }
+    const firstNode = edges[0].node
+    const buttonStyle = [styles.continue, { opacity: buttonOpacity }]
     return (
-      <View style={ styles.container }>
+      <View style={styles.container}>
         <Boris
-          mood={reactions.mood}
+          mood={firstNode.mood}
           size="big"
-          note={reactions.content}
-          animate={ true }
-          style={ styles.boris }
-        />
-
-        <Animated.View style={styleButton}>
+          note={firstNode.content}
+          animate={true}
+          style={styles.boris}
+          />
+        <Animated.View style={buttonStyle}>
           <Button
             label="Let's go!"
-            onPress={this._navigatorReplace}
+            onPress={() => this.handleNextStepPress()}
             color="blue"
-          />
+            />
         </Animated.View>
       </View>
     )
   }
-
-
-  render () {
-    const { viewer } = this.props;
-    const { reactions } = viewer;
-
-    if ( reactions && reactions.edges.length ) {
-      return this._showBoris(reactions.edges[ 0 ].node);
-    }
-
-    return null;
-  }
 }
 
+const reactionFragment = Relay.QL`
+  fragment on BotReaction {
+    id
+    mood
+    content
+  }
+`;
 
 export default Relay.createContainer(ReturnToAppScene, {
   initialVariables: {
     count: 1,
-    countInsights: 1,
-    filter: 'ALL'
   },
   fragments: {
     viewer: () => Relay.QL`
-        fragment on User {
-            ${fragments}
+      fragment on User {
+        greetings: reactions(first: $count, scope: "greetings") {
+          edges {
+            node {
+              ${reactionFragment}
+            }
+          }
         }
-    `
-  }
-});
+      }
+    `,
+  },
+})
 

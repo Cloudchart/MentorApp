@@ -1,20 +1,16 @@
 import React, {
   AppRegistry,
   Component,
-  AlertIOS,
-  View,
-  Text
+  AsyncStorage,
 } from 'react-native'
 import Relay, { DefaultNetworkLayer } from 'react-relay'
-import { GraphQLServerURL } from './config'
-import moment from 'moment'
 import { Provider } from 'react-redux'
 import store from './src/store'
+import { GraphQLServerURL } from './config'
 import Application from './src/application'
-import NetworkError from './src/scenes/network-error'
+import Loader from './src/components/loader'
+//import NetworkError from './src/scenes/network-error'
 import DeviceInfo from 'react-native-device-info'
-import { SAVE_UNIQUE_ID_AND_DATE } from './src/actions/application'
-import { EventManager } from './src/event-manager'
 
 const networkLayerOptions = {
   /*fetchTimeout: 30000,
@@ -47,33 +43,6 @@ if (process.env['NODE_ENV'] === 'development') {
 }
 
 class Mentor extends Component {
-  constructor (props, context) {
-    super(props, context)
-    this.state = {
-      enable: null,
-    }
-    store.dispatch({
-      type: SAVE_UNIQUE_ID_AND_DATE,
-      id: DeviceInfo.getUniqueID(),
-      appStart: moment(),
-    })
-    EventManager.on('enable:network', () => this.handleNetworkEnable())
-  }
-
-  handleNetworkEnable() {
-    this.setState({
-      enable: true,
-    })
-  }
-
-  _renderFailure(error) {
-    if (error && error == 'TypeError: Network request failed') {
-      return (
-        <NetworkError />
-      )
-    }
-  }
-
   render() {
     return (
       <Provider store={store}>

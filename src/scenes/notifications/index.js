@@ -8,7 +8,7 @@ import React, {
 } from "react-native";
 import Relay from 'react-relay';
 import { Button, Boris, TransparentButton } from "../../components";
-import { NOTIFICATIONS_PERMISSION_STATUS } from "../../actions/application";
+import { NOTIFICATIONS__PERMISSIONS_STATUS } from "../../storage";
 import { updateUserNotifications } from "../../actions/user";
 import styles from "./style";
 
@@ -58,7 +58,7 @@ class NotificationsScene extends Component {
   async _requestPermissions () {
     try {
       PushNotificationIOS.requestPermissions();
-      await AsyncStorage.setItem(NOTIFICATIONS_PERMISSION_STATUS, 'already_request_permissions');
+      await AsyncStorage.setItem(NOTIFICATIONS__PERMISSIONS_STATUS, 'already_requested');
     } catch ( error ) {
     }
   }

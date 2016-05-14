@@ -17,26 +17,19 @@ import moment from 'moment'
 import styles from './styles/base'
 import renderScene from './render-scene'
 import { CustomFloatFromRight } from './scene-configs'
-import BannerNotification from './components/banner-notification'
-import { EventManager } from './event-manager'
 import NavigationBar, { routeMapper } from './navigation-bar'
-import {
-  updateUserNotifications,
-} from './actions/user'
-import {
-  checkPermissions,
-  NETAlert,
-  checkNET,
-} from './system'
-import {
-  UPDATE_APP_START_TIME,
-  UPDATE_APP_BACKGROUND_TIME,
-} from './actions/application'
+import Loader from './components/loader'
+import BannerNotification from './components/banner-notification'
+import { checkPermissions } from './system'
 import SetUserPushTokenMutation from './mutations/set-user-push-token'
+import UpdateUserNotificationsSettingsMutation from './mutations/update-user-notifications-settings'
+import {
+  APPLICATION__IS_FIRST_LAUNCH,
+  APPLICATION__START_TIME,
+  APPLICATION__BACKGROUND_TIME,
+} from './storage'
 
-moment.createFromInputFallback = function (config) {
-  config._d = new Date(config._i)
-}
+const ONE_DAY = 24 * 60 * 60 * 1000
 
 /**
  * Repaint white StatusBar
@@ -49,6 +42,18 @@ export default class Application extends Component {
 
   constructor(props, context) {
     super(props, context)
+    // Build initial route according to fetched data
+    let initialRoute
+    console.log('Application constructor')
+    this.state = {
+      appState: null,
+      notificationMessage: null,
+      errorMessage: null,
+      currentAppState: '',
+      isFirstLaunchStateLoading: true,
+      isBackgroundTimeStateLoading: true,
+      initialRoute,
+    }
     // Bind event handlers to component instance
     this._handlePushNotificationsRegister = this.handlePushNotificationsRegister.bind(this)
     this._handlePushNotificationReceived = this.handlePushNotificationReceived.bind(this)
@@ -59,49 +64,74 @@ export default class Application extends Component {
     PushNotificationIOS.addEventListener('notification', this._handlePushNotificationReceived)
     AppState.addEventListener('change', this._handleAppStateChange)
     NetInfo.addEventListener('change', this._handleNetInfoChange)
-    // Build initial route according to fetched data
-    let initialRoute
-    //const { subscribedTopics } = props.viewer
-    console.log('Application constructor')
-    //if (subscribedTopics.edges.length === 0) {
-    if (true) {
-      initialRoute = {
-        scene: 'welcome',
-        title: 'Virtual Mentor',
-      }
-    } else {
-      initialRoute = {
-        scene: 'insights',
-        filter: 'UNRATED',
-      }
-    }
-    this.state = {
-      appState: null,
-      notificationMessage: null,
-      errorMessage: null,
-      currentAppState: '',
-      initialRoute,
-    }
-    checkNET().then(reach => {
+    NetInfo.fetch().done(reach => {
       if (reach === 'none') {
         this._displayNetworkError()
       }
     })
-    setTimeout(() => this.setState({ notificationMessage: 'Push message test' }))
+  }
+
+  componentDidMount() {
+    AsyncStorage.getItem(APPLICATION__IS_FIRST_LAUNCH, (error, result) => {
+      console.log('APPLICATION__IS_FIRST_LAUNCH: ', result)
+      let isFirstLaunch
+      if (result !== null) {
+        isFirstLaunch = (result !== 'false')
+      } else {
+        // By default
+        isFirstLaunch = true
+      }
+      this.setState({
+        isFirstLaunch,
+        isFirstLaunchStateLoading: false,
+      })
+    })
+    AsyncStorage.getItem(APPLICATION__BACKGROUND_TIME, (error, result) => {
+      if (result) {
+        try {
+          const backgroundTime = JSON.stringify(result)
+          if (backgroundTime > 0) {
+            this.setState({
+              previousBackgroundTime: backgroundTime,
+              isBackgroundTimeStateLoading: false,
+            })
+          }
+        } catch (e) {
+          // nothing
+        }
+      }
+      this.setState({
+        isBackgroundTimeStateLoading: false,
+      })
+    })
   }
 
   handleAppStateChange(currentAppState) {
-    console.log('appStateChange: ', currentAppState)
-    const { networkErrorMessage } = this.state
-    const prevAppState = this.state.appState
-    this.setState({
-      appState: currentAppState,
-    })
-    if (!networkErrorMessage) {
-      this._diffTimeStartApp(currentAppState, prevAppState)
+    const prevAppState = this.state.currentAppState
+    console.log('appStateChange: ', { currentAppState, prevAppState })
+    const now = Date.now()
+    switch (currentAppState) {
+      case 'active':
+        AsyncStorage.setItem(APPLICATION__START_TIME, now.toString())
+        this._updateUserNotificationSettings({
+          startAt: moment(now).format('HH:MM'),
+        })
+        break
+      case 'background':
+        AsyncStorage.setItem(APPLICATION__BACKGROUND_TIME, now.toString())
+        this._updateUserNotificationSettings({
+          finishAt: moment(now).format('HH:MM'),
+        })
+        break
+      default:
+        // AsyncStorage.setItem(UPDATE_APP_INACTIVE_TIME, this.prepareData(new Date))
+        break
     }
+    this.setState({
+      currentAppState,
+    })
     if (currentAppState == 'active') {
-      checkNET().then(reach => {
+      NetInfo.fetch().done(reach => {
         if (reach == 'none') {
           this._displayNetworkError()
         }
@@ -112,7 +142,7 @@ export default class Application extends Component {
 
   handleNetInfoChange(reach) {
     const { currentAppState } = this.state
-    if (currentAppState !== 'background' && reach === 'none') {
+    if (reach === 'none' && currentAppState !== 'background') {
       this._displayNetworkError()
     }
   }
@@ -137,47 +167,45 @@ export default class Application extends Component {
     })
   }
 
-  /**
-   * comparing the time re-entry application
-   * @param currentAppState
-   * @private
-   */
-  _diffTimeStartApp(currentAppState, prevAppState) {
-    switch (currentAppState) {
-      case 'active':
-        AsyncStorage.setItem(UPDATE_APP_START_TIME, (new Date()).toString())
-        updateUserNotifications()
-        break
-      case 'background':
-        AsyncStorage.setItem(UPDATE_APP_BACKGROUND_TIME, (new Date()).toString())
-        updateUserNotifications(true)
-        break
-      default:
-        // AsyncStorage.setItem(UPDATE_APP_INACTIVE_TIME, this.prepareData(new Date))
-        break
+  _updateUserNotificationSettings(data) {
+    const finalData = {
+      ...data,
+      utcOffset: moment().utcOffset(),
+      timesToSend: 0,
     }
-    if (currentAppState == 'active' && prevAppState !== 'inactive') {
-      const now = moment()
-      AsyncStorage.getItem(UPDATE_APP_BACKGROUND_TIME, (error, result) => {
-        if (error || !result) return
-        const backgroundDate = moment(result)
-        if (!backgroundDate.diff) {
-          return
-        }
-        const hours = Math.abs(backgroundDate.diff(now, 'hour'))
-        if (hours >= 24) {
-          this._navigator.resetTo({
-            scene: 'return_to_app',
-            title: '',
-          })
-        }
-      })
-    }
+    const mutation = new UpdateUserNotificationsSettingsMutation(finalData)
+    Relay.Store.commitUpdate(mutation)
   }
 
   render() {
     console.log('Application.render()')
-    const { initialRoute, notificationMessage, errorMessage } = this.state
+    const {
+      isFirstLaunchStateLoading, isBackgroundTimeStateLoading,
+      isFirstLaunch, previousBackgroundTime,
+      notificationMessage, errorMessage,
+    } = this.state
+    if (isFirstLaunchStateLoading || isBackgroundTimeStateLoading) {
+      return (
+        <Loader />
+      )
+    }
+    let initialRoute
+    if (isFirstLaunch) {
+      initialRoute = {
+        scene: 'welcome',
+        title: 'Virtual Mentor',
+      }
+    } else if (Date.now() - previousBackgroundTime > ONE_DAY) {
+      initialRoute = {
+        scene: 'return-to-app',
+        title: '',
+      }
+    } else {
+      initialRoute = {
+        scene: 'follow-up',
+        title: 'Rate used advice',
+      }
+    }
     return (
       <View style={styles.scene}>
         <Navigator

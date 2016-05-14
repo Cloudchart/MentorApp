@@ -33,7 +33,26 @@ class QuestionnaireScene extends Component {
   }
 
   componentDidMount() {
-    const { viewer } = this.props
+    const { viewer, navigator, isFirstLaunch } = this.props
+    const { edges } = viewer.questions
+    console.log(Object.keys(this.props))
+    if (edges.length === 0) {
+      if (isFirstLaunch) {
+        const { availableSlotsCount } = viewer.topics
+        navigator.push({
+          scene: 'select_topics',
+          title: 'Select up to ' + availableSlotsCount + ' topics to start:',
+          isFirstLaunch,
+        })
+        return
+      }
+      navigator.push({
+        scene: 'insights',
+        title: '',
+        filter: 'UNRATED',
+      })
+      return
+    }
     this.setState({
       dataSource: this._getDataSource(viewer.questions),
     })

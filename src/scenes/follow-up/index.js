@@ -12,34 +12,23 @@ import React, {
   Dimensions,
   ActionSheetIOS,
   PanResponder
-} from "react-native";
-import Relay from 'react-relay';
-import { Boris, Button, ScrollListView, InsightRate } from "../../components";
-import { ScrollHandler } from "../../utils/animation";
-import Empty from "./../user-insights/empty";
-import { likeInsightInTopic, dislikeInsightInTopic } from "../../actions/insight";
+} from 'react-native'
+import Relay from 'react-relay'
+import { Boris, Button, ScrollListView, InsightRate } from '../../components'
+import { ScrollHandler } from '../../utils/animation'
+import Loader  from '../../components/loader'
+import { likeInsightInTopic, dislikeInsightInTopic } from '../../actions/insight'
+import { insightFragment } from '../insights/insight-card'
+import styles from './../user-insights/style'
+import * as device from '../../utils/device'
 
-import styles from "./../user-insights/style";
-import * as device from "../../utils/device";
+const BORIS_NOTE =
+  'Hello, master. I sincerely hope you\'ve put these advices to work. ' +
+  'Now review them: did they work for you?'
 
+class FollowUpScene extends Component {
 
-const BorisNoteForSubscription = `Hello, master. I sincerely hope you've put these advices to work. Now review them: did they work for you?`;
-
-class FollowUp extends Component {
-
-  state = {
-    listInsights: [],
-    is_empty: false,
-    scrollEnabled: true,
-    isLoadingTail: false,
-    random: (Math.random(1000) * 100).toString(16),
-    dataSource: new ListView.DataSource({
-      rowHasChanged: (row1, row2) => row1 !== row2
-    })
-  }
-
-
-  constructor (props) {
+  constructor(props) {
     super(props)
     this.PAGE_SIZE = 30;
     this.saveTimeout = null;
@@ -48,21 +37,42 @@ class FollowUp extends Component {
     this.filterLike = this.filterLike.bind(this);
     this.filterDisLike = this.filterDisLike.bind(this);
 
+    this.state = {
+      listInsights: [],
+      is_empty: false,
+      scrollEnabled: true,
+      isLoadingTail: false,
+      random: (Math.random(1000) * 100).toString(16),
+      dataSource: new ListView.DataSource({
+        rowHasChanged: (row1, row2) => row1 !== row2
+      })
+    }
+  }
+
+  componentDidMount() {
+    const { viewer, navigator } = this.props
+    const { edges } = viewer.insights
+    if (edges.length === 0) {
+      navigator.push({
+        scene: 'questionnaire',
+        title: '',
+      })
+    }
   }
 
   componentWillReceiveProps (nextProps) {
-    const { insights } = nextProps.viewer;
+    //const { insights } = nextProps.viewer;
     //const thisInsights = this.props.viewer.insights;
 
     /*if ( insights.edges.length != thisInsights.edges.length ) {
      this.state.listInsights = insights.edges;
      }*/
-    if (insights.edges.length === 0) {
-      this.props.navigator.resetTo({
-        scene: 'insights',
-        filter: 'UNRATED',
-      })
-    }
+    //if (insights.edges.length === 0) {
+    //  this.props.navigator.resetTo({
+    //    scene: 'insights',
+    //    filter: 'UNRATED',
+    //  })
+    //}
   }
 
   componentWillMount() {
@@ -149,6 +159,7 @@ class FollowUp extends Component {
    * @returns {XML}
    */
   render () {
+    const { viewer } = this.props
     const {
       scrollEnabled,
       is_empty,
@@ -156,17 +167,17 @@ class FollowUp extends Component {
       listInsights,
       dataSource
     } = this.state;
-
-    if ( is_empty || !listInsights.length ) {
-      return <Empty />
+    const { edges } = viewer.insights
+    if (edges.length === 0) {
+      return (
+        <Loader />
+      )
     }
-
     const _scroll = ScrollHandler.bind(this, {
       isLoadingTail,
       callback: this._onEndReached,
       onEndReachedThreshold: 16
     });
-
     return (
       <View style={ styles.container }>
         <ScrollView
@@ -177,48 +188,42 @@ class FollowUp extends Component {
           scrollEnabled={scrollEnabled}
           showsVerticalScrollIndicator={true}>
           <ButtonsBoris />
-
           <ListView
             enableEmptySections={true}
             dataSource={dataSource.cloneWithRows(listInsights)}
             renderRow={(rowData, sectionID, rowID) => this._renderInsight(rowData, sectionID, rowID)}
             isLoadingTail={isLoadingTail}
             renderHeader={this.renderHeader}
-            style={[styles.scroll, {paddingTop: device.size(220)}]}/>
+            style={[styles.scroll, {paddingTop: device.size(220)}]}
+            />
         </ScrollView>
       </View>
     )
   }
 }
 
-const ButtonsBoris = (props) => (
-  <View style={ styles.borisContainer }>
-    <Boris mood="positive" size="small" note={ BorisNoteForSubscription }/>
+const ButtonsBoris = props => (
+  <View style={styles.borisContainer}>
+    <Boris mood="positive" size="small" note={BORIS_NOTE}/>
   </View>
 )
 
-export default Relay.createContainer(FollowUp, {
+export default Relay.createContainer(FollowUpScene, {
   initialVariables: {
-    count: 50,
-    filter: 'RATED',
+    count: 100,
+    filter: 'FOLLOWUPS',
   },
   fragments: {
     viewer: () => Relay.QL`
       fragment on User {
-        insights(first: $count, filter: $filter) {
+        insights(first: $count, filter: $filter)  {
           edges {
-            node {
-              id
-              content
-              origin {
-                author
-                url
-                title
-                duration
-              }
-            }
             topic {
               id
+              name
+            }
+            node {
+              ${insightFragment}
             }
           }
           pageInfo {
@@ -226,6 +231,6 @@ export default Relay.createContainer(FollowUp, {
           }
         }
       }
-    `
-  }
+    `,
+  },
 })

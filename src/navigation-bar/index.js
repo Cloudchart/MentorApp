@@ -125,8 +125,12 @@ export function routeMapper() {
               />
           )
         case 'follow-up':
+          const nextRoute = {
+            scene: 'questionnaire',
+            title: '',
+          }
           return (
-            <Skip navigator={navigator} route={route}/>
+            <Skip onPress={() => navigator.push(nextRoute)}/>
           )
         case 'insights':
           if (route.filter === 'UNRATED') {
@@ -163,20 +167,12 @@ const Add = () => {
   )
 }
 
-const Skip = ({ navigator, route, title }) => {
-  const handleSkipPress = () => {
-    const customProps = route.buttonSkipProps || {}
-    navigator.replace({
-      scene: route.buttonSkip,
-      title: title || '',
-      ...customProps,
-    })
-  }
+const Skip = ({ onPress }) => {
   return (
     <TouchableOpacity
       activeOpacity={0.75}
       style={styles.crumbIconPlaceholder}
-      onPress={() => handleSkipPress()}
+      onPress={() => onPress && onPress()}
       >
       <Text style={[styles.navBarText, {color : '#2a9ce0'}]}>
         Skip

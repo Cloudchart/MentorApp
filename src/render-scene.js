@@ -149,7 +149,7 @@ export default function renderScene(route, navigator) {
       return renderSceneContainer(NotificationsScene, screenParams)
     case 'profile':
       return renderSceneContainer(ProfileScene, screenParams)
-    case 'return_to_app':
+    case 'return-to-app':
       return renderSceneContainer(ReturnToApp, screenParams)
     default:
       return null

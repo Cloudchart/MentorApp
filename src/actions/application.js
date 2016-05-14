@@ -22,7 +22,6 @@ export const USER_TURN_NOTIFICATIONS = 'USER_TURN_NOTIFICATIONS'
 export const UPDATE_APP_START_TIME = '@AsyncStorage:UPDATE_APP_START_TIME'
 export const UPDATE_APP_BACKGROUND_TIME = '@AsyncStorage:APP_BACKGROUND_TIME'
 export const UPDATE_APP_INACTIVE_TIME = '@AsyncStorage:APP_INACTIVE_TIME'
-export const NOTIFICATIONS_PERMISSION_STATUS = '@AsyncStorage:notification'
 
 export function setUsefulAction(data) {
   return {

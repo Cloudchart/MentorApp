@@ -5,16 +5,16 @@ import React, {
   AsyncStorage,
   NetInfo
 } from 'react-native'
-import { NOTIFICATIONS_PERMISSION_STATUS } from './actions/application'
+import { NOTIFICATIONS__PERMISSIONS_STATUS } from './storage'
 
 /**
  * @returns {Promise|void}
  */
 export async function checkPermissions() {
   try {
-    const notificationsStatus = await AsyncStorage.getItem(NOTIFICATIONS_PERMISSION_STATUS)
-    const isNotificationsAllowed = await getNotificationPermission()
-    const isNotificationsRequested = (notificationsStatus === 'already_request_permissions')
+    const permissionsStatus = await AsyncStorage.getItem(NOTIFICATIONS__PERMISSIONS_STATUS)
+    const isNotificationsAllowed = await getNotificationsPermission()
+    const isNotificationsRequested = (permissionsStatus === 'already_requested')
     if (isNotificationsRequested && !isNotificationsAllowed) {
       AlertIOS.alert(
         'Notification Received',

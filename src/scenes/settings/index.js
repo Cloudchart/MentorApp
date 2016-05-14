@@ -3,17 +3,20 @@ import React, {
   Text,
   TouchableOpacity,
   View,
-  ListView
+  ListView,
+  AsyncStorage,
 } from 'react-native'
 import Relay from 'react-relay'
-import { Button, FBLoginButton, Loader } from '../../components'
+import { APPLICATION__IS_FIRST_LAUNCH } from '../../storage'
+import { Button, FBLoginButton } from '../../components'
+import Loader from '../../components/loader'
 import styles from './style'
 import { getGradient } from '../../utils/colors'
-import { resetUser } from '../../actions/user'
 import ViewerRoute from '../../routes/viewer'
 import ResetUserMutation from '../../mutations/reset-user'
 
 export default class SettingsScene extends Component {
+
   static defaultProps = {
     menuItems: [{
       id: 0,
@@ -45,34 +48,37 @@ export default class SettingsScene extends Component {
     })
     this.state = {
       menuDataSource: basicDataSource.cloneWithRows(props.menuItems),
+      isPending: false
     }
   }
 
-  handleResetUserSuccess() {
-    const { relay, navigator } = this.props
-    relay.forceFetch(null, readyState => {
-      if (readyState.done) {
-        navigator.replace({
-          scene: 'welcome',
-          title: 'Virtual Mentor',
-        })
-      }
+  handleResetSettingsSuccess() {
+    const { navigator } = this.props
+    this.setState({
+      isPending: true,
+    })
+    AsyncStorage.setItem(APPLICATION__IS_FIRST_LAUNCH, '', () => {
+      navigator.replace({
+        scene: 'welcome',
+        title: 'Virtual Mentor',
+      })
     })
   }
 
-  handleItemPress(menuItem, viewer) {
-    const { navigator } = this.props
-    if (menuItem.name == 'Reset settings') {
-      if (viewer) {
-        const mutation = new ResetUserMutation({
-          user: viewer,
-        })
-        Relay.Store.commitUpdate(mutation, {
-          onSuccess: () => this.handleResetUserSuccess(),
-        })
-      }
-      return
-    }
+  handleResetSettingsPress(data, relay) {
+    console.log({ data, relay })
+    const mutation = new ResetUserMutation({
+      user: data.viewer,
+    })
+    Relay.Store.commitUpdate(mutation, {
+      onSuccess: () => {
+        relay.forceFetch()
+        this.handleResetSettingsSuccess()
+      },
+    })
+  }
+
+  handleItemPress(menuItem) {
     navigator.push({
       scene: menuItem.screen,
       title: menuItem.name,
@@ -87,17 +93,38 @@ export default class SettingsScene extends Component {
   }
 
   _renderButtons(rowData, sectionID, rowID) {
+    if (rowData.name === 'Reset settings') {
+      return (
+        <Relay.RootContainer
+          Component={ResetSettingsMenuItemContainer}
+          route={new ViewerRoute()}
+          renderFetched={data => (
+            <ResetSettingsMenuItemContainer
+              {...data}
+              {...rowData}
+              rowID={rowID}
+              onPress={relay => this.handleResetSettingsPress(data, relay)}
+              />
+          )}
+          />
+      )
+    }
     return (
       <SettingsMenuItem
         {...rowData}
         rowID={rowID}
-        onPress={() => this.handleItemPress(rowData, this.state.viewer)}
+        onPress={() => this.handleItemPress(rowData)}
         />
     )
   }
 
   render() {
-    const { menuDataSource } = this.state
+    const { isPending, menuDataSource } = this.state
+    if (isPending) {
+      return (
+        <Loader />
+      )
+    }
     return (
       <View style={styles.container}>
         <ListView
@@ -134,6 +161,29 @@ const SettingsMenuItem = ({ rowID, name, onPress, viewer }) => (
   </TouchableOpacity>
 )
 
+// Stateful Component to get Relay instance
+class ResetSettingsMenuItem extends Component {
+  render() {
+    const { props } = this
+    const patchedProps = {
+      ...props,
+      onPress: () => props.onPress && props.onPress(props.relay),
+    }
+    return SettingsMenuItem(patchedProps)
+  }
+}
+const ResetSettingsMenuItemContainer = Relay.createContainer(ResetSettingsMenuItem, {
+  fragments: {
+    viewer: () => Relay.QL`
+      fragment on User {
+        id
+        email
+        name
+      }
+    `,
+  },
+})
+
 const LoginLogoutButton = ({ viewer, onLogout, onViewerReady }) => {
   return (
     <FBLoginButton
@@ -152,6 +202,6 @@ const ProfileLoginLogoutButton = Relay.createContainer(LoginLogoutButton, {
         email
         name
       }
-    `
+    `,
   },
 })

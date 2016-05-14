@@ -18,7 +18,7 @@ import Relay from 'react-relay'
 import { getNotificationsPermission } from '../../system'
 import { Boris, Button, Loader, Topic, ScrollListView } from '../../components'
 import SubscribeTopicAdd from '../../components/confirmation-screens/subscribe-topic-add'
-import { NOTIFICATIONS_PERMISSION_STATUS } from '../../actions/application'
+import { NOTIFICATIONS__PERMISSIONS_STATUS } from '../../storage'
 import * as device from '../../utils/device'
 import styles from './style'
 import { _flex } from '../../styles/base'
@@ -127,7 +127,7 @@ class SelectTopicScene extends Component {
     const { navigator } = this.props
     let notificationsStatus
     try {
-      notificationsStatus = await AsyncStorage.getItem(NOTIFICATIONS_PERMISSION_STATUS)
+      notificationsStatus = await AsyncStorage.getItem(NOTIFICATIONS__PERMISSIONS_STATUS)
     } catch (e) {
       // nothing
     }

@@ -1,10 +1,12 @@
 import React, {
   Component,
+  AsyncStorage,
   View,
   Text,
 } from 'react-native'
 import Relay from 'react-relay'
 import { Boris, Button, TransparentButton, FBLoginButton } from '../../components'
+import { APPLICATION__IS_FIRST_LAUNCH } from '../../storage'
 import styles from './style'
 
 const BORIS_PROMPT_MESSAGE =
@@ -53,17 +55,21 @@ class ConnectScene extends Component {
   handleNextPress() {
     const { navigator, viewer } = this.props
     const { questions, topics } = viewer
-    if (questions.edges.length === 0) {
-      navigator.push({
-        scene: 'select_topics',
-        title: `Select up to ${topics.availableSlotsCount} topics to start:`,
-      })
-    } else {
-      navigator.push({
-        scene: 'questionnaire',
-        title: '',
-      })
-    }
+    AsyncStorage.setItem(APPLICATION__IS_FIRST_LAUNCH, 'false', () => {
+      if (questions.edges.length === 0) {
+        navigator.push({
+          scene: 'select_topics',
+          title: `Select up to ${topics.availableSlotsCount} topics to start:`,
+          isFirstLaunch: true,
+        })
+      } else {
+        navigator.push({
+          scene: 'questionnaire',
+          title: '',
+          isFirstLaunch: true,
+        })
+      }
+    })
   }
 
   render() {

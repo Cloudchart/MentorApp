@@ -66,7 +66,6 @@ export default class SettingsScene extends Component {
   }
 
   handleResetSettingsPress(data, relay) {
-    console.log({ data, relay })
     const mutation = new ResetUserMutation({
       user: data.viewer,
     })
@@ -79,7 +78,7 @@ export default class SettingsScene extends Component {
   }
 
   handleItemPress(menuItem) {
-    navigator.push({
+    this.props.navigator.push({
       scene: menuItem.screen,
       title: menuItem.name,
     })

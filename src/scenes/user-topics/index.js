@@ -49,7 +49,7 @@ class UserTopicsScene extends Component {
   componentDidMount() {
     const { viewer } = this.props
     this.setState({
-      dataSource: this._getTopicsDataSource(viewer.subscribedTopics),
+      dataSource: this._getDataSource(viewer.subscribedTopics),
     })
   }
 
@@ -58,18 +58,17 @@ class UserTopicsScene extends Component {
     if (nextProps.viewer.subscribedTopics !== viewer.subscribedTopics) {
       const { subscribedTopics } = nextProps.viewer
       this.setState({
-        dataSource: this._getTopicsDataSource(subscribedTopics),
+        dataSource: this._getDataSource(subscribedTopics),
       })
     }
   }
 
-  _getTopicsDataSource(topics) {
+  _getDataSource(topics) {
     const { dataSource } = this.state
     const filteredTopics = topics.edges.filter(topic => (
         !topic.node.isSubscribedByViewer)
     )
-    this._topicsData = (this._topicsData || []).concat(filteredTopics)
-    return dataSource.cloneWithRows(this._topicsData)
+    return dataSource.cloneWithRows(filteredTopics)
   }
 
   handleSubscribePress() {

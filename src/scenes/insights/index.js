@@ -104,7 +104,7 @@ export default Relay.createContainer(InsightsScene, {
         subscribedTopics: topics(first: 1, filter: SUBSCRIBED) {
           edges {
             node {
-              isFinishedByViewer
+              id
             }
           }
         }

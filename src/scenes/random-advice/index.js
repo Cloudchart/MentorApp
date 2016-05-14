@@ -7,7 +7,7 @@ import React, {
 } from 'react-native'
 import Relay from 'react-relay'
 import _ from 'lodash'
-import { Boris, Button, TransparentButton } from '../../components/index'
+import { Boris, Button } from '../../components/index'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import styles from '../../styles/base'
 import { commentStyle, allForNowStyle, topicFinished } from './styles'

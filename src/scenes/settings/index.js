@@ -96,10 +96,10 @@ export default class SettingsScene extends Component {
     if (rowData.name === 'Reset settings') {
       return (
         <Relay.RootContainer
-          Component={ResetSettingsMenuItemContainer}
+          Component={ResetSettingsMenuItem}
           route={new ViewerRoute()}
           renderFetched={data => (
-            <ResetSettingsMenuItemContainer
+            <ResetSettingsMenuItem
               {...data}
               {...rowData}
               rowID={rowID}
@@ -149,30 +149,19 @@ export default class SettingsScene extends Component {
   }
 }
 
-const SettingsMenuItem = ({ rowID, name, onPress, viewer }) => (
+const SettingsMenuItem = props => (
   <TouchableOpacity
-    onPress={onPress}
+    onPress={() => props.onPress(props.relay)}
     activeOpacity={0.75}
-    style={[styles.item, { backgroundColor: getGradient('green', rowID) }]}
+    style={[styles.item, { backgroundColor: getGradient('green', props.rowID) }]}
     >
     <Text style={styles.itemText}>
-      {name}
+      {props.name}
     </Text>
   </TouchableOpacity>
 )
 
-// Stateful Component to get Relay instance
-class ResetSettingsMenuItem extends Component {
-  render() {
-    const { props } = this
-    const patchedProps = {
-      ...props,
-      onPress: () => props.onPress && props.onPress(props.relay),
-    }
-    return SettingsMenuItem(patchedProps)
-  }
-}
-const ResetSettingsMenuItemContainer = Relay.createContainer(ResetSettingsMenuItem, {
+const ResetSettingsMenuItem = Relay.createContainer(SettingsMenuItem, {
   fragments: {
     viewer: () => Relay.QL`
       fragment on User {

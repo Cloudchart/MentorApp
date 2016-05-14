@@ -28,7 +28,6 @@ const showBackIconInScenes = [
   'user-collections',
   'subscription',
   'replace-topic',
-  'questionnaire',
   'profile',
   'user-topics',
   'explore-topic',

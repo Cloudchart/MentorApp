@@ -9,9 +9,13 @@ import React, {
 } from 'react-native'
 import Relay from 'react-relay'
 import { Boris, Answers, ScrollListView, Loader } from '../../components'
-import { answerTheQuestion } from '../../actions/questions'
+import Button from '../../components/button'
+import {
+  CommentGood,
+  CommentBad,
+} from '../../components/confirmation-screens/insights-parts'
 import AnswerTheQuestionMutation from '../../mutations/answer-the-question'
-import styles from './style'
+import styles, { reactionStyles } from './style'
 
 const PAGE_SIZE = 30
 const getBorisNoteForQuestion = ({ content }) => (
@@ -28,14 +32,13 @@ class QuestionnaireScene extends Component {
         rowHasChanged: (row1, row2) => row1 !== row2,
       }),
       isAnswerPending: false,
-      answerReaction: null,
+      lastAnswerReaction: null,
     }
   }
 
   componentDidMount() {
     const { viewer, navigator, isFirstLaunch } = this.props
     const { edges } = viewer.questions
-    console.log(Object.keys(this.props))
     if (edges.length === 0) {
       if (isFirstLaunch) {
         const { availableSlotsCount } = viewer.topics
@@ -120,36 +123,30 @@ class QuestionnaireScene extends Component {
           const { questionIndex } = this.state
           const { answers } = questions.edges[questionIndex].node
           // try to get reaction for the answer
+          let isFinished = true
           answers.edges.forEach(({ node }) => {
             if (node.id === answerID && node.reaction) {
+              isFinished = false
               this.setState({
-                answerReaction: node.reaction,
-                isAnswerPending: false,
+                lastAnswerReaction: node.reaction,
               })
             }
           })
           // try to seek to the next question
           if (questions.edges[questionIndex + 1]) {
+            isFinished = false
             this.setState({
               questionIndex: questionIndex + 1,
+            })
+            return
+          }
+          if (isFinished === false) {
+            this.setState({
               isAnswerPending: false,
             })
             return
           }
-          let sceneAndScreenParams
-          if (goAfterFinish) {
-            sceneAndScreenParams = {
-              scene: goAfterFinish,
-              ...goAfterFinishProps,
-            }
-          } else {
-            const { availableSlotsCount } = topics
-            sceneAndScreenParams = {
-              scene: 'select_topics',
-              title: 'Select up to ' + availableSlotsCount + ' topics to start:',
-            }
-          }
-          navigator.push(sceneAndScreenParams)
+          this._showNextScreen()
         } else {
           this.setState({
             isAnswerPending: false,
@@ -159,10 +156,34 @@ class QuestionnaireScene extends Component {
       onFailure: () => {
         this.setState({
           isAnswerPending: false,
-          answerReaction: null,
+          lastAnswerReaction: null,
         })
       }
     })
+  }
+
+  handleConfirmReactionPress() {
+    const { viewer } = this.props
+    const { questionIndex } = this.state
+    if (viewer.questions.edges[questionIndex + 1]) {
+      this.setState({
+        questionIndex: questionIndex + 1,
+        lastAnswerReaction: null,
+      })
+      return
+    }
+    this._showNextScreen()
+  }
+
+  _showNextScreen() {
+    const { viewer, navigator } = this.props
+    const { topics } = viewer
+    const { availableSlotsCount } = topics
+    const nextRoute = {
+      scene: 'select_topics',
+      title: 'Select up to ' + availableSlotsCount + ' topics to start:',
+    }
+    navigator.push(nextRoute)
   }
 
   _renderAnswer(rawData, sectionID, rowID) {
@@ -179,7 +200,7 @@ class QuestionnaireScene extends Component {
   }
 
   render () {
-    const { isLoadingTail, questionIndex, isAnswerPending, answerReaction } = this.state
+    const { isLoadingTail, questionIndex, isAnswerPending, lastAnswerReaction } = this.state
     const { questions } = this.props.viewer
     const question =
       questions.edges[questionIndex] &&
@@ -192,8 +213,30 @@ class QuestionnaireScene extends Component {
         <Loader />
       )
     }
-    if (answerReaction) {
-      // we can handle it here
+    if (lastAnswerReaction) {
+      return (
+        <View style={reactionStyles.container}>
+          <View style={reactionStyles.borisContainer}>
+            <Boris
+              mood={lastAnswerReaction.mood}
+              notAnimate={true}
+              size="small"
+              note={lastAnswerReaction.content}
+              randomId={(Math.random(1000) * 100).toString(16)}
+              />
+          </View>
+          <Button
+            label=""
+            color="green"
+            onPress={() => this.handleConfirmReactionPress()}
+            style={reactionStyles.button}
+            >
+            <Text style={reactionStyles.buttonText}>
+              Got it
+            </Text>
+          </Button>
+        </View>
+      )
     }
     const answers = question.answers.edges
     return (

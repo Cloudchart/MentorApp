@@ -1,6 +1,7 @@
 import Relay from 'react-relay'
 
 export default class MarkInsightUselessInCollectionMutation extends Relay.Mutation {
+
   getMutation() {
     return Relay.QL`mutation { markInsightUselessInCollection }`
   }

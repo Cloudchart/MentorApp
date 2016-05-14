@@ -202,8 +202,7 @@ export default class Application extends Component {
       }
     } else {
       initialRoute = {
-        scene: 'follow-up',
-        title: 'Rate used advice',
+        scene: 'starter',
       }
     }
     return (

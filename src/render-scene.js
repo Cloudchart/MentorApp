@@ -22,6 +22,7 @@ import FollowUpScene from './scenes/follow-up'
 import NotificationsScene from './scenes/notifications'
 import ProfileScene from './scenes/profile'
 import ReturnToApp from './scenes/return-to-app'
+import StarterScene from './scenes/starter'
 
 /**
  * @param {Function} Component
@@ -78,6 +79,8 @@ export default function renderScene(route, navigator) {
   switch (scene) {
     case 'welcome':
       return renderSceneContainer(WelcomeScene, screenParams)
+    case 'starter':
+      return renderSceneContainer(StarterScene, screenParams)
     case 'connect':
       return renderSceneContainer(ConnectScene, screenParams)
     case 'questionnaire':

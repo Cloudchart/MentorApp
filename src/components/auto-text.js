@@ -49,11 +49,14 @@ export default class AutoText extends Component {
 
   _tryNewSize() {
     requestAnimationFrame(() => {
-      measureLayoutRelativeToParent(
-        React.findNodeHandle(this._text),
-        () => React.AlertIOS.alert('ERROR!'),
-        (x, y, width, height) => this._checkSize(width, height)
-      )
+      const node = React.findNodeHandle(this._text)
+      if (node) {
+        measureLayoutRelativeToParent(
+          node,
+          () => React.AlertIOS.alert('ERROR!'),
+          (x, y, width, height) => this._checkSize(width, height)
+        )
+      }
     })
   }
 

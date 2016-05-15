@@ -24,6 +24,7 @@ import DislikeInsightInTopicMutation from '../../mutations/dislike-insight-in-to
 import styles from './../user-insights/style'
 import * as device from '../../utils/device'
 
+const PAGE_SIZE = 30
 const BORIS_NOTE =
   'Hello, master. I sincerely hope you\'ve put these advices to work. ' +
   'Now review them: did they work for you?'
@@ -34,16 +35,12 @@ const dataSource = new ListView.DataSource({
 
 class FollowUpScene extends Component {
 
-  constructor(props) {
-    super(props)
-    this.PAGE_SIZE = 30;
-    this.saveTimeout = null;
-    this._onEndReached = this._onEndReached.bind(this);
+  constructor(props, context) {
+    super(props, context)
     this.state = {
       listInsights: [],
       scrollEnabled: true,
       isLoadingTail: false,
-      random: (Math.random(1000) * 100).toString(16),
     }
   }
 
@@ -56,9 +53,23 @@ class FollowUpScene extends Component {
         title: '',
       })
     }
+    this.setState({
+      listInsights: edges,
+      dataSource: dataSource.cloneWithRows(edges),
+    })
   }
 
-  componentWillReceiveProps (nextProps) {
+  componentWillReceiveProps(nextProps) {
+    const { viewer } = this.props
+    if (nextProps.viewer.insights !== viewer.insights) {
+      const { insights } = nextProps.viewer
+      this.setState({
+        dataSource: dataSource.cloneWithRows(insights.edges),
+      })
+    }
+  }
+
+  //componentWillReceiveProps (nextProps) {
     //const { insights } = nextProps.viewer;
     //const thisInsights = this.props.viewer.insights;
 
@@ -71,37 +82,31 @@ class FollowUpScene extends Component {
     //    filter: 'UNRATED',
     //  })
     //}
-  }
+  //}
 
-  componentWillMount() {
-    const { viewer } = this.props
-    this.setState({
-      listInsights: viewer.insights.edges,
-      dataSource: dataSource.cloneWithRows(viewer.insights.edges),
+  handleEndReached() {
+    const { relay, viewer } = this.props
+    let pageNext = viewer.insights.pageInfo
+    let count = relay.variables.count
+    if ( !pageNext || !pageNext.hasNextPage ) {
+      return
+    }
+    this.setState({ isLoadingTail: true })
+    relay.setVariables({ count: count + PAGE_SIZE }, transaction => {
+      if (transaction.done) {
+        this.setState({
+          isLoadingTail: false,
+        })
+      }
     })
   }
 
-  _onEndReached() {
-    const { relay, viewer } = this.props;
-    let pageNext = viewer.insights.pageInfo;
-    let count = relay.variables.count;
-
-    if ( !pageNext || !pageNext.hasNextPage ) {
-      return;
-    }
-
-    this.setState({ isLoadingTail: true });
-    relay.setVariables({ count: count + this.PAGE_SIZE }, (transaction) => {
-      if ( transaction.done ) this.setState({ isLoadingTail: false })
-    });
-  }
-
-  renderHeader () {
-    return null;
+  renderHeader() {
+    return null
   }
 
   handleItWorksPress(insight, topic) {
-    console.log({ insight, topic })
+    console.log('handleItWorksPress', { insight, topic })
     const mutation = new LikeInsightInTopicMutation({
       insight,
       topic,
@@ -115,6 +120,7 @@ class FollowUpScene extends Component {
   }
 
   handleDidNotWorkPress(insight, topic) {
+    console.log('handleDidNotWorkPress', { insight, topic })
     const mutation = new DislikeInsightInTopicMutation({
       insight,
       topic,
@@ -127,36 +133,32 @@ class FollowUpScene extends Component {
   }
 
   filterLike(tran) {
-    const { likeInsightInTopic } = tran;
-    const listInsights = [ ...this.state.listInsights ];
+    const { likeInsightInTopic } = tran
+    const listInsights = [ ...this.state.listInsights ]
     listInsights.forEach((item) => {
-      if ( item.node.id == likeInsightInTopic.insight.id ) {
+      if (item.node.id == likeInsightInTopic.insight.id) {
         item.node.like = true;
         item.node.dislike = false;
       }
-    });
-
+    })
     this.setState({
       listInsights: [ ...listInsights ],
-      random: (Math.random(1000) * 100).toString(16)
     });
   }
 
-  filterDisLike (tran) {
-    const { dislikeInsightInTopic } = tran;
-    const listInsights = [ ...this.state.listInsights ];
+  filterDisLike(tran) {
+    const { dislikeInsightInTopic } = tran
+    const listInsights = [ ...this.state.listInsights ]
     listInsights.forEach((item) => {
-      if ( item.node.id == dislikeInsightInTopic.insight.id ) {
-        item.node.dislike = true;
-        item.node.like = false;
-        return item.node;
+      if (item.node.id == dislikeInsightInTopic.insight.id) {
+        item.node.dislike = true
+        item.node.like = false
+        return item.node
       }
-    });
-
+    })
     this.setState({
       listInsights: [ ...listInsights ],
-      random: (Math.random(1000) * 100).toString(16)
-    });
+    })
   }
 
   _renderInsight(rowData, sectionID, rowID) {
@@ -167,7 +169,7 @@ class FollowUpScene extends Component {
         fontSize={20}
         itWorks={() => this.handleItWorksPress(rowData.node, rowData.topic)}
         didNotWork={() => this.handleDidNotWorkPress(rowData.node, rowData.topic)}
-        onPressCard={this._onPressCard}
+        onPressCard={() => false}
         />
     )
   }
@@ -176,13 +178,9 @@ class FollowUpScene extends Component {
    *s
    * @returns {XML}
    */
-  render () {
+  render() {
     const { viewer } = this.props
-    const {
-      scrollEnabled,
-      isLoadingTail,
-      listInsights,
-    } = this.state;
+    const { scrollEnabled, isLoadingTail, listInsights } = this.state
     const { edges } = viewer.insights
     if (edges.length === 0) {
       return (
@@ -191,25 +189,27 @@ class FollowUpScene extends Component {
     }
     const _scroll = ScrollHandler.bind(this, {
       isLoadingTail,
-      callback: this._onEndReached,
-      onEndReachedThreshold: 16
+      callback: () => this.handleEndReached(),
+      onEndReachedThreshold: 16,
     });
     return (
-      <View style={ styles.container }>
+      <View style={styles.container}>
         <ScrollView
           onScroll={_scroll}
-          ref="_scrollView"
           automaticallyAdjustContentInsets={false}
           scrollEventThrottle={16}
           scrollEnabled={scrollEnabled}
-          showsVerticalScrollIndicator={true}>
-          <ButtonsBoris />
+          showsVerticalScrollIndicator={true}
+          >
+          <View style={styles.borisContainer}>
+            <Boris mood="positive" size="small" note={BORIS_NOTE}/>
+          </View>
           <ListView
             enableEmptySections={true}
             dataSource={dataSource.cloneWithRows(listInsights)}
             renderRow={(rowData, sectionID, rowID) => this._renderInsight(rowData, sectionID, rowID)}
             isLoadingTail={isLoadingTail}
-            renderHeader={this.renderHeader}
+            renderHeader={() => this.renderHeader()}
             style={[styles.scroll, {paddingTop: device.size(220)}]}
             />
         </ScrollView>
@@ -217,12 +217,6 @@ class FollowUpScene extends Component {
     )
   }
 }
-
-const ButtonsBoris = props => (
-  <View style={styles.borisContainer}>
-    <Boris mood="positive" size="small" note={BORIS_NOTE}/>
-  </View>
-)
 
 export default Relay.createContainer(FollowUpScene, {
   initialVariables: {

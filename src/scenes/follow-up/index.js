@@ -63,26 +63,17 @@ class FollowUpScene extends Component {
     const { viewer } = this.props
     if (nextProps.viewer.insights !== viewer.insights) {
       const { insights } = nextProps.viewer
+      if (insights.edges.length === 0) {
+        navigator.push({
+          scene: 'questionnaire',
+          title: '',
+        })
+      }
       this.setState({
         dataSource: dataSource.cloneWithRows(insights.edges),
       })
     }
   }
-
-  //componentWillReceiveProps (nextProps) {
-    //const { insights } = nextProps.viewer;
-    //const thisInsights = this.props.viewer.insights;
-
-    /*if ( insights.edges.length != thisInsights.edges.length ) {
-     this.state.listInsights = insights.edges;
-     }*/
-    //if (insights.edges.length === 0) {
-    //  this.props.navigator.resetTo({
-    //    scene: 'insights',
-    //    filter: 'UNRATED',
-    //  })
-    //}
-  //}
 
   handleEndReached() {
     const { relay, viewer } = this.props

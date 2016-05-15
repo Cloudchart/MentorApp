@@ -88,6 +88,7 @@ class UserInsightsScene extends Component {
     if (!note) {
       note = (filter === 'USEFUL') ? BORIS_NOTE_FOR_USEFUL : BORIS_NOTE_FOR_USELESS
     }
+    console.log('userInsights', filter, { node })
     return (
       <View style={styles.container}>
         <ScrollView
@@ -117,7 +118,6 @@ const ButtonsBoris = ({ note }) => (
 
 export default Relay.createContainer(UserInsightsScene, {
   initialVariables: {
-    count: 100,
     filter: 'USEFUL',
   },
   fragments: {
@@ -125,7 +125,7 @@ export default Relay.createContainer(UserInsightsScene, {
       fragment on UserCollection {
         id
         description
-        insights(first: $count, filter: $filter) {
+        insights(first: 100, filter: $filter) {
           usefulCount
           uselessCount
           edges {

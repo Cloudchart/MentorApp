@@ -44,17 +44,29 @@ export default class AutoText extends Component {
 
   componentDidMount() {
     // Convert this to async/await function so I can process synchronously in loop
+    this._isMounted = true
     this._tryNewSize()
+  }
+
+  componentWillUnmount() {
+    this._isMounted = false
   }
 
   _tryNewSize() {
     requestAnimationFrame(() => {
+      if (!this._isMounted) {
+        return
+      }
       const node = React.findNodeHandle(this._text)
       if (node) {
         measureLayoutRelativeToParent(
           node,
           () => React.AlertIOS.alert('ERROR!'),
-          (x, y, width, height) => this._checkSize(width, height)
+          (x, y, width, height) => {
+            if (this._isMounted) {
+              this._checkSize(width, height)
+            }
+          }
         )
       }
     })
@@ -66,46 +78,30 @@ export default class AutoText extends Component {
     if (this.props.maxHeight !== undefined) {
       if (height > this.props.maxHeight) {
         if (fontSize == 0.5) {
-          try {
-            this.setState({
-              isScalingComplete: true,
-            }, () => {
-              if (onComplete) {
-                onComplete(height)
-              }
-            })
-          } catch (e) {
-            if (onComplete) {
-              onComplete(height)
-            }
-          }
-        } else {
-          try {
-            this.setState({
-              fontSize: fontSize - 0.5,
-              //isScalingComplete: true,
-            })
-          } catch (e) {
-            // nothing
-          }
-          this._tryNewSize()
-        }
-      } else if (this.state.isScalingComplete === false) {
-        try {
           this.setState({
-            //fontSize: fontSize + 0.5,
             isScalingComplete: true,
           }, () => {
             if (onComplete) {
-              onComplete({fontSize, height})
+              onComplete(height)
             }
           })
-          //this._tryNewSize()
-        } catch (e) {
+        } else {
+          this.setState({
+            fontSize: fontSize - 0.5,
+            //isScalingComplete: true,
+          })
+          this._tryNewSize()
+        }
+      } else if (this.state.isScalingComplete === false) {
+        this.setState({
+          //fontSize: fontSize + 0.5,
+          isScalingComplete: true,
+        }, () => {
           if (onComplete) {
             onComplete({fontSize, height})
           }
-        }
+        })
+        //this._tryNewSize()
       }
     }
   }

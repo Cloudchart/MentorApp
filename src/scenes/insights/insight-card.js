@@ -276,7 +276,7 @@ class InsightCard extends Component {
 
   _renderCard() {
     const { navigator, insight } = this.props
-    const { isDetailsVisible } = this.state
+    const { isScaling, isDetailsVisible } = this.state
     const {
       _top,
       _pan,
@@ -358,6 +358,7 @@ class InsightCard extends Component {
             navigator={navigator}
             insight={insight.node}
             onCardPress={() => this.handleCardPress()}
+            onScalingStateChange={isScaling => this.setState({ isScaling })}
             />
         </Animated.View>
         <View style={popupToolbarStyle}>
@@ -372,7 +373,7 @@ class InsightCard extends Component {
             </View>
           </Animated.View>
         </View>
-        {(isDetailsVisible === false) && (
+        {!isScaling && !isDetailsVisible && (
           <RateButtons
             handlePositive={_.throttle(() => this.handleLikePress(), 700)}
             handleNegative={_.throttle(() => this.handleDislikePress(), 700)}

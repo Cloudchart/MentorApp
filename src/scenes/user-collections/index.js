@@ -394,7 +394,7 @@ export default Relay.createContainer(ReduxComponent, {
             node {
               id
               name
-              insights(first: 3, filter : $filter) {
+              insights(first: 3, filter: $filter) {
                 count
                 usefulCount
                 uselessCount

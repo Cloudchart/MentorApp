@@ -12,6 +12,7 @@ import React, {
   Dimensions,
 } from 'react-native'
 import Icon from 'react-native-vector-icons/FontAwesome'
+import Loader from '../../components/loader'
 import Filters from '../../utils/filters'
 import { Presets } from '../../utils/animation'
 import Url from 'url'
@@ -25,7 +26,6 @@ const BASIC_FONT_SIZE = 34
 
 function getAdjustedFontSize(content, baseContentLength, fontSize) {
   const minFontSize = 14;
-  console.log(content.length)
   if (content.length > baseContentLength) {
     let ratio = content.length / baseContentLength;
     let percentFontSize = Math.ceil(fontSize / ratio);
@@ -177,7 +177,7 @@ class Insight extends Component {
     })
     this._isLayoutAnimationRun = false
     this.state = {
-      isScaling: null,
+      isScaling: false,
       scaledFontSize: null,
       rowHeight: 0,
       visibility: 0,
@@ -197,6 +197,15 @@ class Insight extends Component {
         isScaling: true,
         scaledFontSize: null,
       })
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    const { onScalingStateChange } = this.props
+    const { isScaling } = this.state
+    if (isScaling !== prevState.isScaling) {
+      console.log({ isScaling })
+      onScalingStateChange && onScalingStateChange(isScaling)
     }
   }
 
@@ -294,13 +303,18 @@ class Insight extends Component {
     const basicFontSize = getAdjustedFontSize(finalContent, BASIC_CONTENT_LENGTH, BASIC_FONT_SIZE)
     const insightTextStyle = [
       styles.itemText,
-      isScaling && styles.itemTextScaling,
       { fontSize: scaledFontSize || basicFontSize },
+      isScaling && styles.itemTextScaling,
+    ]
+    const containerStyles = [
+      styles.item,
+      this.props.style,
+      isScaling && styles.itemScaling,
     ]
     return (
       <TouchableOpacity
         activeOpacity={0.75}
-        style={[styles.item, this.props.style]}
+        style={containerStyles}
         onPress={this._onCardPress}
         >
         {isScaling && (
@@ -315,12 +329,17 @@ class Insight extends Component {
             </AutoText>
           </View>
         )}
-        <View style={[styles.itemInner]}>
-          <Text style={insightTextStyle}>
-            {finalContent}
-          </Text>
-        </View>
-        {origin && (
+        {isScaling && (
+          <Loader />
+        )}
+        {isScaling === false && (
+          <View style={[styles.itemInner]}>
+            <Text style={insightTextStyle}>
+              {finalContent}
+            </Text>
+          </View>
+        )}
+        {isScaling === false && origin && (
           <View style={[styles.itemMore, this.getStyle()]}>
             {visibility === 1 && (
               <View style={styles.itemMoreInner}>

@@ -33,6 +33,10 @@ export default StyleSheet.create({
     paddingVertical: device.size(5),
     backgroundColor: 'transparent'
   },
+  itemScaling: {
+    paddingVertical: device.size(10),
+    paddingHorizontal: 0,
+  },
   itemInner: {
     ...itemInner
   },

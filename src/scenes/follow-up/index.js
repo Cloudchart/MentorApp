@@ -14,11 +14,13 @@ import React, {
   PanResponder
 } from 'react-native'
 import Relay from 'react-relay'
-import { Boris, Button, ScrollListView, InsightRate } from '../../components'
+import { Boris, Button, ScrollListView } from '../../components'
+import InsightRate from '../../components/insight/insight-rate'
 import { ScrollHandler } from '../../utils/animation'
 import Loader  from '../../components/loader'
-import { likeInsightInTopic, dislikeInsightInTopic } from '../../actions/insight'
 import { insightFragment } from '../insights/insight-card'
+import LikeInsightInTopicMutation from '../../mutations/like-insight-in-topic'
+import DislikeInsightInTopicMutation from '../../mutations/dislike-insight-in-topic'
 import styles from './../user-insights/style'
 import * as device from '../../utils/device'
 
@@ -26,26 +28,22 @@ const BORIS_NOTE =
   'Hello, master. I sincerely hope you\'ve put these advices to work. ' +
   'Now review them: did they work for you?'
 
+const dataSource = new ListView.DataSource({
+  rowHasChanged: (row1, row2) => row1 !== row2,
+})
+
 class FollowUpScene extends Component {
 
   constructor(props) {
     super(props)
     this.PAGE_SIZE = 30;
     this.saveTimeout = null;
-
     this._onEndReached = this._onEndReached.bind(this);
-    this.filterLike = this.filterLike.bind(this);
-    this.filterDisLike = this.filterDisLike.bind(this);
-
     this.state = {
       listInsights: [],
-      is_empty: false,
       scrollEnabled: true,
       isLoadingTail: false,
       random: (Math.random(1000) * 100).toString(16),
-      dataSource: new ListView.DataSource({
-        rowHasChanged: (row1, row2) => row1 !== row2
-      })
     }
   }
 
@@ -76,9 +74,11 @@ class FollowUpScene extends Component {
   }
 
   componentWillMount() {
-    const { viewer } = this.props;
-    this.state.listInsights = viewer.insights.edges;
-    this.state.dataSource = this.state.dataSource.cloneWithRows(this.state.listInsights);
+    const { viewer } = this.props
+    this.setState({
+      listInsights: viewer.insights.edges,
+      dataSource: dataSource.cloneWithRows(viewer.insights.edges),
+    })
   }
 
   _onEndReached() {
@@ -100,12 +100,30 @@ class FollowUpScene extends Component {
     return null;
   }
 
-  _itWorks(insight) {
-    likeInsightInTopic(insight, true).then(this.filterLike);
+  handleItWorksPress(insight, topic) {
+    console.log({ insight, topic })
+    const mutation = new LikeInsightInTopicMutation({
+      insight,
+      topic,
+      shouldAddToUserCollectionWithTopicName: true,
+    }, {
+      onSuccess: transaction => {
+        this.filterLike(transaction)
+      }
+    })
+    Relay.Store.commitUpdate(mutation)
   }
 
-  _didNotWork(insight) {
-    dislikeInsightInTopic(insight).then(this.filterDisLike);
+  handleDidNotWorkPress(insight, topic) {
+    const mutation = new DislikeInsightInTopicMutation({
+      insight,
+      topic,
+    }, {
+      onSuccess: transaction => {
+        this.filterDisLike(transaction)
+      }
+    })
+    Relay.Store.commitUpdate(mutation)
   }
 
   filterLike(tran) {
@@ -141,16 +159,16 @@ class FollowUpScene extends Component {
     });
   }
 
-  _renderInsight (rowData, sectionID, rowID) {
-    console.log(rowData.node, 'rowData.node');
+  _renderInsight(rowData, sectionID, rowID) {
     return (
       <InsightRate
         key={rowID}
         insight={rowData.node}
         fontSize={20}
-        itWorks={this._itWorks.bind(this, rowData)}
-        didNotWork={this._didNotWork.bind(this, rowData)}
-        onPressCard={this._onPressCard}/>
+        itWorks={() => this.handleItWorksPress(rowData.node, rowData.topic)}
+        didNotWork={() => this.handleDidNotWorkPress(rowData.node, rowData.topic)}
+        onPressCard={this._onPressCard}
+        />
     )
   }
 
@@ -162,10 +180,8 @@ class FollowUpScene extends Component {
     const { viewer } = this.props
     const {
       scrollEnabled,
-      is_empty,
       isLoadingTail,
       listInsights,
-      dataSource
     } = this.state;
     const { edges } = viewer.insights
     if (edges.length === 0) {

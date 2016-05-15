@@ -88,7 +88,6 @@ class UserInsightsScene extends Component {
     if (!note) {
       note = (filter === 'USEFUL') ? BORIS_NOTE_FOR_USEFUL : BORIS_NOTE_FOR_USELESS
     }
-    console.log('userInsights', filter, { node })
     return (
       <View style={styles.container}>
         <ScrollView

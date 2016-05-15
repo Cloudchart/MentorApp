@@ -204,7 +204,6 @@ class Insight extends Component {
     const { onScalingStateChange } = this.props
     const { isScaling } = this.state
     if (isScaling !== prevState.isScaling) {
-      console.log({ isScaling })
       onScalingStateChange && onScalingStateChange(isScaling)
     }
   }

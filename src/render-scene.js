@@ -83,6 +83,10 @@ export default function renderScene(route, navigator) {
       return renderSceneContainer(StarterScene, screenParams)
     case 'connect':
       return renderSceneContainer(ConnectScene, screenParams)
+    case 'return-to-app':
+      return renderSceneContainer(ReturnToApp, screenParams)
+    case 'follow-up':
+      return renderSceneContainer(FollowUpScene, screenParams)
     case 'questionnaire':
       return renderSceneContainer(QuestionnaireScene, screenParams)
     case 'select_topics':
@@ -128,8 +132,6 @@ export default function renderScene(route, navigator) {
       })
     case 'replace-topic':
       return renderSceneContainer(ReplaceTopicScene, screenParams)
-    case 'follow-up':
-      return renderSceneContainer(FollowUpScene, screenParams)
     case 'user-insights_useful':
       return renderSceneContainer(UserInsightsScene, {
         filter: 'USEFUL',
@@ -154,8 +156,6 @@ export default function renderScene(route, navigator) {
       return renderSceneContainer(NotificationsScene, screenParams)
     case 'profile':
       return renderSceneContainer(ProfileScene, screenParams)
-    case 'return-to-app':
-      return renderSceneContainer(ReturnToApp, screenParams)
     default:
       return null
   }

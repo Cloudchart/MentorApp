@@ -9,13 +9,13 @@ import Icon from 'react-native-vector-icons/FontAwesome'
 import styles from './style'
 import baseStyles from '../../styles/base'
 
-const OnlyAdd = ({ collection, pressRow }) => {
+const OnlyAdd = ({ collection, onPress }) => {
   const { insights } = collection
   return (
     <TouchableOpacity
       style={styles.collectionItem}
       activeOpacity={0.75}
-      onPress={pressRow}
+      onPress={onPress}
       >
       <View style={styles.collectionItemInner}>
         <Icon name="folder-open-o" style={[baseStyles.crumbIcon, {color : '#00af58'}]}/>

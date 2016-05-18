@@ -147,7 +147,7 @@ class UserInsightCard extends Component {
     navigator.push({
       scene: 'user-collections',
       title: 'Add to collection',
-      advice: insight,
+      insightNode: insight,
     })
   }
 

@@ -11,8 +11,9 @@ import React, {
 } from 'react-native'
 import Relay from 'react-relay'
 import { connect } from 'react-redux'
+import AddInsightToCollectionMutation from '../../mutations/add-insight-to-collection'
 import { ScrollHandler } from '../../utils/animation'
-import { createCollection, removeCollection, addToCollection } from '../../actions/collections'
+import { createCollection, removeCollection } from '../../actions/collections'
 import * as actions from '../../actions/application'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import { EventManager } from '../../event-manager'
@@ -21,82 +22,94 @@ import OnlyAdd from './only-add'
 import styles from './style'
 import baseStyles from '../../styles/base'
 
+const PAGE_SIZE = 20
 const dataSource = new ListView.DataSource({
   rowHasChanged: (row1, row2) => row1 !== row2
 })
 
 class UserCollectionsScene extends Component {
 
-  state = {
-    loader: false,
-    isLoadingTail: false,
-    collectionName: '',
-    collections: [],
-    addControlShow: false
-  }
+  constructor(props, context) {
+    super(props, context)
+    this._keyboardDidShowSubscription = DeviceEventEmitter.addListener(
+      'keyboardDidShow',
+      this.handleKeyboardDidShow.bind(this)
+    )
+    this._keyboardWillHideSubscription = DeviceEventEmitter.addListener(
+      'keyboardWillHide',
+      this.handleKeyboardWillHide.bind(this)
+    )
 
-  constructor (props) {
-    super(props)
-    this.PAGE_SIZE = 20
     this._textInput = null
     this._goBack = false
     // subscribe to an event to create a new collection
     this._showControlAddNewItem = this._showControlAddNewItem.bind(this)
     this._forceFetch = this._forceFetch.bind(this)
-
     EventManager.addListener(actions.ACTION_ADD_USER_COLLECTION, this._showControlAddNewItem)
     EventManager.addListener(actions.UPDATE_COLLECTIONS, this._forceFetch)
 
-    this.keyboardDidShowSubscription = DeviceEventEmitter.addListener('keyboardDidShow', this._keyboardDidShow.bind(this))
-    this.keyboardWillHideSubscription = DeviceEventEmitter.addListener('keyboardWillHide', this._keyboardWillHide.bind(this))
 
     this._handleCollectionNameChange = this._handleCollectionNameChange.bind(this)
     this._handleCollectionNameBlur = this._handleCollectionNameBlur.bind(this)
-    this._onEndReached = this._onEndReached.bind(this)
-    this._keyboardDidShow = this._keyboardDidShow.bind(this)
-    this.renderHeader = this.renderHeader.bind(this)
-
     this._panResponder = PanResponder.create({
       onStartShouldSetPanResponderCapture: (evt, gestureState) => {
         this.setState({ closeAllItems: true })
         return false
       }
     })
-  }
-
-
-  componentWillReceiveProps (nextProps) {
-    this.state.collections = _.map(nextProps.viewer.collections.edges, 'node');
-    this._updateCounterAdvice(nextProps.viewer.collections);
-    if ( !this.state.collections || !this.state.collections.length && !this._goBack ) {
-      this._goBack = true;
-      this.props.navigator.popToTop();
+    this.state = {
+      loader: false,
+      isLoadingTail: false,
+      collectionName: '',
+      collections: [],
+      addControlShow: false,
     }
   }
 
-  componentDidMount () {
-    const { dispatch, viewer } = this.props;
-    dispatch({ type: actions.SET_COLLECTIONS, collections: viewer.collections })
+  componentWillMount() {
+    const { insightNode, viewer } = this.props
+    const { edges } = viewer.collections
+    this.setState({
+      insightNode,
+      collections: edges.map(edge => edge.node),
+    })
   }
 
-  componentWillMount () {
-    this.state.advice = this.props.advice;
-    this.state.collections = _.map(this.props.viewer.collections.edges, 'node');
+  componentDidMount() {
+    const { dispatch, viewer } = this.props
+    const { collections } = viewer
+    dispatch({
+      type: actions.SET_COLLECTIONS,
+      collections,
+    })
   }
 
-  componentDidUpdate (prevProps) {
-    const { dispatch, viewer } = this.props;
-    if ( this.state.collections < viewer.collections.edges.length ) {
-      this._updateCounterAdvice(viewer.collections);
+  componentWillReceiveProps(nextProps) {
+    const { collections } = nextProps.viewer
+    const nextCollections = collections.edges.map(edge => edge.node)
+    this.setState({
+      collections: nextCollections,
+    })
+    this._updateCounterAdvice(collections);
+    if (!nextCollections || !nextCollections.length && !this._goBack) {
+      this._goBack = true
+      this.props.navigator.popToTop()
     }
   }
 
-  componentWillUnmount () {
-    this._goBack = false;
-    EventManager.removeListener(actions.ACTION_ADD_USER_COLLECTION, this._showControlAddNewItem);
-    EventManager.removeListener(actions.UPDATE_COLLECTIONS, this._forceFetch);
-    this.keyboardDidShowSubscription.remove();
-    this.keyboardWillHideSubscription.remove();
+  componentDidUpdate(prevProps) {
+    const { viewer } = this.props
+    if (this.state.collections.length < viewer.collections.edges.length) {
+      this._updateCounterAdvice(viewer.collections)
+    }
+  }
+
+  componentWillUnmount() {
+    this._goBack = false
+    EventManager.removeListener(actions.ACTION_ADD_USER_COLLECTION, this._showControlAddNewItem)
+    EventManager.removeListener(actions.UPDATE_COLLECTIONS, this._forceFetch)
+    this._keyboardDidShowSubscription.remove()
+    this._keyboardWillHideSubscription.remove()
   }
 
 
@@ -105,18 +118,19 @@ class UserCollectionsScene extends Component {
    * @param frames
    * @private
    */
-  _keyboardDidShow (frames) {
-    if ( !frames.endCoordinates ) return;
-    const { viewer } = this.props;
-    const coll = this.state.collections;
-    if ( coll.length && coll.length > 3 ) {
+  handleKeyboardDidShow(frames) {
+    if (!frames.endCoordinates) {
+      return
+    }
+    const { collections } = this.state
+    if (collections && collections.length > 3) {
       setTimeout(() => {
-        let scrollResponder = this.refs._scrollView.getScrollResponder();
+        let scrollResponder = this.refs._scrollView.getScrollResponder()
         scrollResponder.scrollResponderScrollNativeHandleToKeyboard(
           React.findNodeHandle(this.refs[ 'newItemInput' ]),
           76
-        );
-      }, 0);
+        )
+      }, 0)
     }
   }
 
@@ -125,9 +139,9 @@ class UserCollectionsScene extends Component {
    * @param frames
    * @private
    */
-  _keyboardWillHide (frames) {
-    let scrollResponder = this.refs._scrollView.getScrollResponder();
-    setTimeout(()=> {
+  handleKeyboardWillHide(frames) {
+    let scrollResponder = this.refs._scrollView.getScrollResponder()
+    setTimeout(() => {
       scrollResponder.scrollTo({ y: 0, animated: false })
     }, 0)
   }
@@ -165,34 +179,29 @@ class UserCollectionsScene extends Component {
    * @private
    */
   _createNewUserCollection () {
-    const { viewer, relay } = this.props;
-    const { collectionName, advice } = this.state;
-
-    let collectionData = {
+    const { viewer, relay } = this.props
+    const { collectionName, insightNode } = this.state
+    const collection = {
       id: (Math.random(100) * 1000).toString(16),
-      name: collectionName
+      name: collectionName,
     }
-
-    createCollection({ collection: collectionData, user: viewer })
-      .then((tran)=> {
-        if ( tran.addCollectionToUser && tran.addCollectionToUser.collection ) {
-          let collection = tran.addCollectionToUser.collection;
+    createCollection({ collection, user: viewer })
+      .then(transaction => {
+        if (transaction.addCollectionToUser && transaction.addCollectionToUser.collection ) {
+          const { collection } = transaction.addCollectionToUser
           this.state.collections.push(this.prepareCollectionData(collection))
           this.setState({
             collections: [ ...this.state.collections ],
-            collectionName: ''
-          });
-
-          if ( advice ) {
+            collectionName: '',
+          })
+          if (insightNode) {
             this._addInsightToCollection(
-              tran.addCollectionToUser.collection
+              transaction.addCollectionToUser.collection
             )
           }
         }
       })
-      .catch((transaction)=> {
-        this.setState({ collectionName: '' })
-      })
+      .catch(() => this.setState({ collectionName: '' }))
   }
 
   /**
@@ -224,16 +233,19 @@ class UserCollectionsScene extends Component {
   }
 
   /**
-   * add new insight to collection
-   * @param collectionId
+   * Add current insight to specified collection
+   * @param {Object} collection
    * @private
    */
-  _addInsightToCollection (collection) {
-    const { navigator } = this.props;
-    addToCollection({ insight: this.state.advice, collection })
-      .then((transaction)=> {
-        navigator.pop();
-      })
+  _addInsightToCollection(collection) {
+    const { insightNode } = this.state
+    const mutation = new AddInsightToCollectionMutation({
+      insight: insightNode,
+      collection,
+    })
+    Relay.Store.commitUpdate(mutation, {
+      onSuccess: () => this.props.navigator.pop(),
+    })
   }
 
   _handleCollectionNameChange (name) {
@@ -259,23 +271,19 @@ class UserCollectionsScene extends Component {
     this.props.relay.forceFetch();
   }
 
-  _onEndReached () {
+  handleEndReached() {
     const { relay, viewer } = this.props;
     let pageNext = viewer.collections.pageInfo;
     let count = relay.variables.count;
-
     if ( !pageNext || !pageNext.hasNextPage ) {
       return;
     }
-
     this.setState({ isLoadingTail: true })
-    relay.setVariables({ count: count + this.PAGE_SIZE }, (transaction) => {
-      if ( transaction.done ) this.setState({ isLoadingTail: false })
-    });
-  }
-
-  renderHeader () {
-    return null;
+    relay.setVariables({ count: count + PAGE_SIZE }, transaction => {
+      if (transaction.done) {
+        this.setState({ isLoadingTail: false })
+      }
+    })
   }
 
   handlePressRow(collection) {
@@ -300,7 +308,7 @@ class UserCollectionsScene extends Component {
             placeholderTextColor="hsl(137, 100%, 83%)"
             autoFocus={ true }
             onChangeText={ this._handleCollectionNameChange }
-            onFocus={ this._keyboardDidShow }
+            onFocus={frames => this.handleKeyboardDidShow(frames)}
             onBlur={ this._handleCollectionNameBlur }
           />
         </View>
@@ -308,18 +316,18 @@ class UserCollectionsScene extends Component {
     )
   }
 
-  _renderCollectionItem (rowData, sectionID, rowID) {
+  _renderCollectionItem(rowData, sectionID, rowID) {
     const { viewer } = this.props
-    const { addControlShow, advice, closeAllItems } = this.state
-    const last = (parseInt(rowID) + 1) == this.state.collections.length
+    const { insightNode, closeAllItems } = this.state
     const collection = rowData
-    if (advice) {
+    if (insightNode) {
       return (
         <OnlyAdd
           key={rowID}
           collection={collection}
           user={viewer}
-          pressRow={this._addInsightToCollection.bind(this, collection)}/>
+          onPress={() => this._addInsightToCollection(collection)}
+        />
       )
     } else {
       return (
@@ -343,15 +351,15 @@ class UserCollectionsScene extends Component {
 
   render() {
     const { isLoadingTail, addControlShow, collections } = this.state
-    const _scroll = ScrollHandler.bind(this, {
+    const scrollHandler = ScrollHandler.bind(this, {
       isLoadingTail,
-      callback: !addControlShow ? this._onEndReached : () => {},
+      callback: addControlShow ? () => {} : () => this.handleEndReached(),
       onEndReachedThreshold: 20,
     })
     return (
       <View style={styles.container} {...this._panResponder.panHandlers}>
         <ScrollView
-          onScroll={_scroll}
+          onScroll={scrollHandler}
           ref="_scrollView"
           keyboardDismissMode='on-drag'
           keyboardShouldPersistTaps={false}
@@ -365,7 +373,7 @@ class UserCollectionsScene extends Component {
             renderRow={(rowData, sectionID, rowID) => this._renderCollectionItem(rowData, sectionID, rowID)}
             pageSize={20}
             isLoadingTail={isLoadingTail}
-            renderHeader={this.renderHeader}
+            renderHeader={() => null}
             />
           {(addControlShow || (!collections.length && !this._goBack)) && (
             this._renderNewItem()

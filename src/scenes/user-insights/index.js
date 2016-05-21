@@ -73,7 +73,7 @@ class UserInsightsScene extends Component {
     const { node, filter } = this.props
     const { isScrollEnabled } = this.state
     const { description, insights } = node
-    if (insights.length === 0) {
+    if (insights.edges.length === 0) {
       return (
         <Empty filter={filter} />
       )

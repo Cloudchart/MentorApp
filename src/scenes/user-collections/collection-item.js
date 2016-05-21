@@ -21,7 +21,10 @@ import {
   RemoveCollectionFromUserMutation
 } from '../../mutations'
 
+const PREVIEW_ITEMS_COUNT = 3
+
 class UserCollectionItem extends Component {
+
   constructor (props, context) {
     super(props, context)
     this._swipeButtons = [{
@@ -90,7 +93,7 @@ class UserCollectionItem extends Component {
     const { collection, pressRow } = this.props
     const { insights } = collection
     const basicRowHeight =
-      insights.count > 3 ?
+      insights.usefulCount > 3 ?
         (3 * 30 + 30) :
         insights.edges.length * 30 + 13
     const finalRowHeight = device.size(basicRowHeight)
@@ -125,9 +128,9 @@ class UserCollectionItem extends Component {
               {insights.edges.map(this.renderAdvicePreview)}
             </View>
             <View style={{ flex: 1}}>
-              {(insights.count > 3) ? (
+              {(insights.usefulCount > PREVIEW_ITEMS_COUNT) ? (
                 <Text style={styles.textMore}>
-                  {'and ' + (insights.count - insights.edges.length) + ' more'}
+                  {'and ' + (insights.usefulCount - PREVIEW_ITEMS_COUNT) + ' more'}
                 </Text>
               ) : null}
             </View>

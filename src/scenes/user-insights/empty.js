@@ -3,11 +3,11 @@ import Boris from '../../components/boris'
 import styles from './style'
 
 const BORIS_NOTE_FOR_USEFUL =
-  'There\'s nothing here, human. Try adding some fine advice to this collection?'
+  'There\'s nothing here, human. Try adding some useful advices to this collection?'
 const BORIS_NOTE_FOR_USELESS =
-  'There\'s nothing here, human. Try to remove some useless advice?'
+  'There\'s nothing here, human.'
 
-export function Empty({ filter }) {
+export default function Empty({ filter }) {
   return (
     <View style={styles.container}>
       <View style={styles.borisContainerCenter}>

@@ -71,9 +71,7 @@ export default StyleSheet.create({
     bottom: device.fontSize(0),
     paddingTop: device.fontSize(10),
     paddingBottom: device.fontSize(10),
-    left: 0,
-    // fontSize: device.fontSize(18),
-    // fontWeight: '300',
+    left: device.size(5),
     marginHorizontal: device.size(12),
   },
 

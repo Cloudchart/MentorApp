@@ -14,16 +14,9 @@ import React, {
   PanResponder,
 } from 'react-native'
 import Relay from 'react-relay'
-import { EventManager } from '../../event-manager'
-import { connect } from 'react-redux'
 import { Boris, Button, ScrollListView, Insight } from '../../components'
 import UserInsightCard from './insight-card'
 import Empty from './empty'
-import {
-  SET_CURRENT_COLLECTION,
-  UPDATE_COLLECTIONS,
-  UPDATE_ADVICES_COLLECTIONS,
-} from '../../actions/application'
 import { insightFragment } from '../insights/insight-card'
 import styles from './style'
 
@@ -31,6 +24,7 @@ const BORIS_NOTE_FOR_USEFUL = 'Hello superman! How is going?'
 const BORIS_NOTE_FOR_USELESS = 'Today what do you think about that?'
 
 class UserInsightsScene extends Component {
+  
   constructor(props, context) {
     super(props, context)
     this.state = {
@@ -50,11 +44,11 @@ class UserInsightsScene extends Component {
     })
   }
 
-  _forceFetch () {
+  _forceFetch() {
     const { relay } = this.props
     relay.forceFetch()
     // @todo update prev screen { user collections }
-    EventManager.emit(UPDATE_COLLECTIONS)
+    // EventManager.emit(UPDATE_COLLECTIONS)
   }
 
   _renderList() {
@@ -81,7 +75,7 @@ class UserInsightsScene extends Component {
     const { description, insights } = node
     if (insights.length === 0) {
       return (
-        <Empty />
+        <Empty filter={filter} />
       )
     }
     let note = description

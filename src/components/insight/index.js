@@ -240,9 +240,9 @@ class Insight extends Component {
     })
   }
 
-  _openWebView () {
-    const { insight } = this.props;
-    if ( insight && insight.origin && insight.origin.url ) {
+  _openWebView() {
+    const { insight } = this.props
+    if (insight && insight.origin && insight.origin.url) {
       Linking.openURL(insight.origin.url)
     }
   }
@@ -374,4 +374,4 @@ class Insight extends Component {
   }
 }
 
-export default Insight;
+export default Insight

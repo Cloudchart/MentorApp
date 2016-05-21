@@ -38,17 +38,16 @@ export default class MarkInsightUsefulInCollectionMutation extends Relay.Mutatio
   }
 
   getConfigs() {
-    const { insight, collection } = this.props
     return [{
       type: 'FIELDS_CHANGE',
       fieldIDs: {
-        insight: insight.id,
-        collection: collection.id,
+        insight: this.props.insight.id,
+        collection: this.props.collection.id,
       },
     }, {
       type: 'RANGE_ADD',
       parentName: 'collection',
-      parentID: collection.id,
+      parentID: this.props.collection.id,
       connectionName: 'insights',
       edgeName: 'insightEdge',
       rangeBehaviors: {

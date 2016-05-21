@@ -31,7 +31,7 @@ class ExploreTopicScene extends Component {
   componentDidMount() {
     const { viewer } = this.props
     this.setState({
-      dataSource: this._getDataSource(viewer.topics),
+      dataSource: this._getDataSource(viewer.topics.edges),
     })
   }
 
@@ -40,18 +40,17 @@ class ExploreTopicScene extends Component {
     if (nextProps.viewer.topics !== viewer.topics) {
       const { topics } = nextProps.viewer
       this.setState({
-        dataSource: this._getDataSource(topics),
+        dataSource: this._getDataSource(topics.edges),
       })
     }
   }
 
   _getDataSource(topics) {
     const { dataSource } = this.state
-    const filteredTopics = topics.edges.filter(topic =>
+    const filteredTopics = topics.filter(topic =>
         !topic.node.isSubscribedByViewer
     )
-    this._topicsData = (this._topicsData || []).concat(filteredTopics)
-    return dataSource.cloneWithRows(this._topicsData)
+    return dataSource.cloneWithRows(filteredTopics)
   }
 
   handleSelectTopic(topic) {
@@ -74,10 +73,11 @@ class ExploreTopicScene extends Component {
     })
     relay.setVariables({
       count: count + PAGE_SIZE,
-    }, transaction => {
-      if (transaction.done) {
+    }, readyState => {
+      if (readyState.done) {
         this.setState({
           isLoadingTail: false,
+          dataSource: this._getDataSource(this.props.viewer.topics.edges),
         })
       }
     })

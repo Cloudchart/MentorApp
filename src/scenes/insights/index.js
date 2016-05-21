@@ -6,8 +6,12 @@ import {
   AllForNow,
   AllEnded,
 } from '../../components/confirmation-screens/insights-parts'
-import InsightCardContainer from './insight-card'
-import styles from './styles'
+import InsightCard, {
+  userFragment,
+  topicFragment,
+  insightFragment,
+  reactionsFragment,
+} from './insight-card'
 
 class InsightsScene extends Component {
 
@@ -30,7 +34,7 @@ class InsightsScene extends Component {
   }
 
   render() {
-    const { viewer, navigator } = this.props
+    const { filter, viewer, navigator } = this.props
     const { isTopicFinished } = this.state
     const { subscribedTopics, insights } = viewer
     console.log('insights-scene: found ' + insights.edges.length + ' available insights.', {
@@ -39,7 +43,7 @@ class InsightsScene extends Component {
     })
     let isAllEnded = true
     subscribedTopics.edges.forEach(({ node }) => {
-      if (!node.isTopicFinished) {
+      if (!node.isFinishedByViewer) {
         isAllEnded = false
       }
     })
@@ -68,12 +72,13 @@ class InsightsScene extends Component {
     }
     const firstInsight = insights.edges[0]
     if (firstInsight) {
-      console.log({ firstInsight })
       return (
-        <InsightCardContainer
+        <InsightCard
+          filter={filter}
           navigator={navigator}
-          insight={firstInsight}
           user={viewer}
+          topic={firstInsight.topic}
+          insight={firstInsight.node}
           handleTopicFinish={() => this.handleTopicFinish()}
           />
       )
@@ -92,11 +97,15 @@ export default Relay.createContainer(InsightsScene, {
   fragments: {
     viewer: () => Relay.QL`
       fragment on User {
-        ${InsightCardContainer.getFragment('user')}
+        ${userFragment}
         insights(first: $count, filter: $filter)  {
           edges {
-            ${InsightCardContainer.getFragment('insight')}
+            node {
+              ${insightFragment}
+              ${reactionsFragment}
+            }
             topic {
+              ${topicFragment}
               isFinishedByViewer
             }
           }
@@ -105,6 +114,7 @@ export default Relay.createContainer(InsightsScene, {
           edges {
             node {
               id
+              isFinishedByViewer
             }
           }
         }

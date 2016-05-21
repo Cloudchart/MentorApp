@@ -123,8 +123,8 @@ export function routeMapper() {
                 filter: 'USELESS',
               })}
               renderFetched={data => (
-              <TrashCounter {...route} {...data} navigator={navigator}/>
-            )}
+                <TrashCounter {...route} {...data} navigator={navigator}/>
+              )}
               />
           )
         case 'follow-up':

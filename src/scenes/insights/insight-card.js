@@ -10,7 +10,7 @@ import React, {
 } from 'react-native'
 import Relay from 'react-relay'
 import { _ } from 'lodash'
-import { Button, Loader, ScrollListView, TopicSubscribed } from '../../components'
+import Loader from '../../components/loader'
 import {
   CONTROL_PIECE,
   CONTROLS_WIDTH,
@@ -22,14 +22,16 @@ import Icon from 'react-native-vector-icons/FontAwesome'
 import baseStyle from '../../styles/base'
 import clamp from 'clamp'
 import LikeInsightInTopicMutation from '../../mutations/like-insight-in-topic'
+import LikeInsightInPreviewMutation from '../../mutations/like-insight-in-preview'
 import DislikeInsightInTopicMutation from '../../mutations/dislike-insight-in-topic'
+import DislikeInsightInPreviewMutation from '../../mutations/dislike-insight-in-preview'
 import {
   CommentGood,
   CommentBad,
 } from '../../components/confirmation-screens/insights-parts'
 import {
   ShareCard,
-  AddCard
+  AddCard,
 } from './popup-controls'
 import createInsightCardPanResponder from './pan-responder'
 import Insight, {
@@ -40,10 +42,10 @@ import Insight, {
 } from '../../components/insight'
 import styles from './styles'
 
-
 const dimensions = Dimensions.get('window')
 
-class InsightCard extends Component {
+export default class InsightCard extends Component {
+
   constructor(props, context) {
     super(props, context)
     this.state = {
@@ -65,7 +67,7 @@ class InsightCard extends Component {
   componentWillReceiveProps(nextProps) {
     const currentInsight = this.props.insight
     const nextInsight = nextProps.insight
-    if (nextInsight.node.id !== currentInsight.node.id) {
+    if (nextInsight.id !== currentInsight.id) {
       this._resetState()
     }
   }
@@ -92,17 +94,17 @@ class InsightCard extends Component {
     navigator.push({
       scene: 'user-collections',
       title: 'Add to collection',
-      insightNode: insight.node
+      insightNode: insight,
     })
   }
 
   handleShareControlPress() {
-    const { node } = this.props.insight
+    const { insight } = this.props
     ActionSheetIOS.showShareActionSheetWithOptions(
       {
-        url: node.origin.url || '',
-        message: node.content,
-        subject: 'a subject to go in the email heading'
+        url: insight.origin.url || '',
+        message: insight.content,
+        subject: 'a subject to go in the email heading',
       },
       error => {},
       (success, method) => {
@@ -119,7 +121,7 @@ class InsightCard extends Component {
       return
     }
     if (reaction.type === 'like') {
-      this._requestLikeMutation(true)
+      this._requestLikeMutation()
     } else {
       this._requestDislikeMutation()
     }
@@ -136,7 +138,7 @@ class InsightCard extends Component {
 
   _requestLikeRate() {
     const { insight } = this.props
-    const basicReaction = insight.node.likeReaction
+    const basicReaction = insight.likeReaction
     if (basicReaction) {
       const reaction = {
         type: 'like',
@@ -144,25 +146,37 @@ class InsightCard extends Component {
       }
       this.setState({ reaction })
     } else {
-      this._requestLikeMutation(true)
+      this._requestLikeMutation()
     }
   }
 
-  _requestLikeMutation(shouldAddToUserCollectionWithTopicName) {
-    const { user, insight } = this.props
-    const insightID = insight.node.id
+  _requestLikeMutation() {
+    const { filter, user, topic, insight } = this.props
     this.setState({
-      isPendingForInsight: insightID,
+      isPendingForInsight: insight.id,
       reaction: null,
     })
-    const mutation = new LikeInsightInTopicMutation({
-      topic: insight.topic,
-      insight: insight.node,
-      user: user,
-      shouldAddToUserCollectionWithTopicName,
-    })
+    let mutation
+    if (filter === 'PREVIEW') {
+      mutation = new LikeInsightInPreviewMutation({
+        shouldAddToUserCollectionWithTopicName: true,
+        user,
+        topic,
+        insight,
+      })
+    } else {
+      mutation = new LikeInsightInTopicMutation({
+        shouldAddToUserCollectionWithTopicName: true,
+        user,
+        topic,
+        insight,
+      })
+    }
     Relay.Store.commitUpdate(mutation, {
       onSuccess: response => {
+        if (filter === 'PREVIEW') {
+          return
+        }
         if (response.topic && response.topic.isFinishedByViewer) {
           this.props.handleTopicFinish();
         }
@@ -172,7 +186,7 @@ class InsightCard extends Component {
 
   _requestDislikeRate() {
     const { insight } = this.props
-    const basicReaction = insight.node.dislikeReaction
+    const basicReaction = insight.dislikeReaction
     if (basicReaction) {
       const reaction = {
         type: 'dislike',
@@ -185,19 +199,30 @@ class InsightCard extends Component {
   }
 
   _requestDislikeMutation() {
-    const { user, insight } = this.props
-    const insightID = insight.node.id
+    const { filter, user, topic, insight } = this.props
     this.setState({
-      isPendingForInsight: insightID,
+      isPendingForInsight: insight.id,
       reaction: null,
     })
-    const mutation = new DislikeInsightInTopicMutation({
-      topic: insight.topic,
-      insight: insight.node,
-      user: user,
-    })
+    let mutation
+    if (filter === 'PREVIEW') {
+      mutation = new DislikeInsightInPreviewMutation({
+        user,
+        topic,
+        insight,
+      })
+    } else {
+      mutation = new DislikeInsightInTopicMutation({
+        user,
+        topic,
+        insight,
+      })
+    }
     Relay.Store.commitUpdate(mutation, {
       onSuccess: response => {
+        if (filter === 'PREVIEW') {
+          return
+        }
         if (response.topic && response.topic.isFinishedByViewer) {
           this.props.handleTopicFinish()
         }
@@ -275,7 +300,7 @@ class InsightCard extends Component {
   }
 
   _renderCard() {
-    const { navigator, insight } = this.props
+    const { filter, navigator, topic, insight } = this.props
     const { isScaling, isDetailsVisible } = this.state
     const {
       _top,
@@ -346,8 +371,8 @@ class InsightCard extends Component {
     ]
     return (
       <View style={styles.container}>
-        {isDetailsVisible && (
-          <InsightTitle topicName={insight.topic.name ||  '' } />
+        {isDetailsVisible && (filter !== 'PREVIEW') && (
+          <InsightTitle topicName={topic.name ||  '' } />
         )}
         <Animated.View
           style={[styles.card, animatedCardStyles]}
@@ -356,7 +381,7 @@ class InsightCard extends Component {
           <Insight
             style={{alignSelf: 'center'}}
             navigator={navigator}
-            insight={insight.node}
+            insight={insight}
             onCardPress={() => this.handleCardPress()}
             onScalingStateChange={isScaling => this.setState({ isScaling })}
             />
@@ -387,8 +412,7 @@ class InsightCard extends Component {
   render() {
     const { insight } = this.props
     const { isPendingForInsight, reaction } = this.state
-    const insightID = insight.node.id
-    if (isPendingForInsight === insightID) {
+    if (isPendingForInsight === insight.id) {
       return (
         <Loader />
       )
@@ -431,6 +455,19 @@ const RateButtons = props => (
   </View>
 )
 
+export const userFragment = Relay.QL`
+  fragment on User {
+    id
+  }
+`
+
+export const topicFragment = Relay.QL`
+  fragment on Topic {
+    id
+    name
+  }
+`
+
 export const insightFragment = Relay.QL`
   fragment on Insight {
     id
@@ -444,31 +481,15 @@ export const insightFragment = Relay.QL`
   }
 `
 
-export default Relay.createContainer(InsightCard, {
-  fragments: {
-    user: () => Relay.QL`
-      fragment on User {
-        id
-      }
-    `,
-    insight: () => Relay.QL`
-      fragment on UserInsightsEdge {
-        topic {
-          id
-          name
-        }
-        node {
-          ${insightFragment}
-          likeReaction {
-            content
-            mood
-          }
-          dislikeReaction {
-            content
-            mood
-          }
-        }
-      }
-    `,
-  },
-})
+export const reactionsFragment = Relay.QL`
+  fragment on Insight {
+    likeReaction {
+      content
+      mood
+    }
+    dislikeReaction {
+      content
+      mood
+    }
+  }
+`

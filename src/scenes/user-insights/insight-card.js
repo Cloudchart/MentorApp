@@ -12,11 +12,10 @@ import React, {
   ActionSheetIOS,
   Animated,
   Easing,
-  Dimensions,
   PanResponder,
 } from 'react-native'
 import Relay from 'react-relay'
-import { Button, Loader, ScrollListView } from '../../components'
+import { Button, ScrollListView } from '../../components'
 import Insight, {
   animationCardLeft,
   animationCardRight,
@@ -31,15 +30,12 @@ import {
 import * as device from '../../utils/device'
 import clamp from 'clamp'
 import { ShareCard, AddCard } from './add-card-to-collection'
-//import { _panResponder } from './pan-responder'
 import createInsightCardPanResponder from '../insights/pan-responder'
 import MarkInsightUsefulInCollectionMutation from '../../mutations/mark-insight-useful-in-collection'
 import MarkInsightUselessInCollectionMutation from '../../mutations/mark-insight-useless-in-collection'
 import styles from './style'
 
-const dimensions = Dimensions.get('window')
-
-class UserInsightCard extends Component {
+export default class UserInsightCard extends Component {
   constructor (props) {
     super(props)
     //this._onPressCard = this._onPressCard.bind(this)
@@ -94,7 +90,7 @@ class UserInsightCard extends Component {
    * @param opt_param
    * @private
    */
-  handleMarkUseful(opt_param) {
+  handleMarkUseful() {
     const { type } = this.props
     if (type === 'USEFUL') {
       return false
@@ -157,9 +153,9 @@ class UserInsightCard extends Component {
       {
         url: insight.origin.url || '',
         message: insight.content,
-        subject: 'a subject to go in the email heading'
+        subject: 'a subject to go in the email heading',
       },
-        error => {},
+      error => console.error(error),
       (success, method) => {
         console.log({ success, method })
       }
@@ -179,9 +175,8 @@ class UserInsightCard extends Component {
   }
 
   /**
-   * show control piece
-   * and scrollEnabled = false
-   * @private
+   * Using by PanResponder
+   * Show control piece
    */
   showPopupControls() {
     const { _pan } = this
@@ -192,7 +187,7 @@ class UserInsightCard extends Component {
         const param = {
           toValue: CONTROL_PIECE,
           duration: 200,
-          friction: device.size(9 * 1.2)
+          friction: device.size(9 * 1.2),
         }
         setTimeout(() => {
           Animated.spring(this._addControl, param).start()
@@ -281,5 +276,3 @@ class UserInsightCard extends Component {
     )
   }
 }
-
-export default UserInsightCard

@@ -7,7 +7,7 @@ import Relay from 'react-relay'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import styles from '../styles/base'
 
-function TrashCounter({ navigator, route, node, title, filter }) {
+export default function TrashCounter({ navigator, route, node, title, filter }) {
   const handleUselessPress = () => {
     const route = {
       scene: 'user-insights_useless',
@@ -16,7 +16,7 @@ function TrashCounter({ navigator, route, node, title, filter }) {
     }
     navigator.push(route)
   }
-  let count
+  let count 
   if (node && node.insights) {
     count = node.insights.uselessCount
   }

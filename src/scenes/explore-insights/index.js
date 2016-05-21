@@ -1,14 +1,11 @@
 import React, { Component } from 'react-native'
 import Relay from 'react-relay'
-import { _ } from 'lodash'
-import { Loader } from '../../components'
-import {
-  TopicFinished,
-  AllForNow,
-  AllEnded,
-} from '../../components/confirmation-screens/insights-parts'
-import InsightCardContainer from './insight-card'
-import styles from './styles'
+import Loader from '../../components/loader'
+import InsightCard, {
+  userFragment,
+  topicFragment,
+  insightFragment,
+} from '../insights/insight-card'
 
 class ExploreInsightsScene extends Component {
 
@@ -28,17 +25,20 @@ class ExploreInsightsScene extends Component {
   }
 
   render() {
-    const { viewer, node, navigator } = this.props
+    const { filter, viewer, node, navigator } = this.props
     console.log('explore-insights-scene: found ' + node.insights.edges.length + ' available insights.')
     const firstInsight = node.insights.edges[0]
+    console.log({ node, firstInsight })
     if (firstInsight) {
       return (
-        <InsightCardContainer
+        <InsightCard
+          filter={filter}
           navigator={navigator}
-          insight={firstInsight}
+          topic={node}
+          insight={firstInsight.node}
           user={viewer}
           handleTopicFinish={() => this.handleTopicFinish()}
-          />
+        />
       )
     }
     return (
@@ -55,19 +55,20 @@ export default Relay.createContainer(ExploreInsightsScene, {
   fragments: {
     viewer: () => Relay.QL`
       fragment on User {
-        ${InsightCardContainer.getFragment('user')}
+        ${userFragment}
       }
     `,
     node: () => Relay.QL`
       fragment on Topic {
-        insights(first: $count, filter: $filter)  {
+        ${topicFragment}
+        insights(first: 100, filter: $filter)  {
           edges {
             node {
-              ${InsightCardContainer.getFragment('insight')}
+              ${insightFragment}
             }
           }
         }
       }
-    `
+    `,
   },
 })

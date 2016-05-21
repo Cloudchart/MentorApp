@@ -112,7 +112,7 @@ class ExploreInsightsScene extends Component {
         <Loader />
       )
     }
-    const isAllViewed = (node.insights.edges.length === 0)
+    const isAllViewed = (node.insights.edges.length === 0) || true
     if (isAllViewed) {
       return this._renderAddWizard()
     }

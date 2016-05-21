@@ -18,9 +18,9 @@ import { Boris, Button, ScrollListView } from '../../components'
 import InsightRate from '../../components/insight/insight-rate'
 import { ScrollHandler } from '../../utils/animation'
 import Loader  from '../../components/loader'
-import { insightFragment } from '../insights/insight-card'
-import LikeInsightInTopicMutation from '../../mutations/like-insight-in-topic'
-import DislikeInsightInTopicMutation from '../../mutations/dislike-insight-in-topic'
+import { userFragment, topicFragment, insightFragment } from '../insights/insight-card'
+import LikeInsightInFollowUpMutation from '../../mutations/like-insight-in-follow-up'
+import DislikeInsightInFollowUpMutation from '../../mutations/dislike-insight-in-follow-up'
 import styles from './../user-insights/style'
 import * as device from '../../utils/device'
 
@@ -29,23 +29,23 @@ const BORIS_NOTE =
   'Hello, master. I sincerely hope you\'ve put these advices to work. ' +
   'Now review them: did they work for you?'
 
-const dataSource = new ListView.DataSource({
-  rowHasChanged: (row1, row2) => row1 !== row2,
-})
-
 class FollowUpScene extends Component {
 
   constructor(props, context) {
     super(props, context)
     this.state = {
-      listInsights: [],
       scrollEnabled: true,
       isLoadingTail: false,
+      rates: {},
+      dataSource: new ListView.DataSource({
+        rowHasChanged: (row1, row2) => row1 !== row2,
+      }),
     }
   }
 
   componentDidMount() {
     const { viewer, navigator } = this.props
+    const { dataSource } = this.state
     const { edges } = viewer.insights
     if (edges.length === 0) {
       navigator.push({
@@ -54,7 +54,6 @@ class FollowUpScene extends Component {
       })
     }
     this.setState({
-      listInsights: edges,
       dataSource: dataSource.cloneWithRows(edges),
     })
   }
@@ -62,6 +61,7 @@ class FollowUpScene extends Component {
   componentWillReceiveProps(nextProps) {
     const { viewer } = this.props
     if (nextProps.viewer.insights !== viewer.insights) {
+      const { dataSource } = this.state
       const { insights } = nextProps.viewer
       if (insights.edges.length === 0) {
         navigator.push({
@@ -77,13 +77,17 @@ class FollowUpScene extends Component {
 
   handleEndReached() {
     const { relay, viewer } = this.props
-    let pageNext = viewer.insights.pageInfo
-    let count = relay.variables.count
-    if ( !pageNext || !pageNext.hasNextPage ) {
+    const { pageInfo } = viewer.insights
+    if (!pageInfo || !pageInfo.hasNextPage) {
       return
     }
-    this.setState({ isLoadingTail: true })
-    relay.setVariables({ count: count + PAGE_SIZE }, transaction => {
+    const { count } = relay.variables
+    this.setState({
+      isLoadingTail: true,
+    })
+    relay.setVariables({
+      count: count + PAGE_SIZE,
+    }, transaction => {
       if (transaction.done) {
         this.setState({
           isLoadingTail: false,
@@ -96,82 +100,87 @@ class FollowUpScene extends Component {
     return null
   }
 
-  handleItWorksPress(insight, topic) {
-    console.log('handleItWorksPress', { insight, topic })
-    const mutation = new LikeInsightInTopicMutation({
-      insight,
+  handleItWorksPress(user, topic, insight) {
+    const mutation = new LikeInsightInFollowUpMutation({
+      user,
       topic,
-      shouldAddToUserCollectionWithTopicName: true,
-    }, {
-      onSuccess: transaction => {
-        this.filterLike(transaction)
-      }
-    })
-    Relay.Store.commitUpdate(mutation)
-  }
-
-  handleDidNotWorkPress(insight, topic) {
-    console.log('handleDidNotWorkPress', { insight, topic })
-    const mutation = new DislikeInsightInTopicMutation({
       insight,
-      topic,
-    }, {
+    })
+    Relay.Store.commitUpdate(mutation, {
       onSuccess: transaction => {
-        this.filterDisLike(transaction)
+        this.applyLikeTransaction(transaction)
       }
     })
-    Relay.Store.commitUpdate(mutation)
   }
 
-  filterLike(tran) {
-    const { likeInsightInTopic } = tran
-    const listInsights = [ ...this.state.listInsights ]
-    listInsights.forEach((item) => {
-      if (item.node.id == likeInsightInTopic.insight.id) {
-        item.node.like = true;
-        item.node.dislike = false;
+  handleDidNotWorkPress(user, topic, insight) {
+    const mutation = new DislikeInsightInFollowUpMutation({
+      user,
+      topic,
+      insight,
+    })
+    Relay.Store.commitUpdate(mutation, {
+      onSuccess: transaction => {
+        this.applyDislikeTransaction(transaction)
       }
     })
-    this.setState({
-      listInsights: [ ...listInsights ],
-    });
   }
 
-  filterDisLike(tran) {
-    const { dislikeInsightInTopic } = tran
-    const listInsights = [ ...this.state.listInsights ]
-    listInsights.forEach((item) => {
-      if (item.node.id == dislikeInsightInTopic.insight.id) {
-        item.node.dislike = true
-        item.node.like = false
-        return item.node
+  applyLikeTransaction({ likeInsightInTopic }) {
+    const { rates } = this.state
+    const { id } = likeInsightInTopic.insight
+    if (!id) {
+      return
+    }
+    const newRates = {
+      ...rates,
+      [id]: {
+        isLiked: true,
       }
-    })
+    }
     this.setState({
-      listInsights: [ ...listInsights ],
+      rates: newRates,
+    })
+  }
+
+  applyDislikeTransaction({ dislikeInsightInTopic }) {
+    const { rates } = this.state
+    const { id } = dislikeInsightInTopic.insight
+    if (!id) {
+      return
+    }
+    const newRates = {
+      ...rates,
+      [id]: {
+        isDisliked: true,
+      }
+    }
+    this.setState({
+      rates: newRates,
     })
   }
 
   _renderInsight(rowData, sectionID, rowID) {
+    const { viewer } = this.props
+    const { rates } = this.state
+    const insightRate = rates[rowData.node.id] || {}
     return (
       <InsightRate
         key={rowID}
         insight={rowData.node}
         fontSize={20}
-        itWorks={() => this.handleItWorksPress(rowData.node, rowData.topic)}
-        didNotWork={() => this.handleDidNotWorkPress(rowData.node, rowData.topic)}
+        itWorksState={insightRate.isLiked}
+        didNotWorkState={insightRate.isDisliked}
+        onItWorksPress={() => this.handleItWorksPress(viewer, rowData.topic, rowData.node)}
+        onDidNotWorkPress={() => this.handleDidNotWorkPress(viewer, rowData.topic, rowData.node)}
         onPressCard={() => false}
         />
     )
   }
 
-  /**
-   *s
-   * @returns {XML}
-   */
   render() {
     const { viewer } = this.props
-    const { scrollEnabled, isLoadingTail, listInsights } = this.state
+    const { dataSource, scrollEnabled, isLoadingTail } = this.state
     const { edges } = viewer.insights
     if (edges.length === 0) {
       return (
@@ -197,11 +206,11 @@ class FollowUpScene extends Component {
           </View>
           <ListView
             enableEmptySections={true}
-            dataSource={dataSource.cloneWithRows(listInsights)}
+            dataSource={dataSource}
             renderRow={(rowData, sectionID, rowID) => this._renderInsight(rowData, sectionID, rowID)}
             isLoadingTail={isLoadingTail}
             renderHeader={() => this.renderHeader()}
-            style={[styles.scroll, {paddingTop: device.size(220)}]}
+            style={[styles.scroll, { paddingTop: device.size(220) }]}
             />
         </ScrollView>
       </View>
@@ -217,13 +226,14 @@ export default Relay.createContainer(FollowUpScene, {
   fragments: {
     viewer: () => Relay.QL`
       fragment on User {
+        ${userFragment}
         insights(first: $count, filter: $filter)  {
           edges {
             topic {
-              id
-              name
+              ${topicFragment}
             }
             node {
+              id
               ${insightFragment}
             }
           }

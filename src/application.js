@@ -41,7 +41,6 @@ export default class Application extends Component {
   constructor(props, context) {
     super(props, context)
     // Build initial route according to fetched data
-    let initialRoute
     console.log('Application constructor')
     this.state = {
       appState: null,
@@ -50,7 +49,7 @@ export default class Application extends Component {
       currentAppState: '',
       isFirstLaunchStateLoading: true,
       isBackgroundTimeStateLoading: true,
-      initialRoute,
+      initialRoute: null,
     }
     // Bind event handlers to component instance
     this._handlePushNotificationsRegister = this.handlePushNotificationsRegister.bind(this)
@@ -95,7 +94,7 @@ export default class Application extends Component {
               isBackgroundTimeStateLoading: false,
             })
           }
-        } catch (e) {
+        } catch (err) {
           // nothing
         }
       }

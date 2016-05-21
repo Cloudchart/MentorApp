@@ -25,6 +25,20 @@ import { _flex } from '../../styles/base'
 
 const PAGE_SIZE = 30
 
+function checkForAnyNotificationPermissions() {
+  return new Promise((resolve, reject) => {
+    try {
+      PushNotificationIOS.checkPermissions(permissions => {
+        const { badge, sound, alert } = permissions
+        const hasAny = Boolean(badge || sound || alert)
+        resolve(hasAny)
+      })
+    } catch (err) {
+      reject(err)
+    }
+  })
+}
+
 class SelectTopicScene extends Component {
 
   constructor(props, context) {
@@ -128,7 +142,7 @@ class SelectTopicScene extends Component {
     try {
       notificationsStatus = await AsyncStorage.getItem(NOTIFICATIONS__PERMISSIONS_STATUS)
     } catch (e) {
-      // nothing
+      console.error('handleContinuePress()', e)
     }
     if (notificationsStatus && notificationsStatus == 'already_request_permissions') {
       console.log('already requested permissions, move to insights')
@@ -142,8 +156,8 @@ class SelectTopicScene extends Component {
       return
     }
     try {
-      const allowed = await getNotificationsPermission()
-      if (allowed) {
+      const granted = checkForAnyNotificationPermissions()
+      if (granted) {
         console.log('requested permissions granted, move to insights')
         navigator.resetTo({
           scene: 'insights',
@@ -154,8 +168,8 @@ class SelectTopicScene extends Component {
         })
         return
       }
-    } catch (error) {
-      // nothing
+    } catch (err) {
+      console.error('handleContinuePress()', err)
     }
     navigator.push({
       scene: 'notifications',

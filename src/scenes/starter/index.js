@@ -1,6 +1,7 @@
 import React, { Component } from 'react-native'
 import Relay from 'react-relay'
 import Loader  from '../../components/loader'
+import { userFragment, topicFragment, insightFragment } from '../insights/insight-card'
 
 const ONE_DAY = 24 * 60 * 60 * 1000
 
@@ -9,6 +10,7 @@ class StarterScene extends Component {
   componentDidMount() {
     const { isFirstLaunch, previousBackgroundTime, viewer, navigator } = this.props
     const { followups, questions } = viewer
+    console.log({ isFirstLaunch, previousBackgroundTime })
     if (isFirstLaunch) {
       navigator.push({
         scene: 'welcome',
@@ -53,10 +55,14 @@ export default Relay.createContainer(StarterScene, {
   fragments: {
     viewer: () => Relay.QL`
       fragment on User {
+        ${userFragment}
         followups: insights(first: 1, filter: FOLLOWUPS)  {
           edges {
+            topic {
+              ${topicFragment}
+            }
             node {
-              id
+              ${insightFragment}
             }
           }
         }

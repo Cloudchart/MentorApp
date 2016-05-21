@@ -10,7 +10,7 @@ export default function NavLogo({ navigator }) {
   const handlePress = () => {
     navigator.push({
       scene: 'random_advice',
-      FloatFromLeft: true,
+      FloatFromBottom: true,
     })
   }
   return (

@@ -13,6 +13,7 @@ import React, {
   Animated,
   Easing,
   PanResponder,
+  Dimensions,
 } from 'react-native'
 import Relay from 'react-relay'
 import { Button, ScrollListView } from '../../components'
@@ -35,6 +36,8 @@ import MarkInsightUsefulInCollectionMutation from '../../mutations/mark-insight-
 import MarkInsightUselessInCollectionMutation from '../../mutations/mark-insight-useless-in-collection'
 import styles from './style'
 
+const dimensions = Dimensions.get('window')
+
 export default class UserInsightCard extends Component {
   constructor (props) {
     super(props)
@@ -47,6 +50,7 @@ export default class UserInsightCard extends Component {
       opacityOn: false,
       cardHeight: 0,
       calculateTopControl: 0,
+      // toolbarTop: dimensions.height / 4.5,
     }
     this._shareControl = new Animated.ValueXY({ x: 0, y: 0 })
     this._addControl = new Animated.ValueXY({ x: 0, y: 0 })
@@ -247,6 +251,7 @@ export default class UserInsightCard extends Component {
     const shareStyle = { transform: [ { translateX: share } ] }
     const add = _addControl.x.interpolate(interpolateControls)
     const addStyle = { transform: [ { translateX: add } ] }
+    const toolbarTop = device.size(40)
     return (
       <View style={{flex: 1, flexDirection: 'row'}}>
         <View
@@ -260,7 +265,7 @@ export default class UserInsightCard extends Component {
               onCardPress={() => this.handleCardPress()}/>
           </Animated.View>
         </View>
-        <View style={styles.wrapperAddCardControl}>
+        <View style={[styles.wrapperAddCardControl, { top: toolbarTop }]}>
           <Animated.View style={[{width: CONTROLS_WIDTH}, shareStyle]}>
             <View ref={SHARE_CARD_REF} style={{flex: 1}}>
               <ShareCard />

@@ -7,12 +7,13 @@ export default StyleSheet.create({
   container: {
     ...root_view,
     position: 'relative',
-    paddingTop: device.size(10),
+    paddingTop: 0,
     paddingBottom: device.size(20)
   },
   scroll : {
-    flex: 1,
-    paddingTop: device.size(130)
+    // posit
+    // flex: 1,
+    // paddingTop: device.size(130)
   },
   crumbIcon: {
     color: '#fff',
@@ -21,6 +22,14 @@ export default StyleSheet.create({
   borisContainer: {
     flex: 1,
     position: 'absolute',
+    top : 0,
+    left : 0,
+    right : 0,
+    justifyContent: 'center'
+  },
+  borisContainerInList: {
+    flex: 1,
+    position: 'relative',
     top : 0,
     left : 0,
     right : 0,

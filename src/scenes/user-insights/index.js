@@ -24,7 +24,7 @@ const BORIS_NOTE_FOR_USEFUL = 'Hello superman! How is going?'
 const BORIS_NOTE_FOR_USELESS = 'Today what do you think about that?'
 
 class UserInsightsScene extends Component {
-  
+
   constructor(props, context) {
     super(props, context)
     this.state = {
@@ -78,10 +78,7 @@ class UserInsightsScene extends Component {
         <Empty filter={filter} />
       )
     }
-    let note = description
-    if (!note) {
-      note = (filter === 'USEFUL') ? BORIS_NOTE_FOR_USEFUL : BORIS_NOTE_FOR_USELESS
-    }
+    const finalDescription = description || ''
     return (
       <View style={styles.container}>
         <ScrollView
@@ -89,8 +86,16 @@ class UserInsightsScene extends Component {
           scrollEnabled={isScrollEnabled}
           showsVerticalScrollIndicator={true}
           >
-          <ButtonsBoris note={note} />
-          <View style={styles.scroll}>
+          {finalDescription !== '' && (
+            <View style={styles.borisContainerInList}>
+              <Boris
+                mood="positive"
+                size="small"
+                note={finalDescription.trim()}
+                />
+            </View>
+          )}
+          <View style={[styles.scroll, { position: 'relative' }]}>
             {this._renderList()}
           </View>
         </ScrollView>
@@ -98,16 +103,6 @@ class UserInsightsScene extends Component {
     )
   }
 }
-
-const ButtonsBoris = ({ note }) => (
-  <View style={styles.borisContainer}>
-    <Boris
-      mood="positive"
-      size="small"
-      note={note.trim()}
-      />
-  </View>
-)
 
 export default Relay.createContainer(UserInsightsScene, {
   initialVariables: {

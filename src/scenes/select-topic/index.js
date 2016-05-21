@@ -30,6 +30,7 @@ class SelectTopicScene extends Component {
   constructor(props, context) {
     super(props, context)
     this.state = {
+      isPending: false,
       isLoadingTail: false,
       dataSource: new ListView.DataSource({
         rowHasChanged: (row1, row2) => row1 !== row2,
@@ -103,24 +104,22 @@ class SelectTopicScene extends Component {
 
   handleTopicPress(topic) {
     //this.props.relay.forceFetch()
-  }
-
-  handleTopicPressBefore(topic) {
-    //const { excludeUserTopics, viewer, navigator } = this.props
     const { excludeUserTopics } = this.props
-    //const { availableSlotsCount } = viewer.subscribedTopics
     if (excludeUserTopics) {
+      this.setState({
+        isPending: false,
+      })
       this.props.navigator.pop()
     }
-    /*if ( filterUserAddedTopic && !availableSlotsCount ) {
-     this.setState({
-     topicConfirmationSave: {
-     topic,
-     user: viewer
-     },
-     showConfirmation: true
-     })
-     }*/
+  }
+
+  handleTopicPressBefore() {
+    const { excludeUserTopics } = this.props
+    if (excludeUserTopics) {
+      this.setState({
+        isPending: true,
+      })
+    }
   }
 
   async handleContinuePress() {
@@ -213,12 +212,17 @@ class SelectTopicScene extends Component {
 
   render() {
     const {
-      isLoadingTail, dataSource, topicConfirmationSave, showConfirmation,
+      isPending, isLoadingTail, dataSource, showConfirmation,
       subscribedTopicsCount,
       } = this.state
     const { excludeUserTopics, viewer, navigator } = this.props
     const { topics } = viewer
     const { availableSlotsCount } = topics
+    if (isPending) {
+      return (
+        <Loader />
+      )
+    }
     if (availableSlotsCount === 0 &&
       excludeUserTopics &&
       showConfirmation) {

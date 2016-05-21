@@ -83,11 +83,10 @@ class UserTopicsScene extends Component {
       (availableToSelect > 1) ?
         'Select up to ' + availableToSelect + ' topics to start:' :
         'Select any one of following topics:'
-    console.log('handleAddTopicPress')
     this.props.navigator.push({
       scene: 'select_topics',
       title,
-      filterUserAddedTopic: true,
+      excludeUserTopics: true,
       availableToSelect,
     })
   }

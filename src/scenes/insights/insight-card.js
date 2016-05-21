@@ -301,9 +301,8 @@ export default class InsightCard extends Component {
 
   _renderCard() {
     const { filter, navigator, topic, insight } = this.props
-    const { isScaling, isDetailsVisible } = this.state
+    const { top, isScaling, isDetailsVisible } = this.state
     const {
-      _top,
       _pan,
       _enter,
       _shareControl,
@@ -351,7 +350,7 @@ export default class InsightCard extends Component {
     }
     const popupToolbarStyle = [
       styles.wrapperAddCardControl,
-      { top: _top },
+      { top },
     ]
     const shareButtonTranslate = _shareControl.x.interpolate(interpolateControls)
     const shareButtonTransform = [

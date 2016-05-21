@@ -100,18 +100,17 @@ export default class SubscriptionScene extends Component {
     this._isUnmounted = true
   }
 
-  _handlePurchaseComplete({ productIdentifier, transactionIdentifier }) {
-    const { navigator } = this.props
+  _handlePurchaseComplete({ productIdentifier }) {
     const { loadedProducts, purchasedProducts } = this.state
-    loadedProducts.forEach(product => {
-      if (product.identifier === productIdentifier) {
-        const purchasedProducts = purchasedProducts || []
-        const newPurchasedProducts = purchasedProducts.concat([ product ])
-        this.setState({
-          purchasedProducts: newPurchasedProducts,
-        })
-      }
-    })
+    const product = loadedProducts && loadedProducts[productIdentifier]
+    if (product) {
+      const purchasedProducts = purchasedProducts || []
+      const newPurchasedProducts = purchasedProducts.concat([ product ])
+      this.setState({
+        purchasedProducts: newPurchasedProducts,
+      })
+    }
+  }
 
     //const mutation = new PurchaseProductMutation({
     //  productID: productIdentifier,

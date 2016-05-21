@@ -41,10 +41,11 @@ class QuestionnaireScene extends Component {
     const { edges } = viewer.questions
     if (edges.length === 0) {
       if (isFirstLaunch) {
-        const { availableSlotsCount } = viewer.topics
+        const { availableSlotsCount, edges } = viewer.topics
+        const upToCount = availableSlotsCount + edges.length
         navigator.push({
           scene: 'select_topics',
-          title: 'Select up to ' + availableSlotsCount + ' topics to start:',
+          title: 'Select up to ' + upToCount + ' topics to start:',
           isFirstLaunch,
         })
         return
@@ -176,11 +177,11 @@ class QuestionnaireScene extends Component {
 
   _showNextScreen() {
     const { viewer, navigator } = this.props
-    const { topics } = viewer
-    const { availableSlotsCount } = topics
+    const { availableSlotsCount, edges } = viewer.topics
+    const upToCount = availableSlotsCount + edges.length
     const nextRoute = {
       scene: 'select_topics',
-      title: 'Select up to ' + availableSlotsCount + ' topics to start:',
+      title: 'Select up to ' + upToCount + ' topics to start:',
     }
     navigator.push(nextRoute)
   }
@@ -320,8 +321,13 @@ export default Relay.createContainer(QuestionnaireScene, {
   fragments: {
     viewer: () => Relay.QL`
       fragment on User {
-        topics {
+        topics(first: 100, filter: SUBSCRIBED) {
           availableSlotsCount
+          edges {
+            node {
+              id
+            }
+          }
         }
         questions(first: 100, filter: $filter) {
           edges {

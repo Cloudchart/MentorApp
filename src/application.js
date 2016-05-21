@@ -146,11 +146,11 @@ export default class Application extends Component {
   }
 
   handlePushNotificationsRegister(token) {
-    const mutation = new SetUserPushTokenMutation({
-      user: this.props.viewer,
-      token,
-    })
-    Relay.Store.commitUpdate(mutation)
+    // const mutation = new SetUserPushTokenMutation({
+    //   user: this.props.viewer,
+    //   token,
+    // })
+    // Relay.Store.commitUpdate(mutation)
   }
 
   handlePushNotificationReceived(notification) {
@@ -166,13 +166,13 @@ export default class Application extends Component {
   }
 
   _updateUserNotificationSettings(data) {
-    const finalData = {
-      ...data,
-      utcOffset: moment().utcOffset(),
-      timesToSend: 0,
-    }
-    const mutation = new UpdateUserNotificationsSettingsMutation(finalData)
-    Relay.Store.commitUpdate(mutation)
+    // const finalData = {
+    //   ...data,
+    //   utcOffset: moment().utcOffset(),
+    //   timesToSend: 0,
+    // }
+    // const mutation = new UpdateUserNotificationsSettingsMutation(finalData)
+    // Relay.Store.commitUpdate(mutation)
   }
 
   render() {
@@ -234,12 +234,12 @@ export default class Application extends Component {
   }
 }
 
-Relay.createContainer(Application, {
-  fragments: {
-    viewer: () => Relay.QL`
-      fragment on User {
-        id
-      }
-    `,
-  },
-})
+// export default Relay.createContainer(Application, {
+//   fragments: {
+//     viewer: () => Relay.QL`
+//       fragment on User {
+//         id
+//       }
+//     `,
+//   },
+// })

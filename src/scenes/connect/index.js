@@ -57,9 +57,15 @@ class ConnectScene extends Component {
     const { questions, topics } = viewer
     AsyncStorage.setItem(APPLICATION__IS_FIRST_LAUNCH, 'false', () => {
       if (questions.edges.length === 0) {
+        const { availableSlotsCount, edges } = topics
+        const upToCount = availableSlotsCount + edges.length
+        console.log({
+          availableSlotsCount,
+          topicsCount: edges.length,
+        })
         navigator.push({
           scene: 'select_topics',
-          title: `Select up to ${topics.availableSlotsCount} topics to start:`,
+          title: `Select up to ${upToCount} topics to start:`,
           isFirstLaunch: true,
         })
       } else {
@@ -119,8 +125,13 @@ export default Relay.createContainer(ConnectScene, {
       fragment on User {
         id
         email
-        topics {
+        topics(first: 100, filter: SUBSCRIBED) {
           availableSlotsCount
+          edges {
+            node {
+              id
+            }
+          }
         }
         questions(first: 1, filter: $filter) {
           edges {

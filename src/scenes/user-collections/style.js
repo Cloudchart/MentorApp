@@ -25,7 +25,7 @@ export default StyleSheet.create({
   },
 
   newCollection: {
-    
+
     height: device.size(64),
     backgroundColor: 'hsla(137, 54%, 50%, 0.5)'
   },
@@ -68,10 +68,12 @@ export default StyleSheet.create({
     flex: 1,
     color: 'hsl(137, 59%, 43%)',
     position: 'absolute',
-    bottom: device.fontSize(10),
+    bottom: device.fontSize(0),
+    paddingTop: device.fontSize(10),
+    paddingBottom: device.fontSize(10),
     left: 0,
-    fontSize: device.fontSize(18),
-    fontWeight: '300',
+    // fontSize: device.fontSize(18),
+    // fontWeight: '300',
     marginHorizontal: device.size(12),
   },
 

@@ -7,6 +7,7 @@ import React, {
   AsyncStorage,
 } from 'react-native'
 import Relay from 'react-relay'
+import { FBSDKLoginManager } from 'react-native-fbsdklogin'
 import { APPLICATION__IS_FIRST_LAUNCH } from '../../storage'
 import { Button, FBLoginButton } from '../../components'
 import Loader from '../../components/loader'
@@ -57,7 +58,7 @@ export default class SettingsScene extends Component {
     this.setState({
       isPending: true,
     })
-    AsyncStorage.setItem(APPLICATION__IS_FIRST_LAUNCH, '', () => {
+    AsyncStorage.setItem(APPLICATION__IS_FIRST_LAUNCH, 'true', () => {
       navigator.replace({
         scene: 'welcome',
         title: 'Virtual Mentor',
@@ -71,8 +72,12 @@ export default class SettingsScene extends Component {
     })
     Relay.Store.commitUpdate(mutation, {
       onSuccess: () => {
-        relay.forceFetch()
-        this.handleResetSettingsSuccess()
+        relay.forceFetch({}, readyState => {
+          if (readyState.done) {
+            FBSDKLoginManager.logOut()
+            this.handleResetSettingsSuccess()
+          }
+        })
       },
     })
   }

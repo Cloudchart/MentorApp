@@ -3,12 +3,12 @@ import React, {
   View,
   Text,
   DeviceEventEmitter
-} from "react-native";
-import { Button } from "../../components";
-import styles from "./style";
-import { loginAndGetDataFromFB, updateUser } from "../../actions/user";
-import { FBSDKAccessToken, FBSDKGraphRequest } from "react-native-fbsdkcore";
-import { FBSDKLoginManager } from "react-native-fbsdklogin";
+} from 'react-native'
+import { Button } from '../../components'
+import styles from './style'
+import { loginAndGetDataFromFB, updateUser } from '../../actions/user'
+import { FBSDKAccessToken, FBSDKGraphRequest } from 'react-native-fbsdkcore'
+import { FBSDKLoginManager } from 'react-native-fbsdklogin'
 
 class FBLoginButton extends Component {
 

@@ -131,7 +131,6 @@ export default class SubscriptionScene extends Component {
     //    )
     //  }
     //})
-  }
 
   _handlePurchase(productID) {
     const { loadedProducts } = this.state

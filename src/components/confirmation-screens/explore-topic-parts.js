@@ -7,7 +7,6 @@ import React, {
 } from "react-native";
 import { Boris, Button, TransparentButton } from "../../components";
 import { commentStyle } from "./style";
-import { EventManager } from '../../event-manager';
 
 class ExploreTopicSubscribe extends Component {
 

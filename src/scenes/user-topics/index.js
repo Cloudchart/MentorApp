@@ -22,8 +22,8 @@ import * as device from '../../utils/device'
 import { getGradient } from '../../utils/colors'
 import { TOPICS_FORCE_FETCH } from '../../actions/application'
 
-const getBorisNote = ({ availableSlotsCount }) => (
-  `Don\’t restrain yourself with ${availableSlotsCount} topics, meatb… Master. ` +
+const getBorisNote = ({ totalTopics }) => (
+  `Don\’t restrain yourself with ${totalTopics} topics, meatb… Master. ` +
   'Subscribe and unlock the full power of your Virtual Mentor!'
 )
 
@@ -154,6 +154,7 @@ class UserTopicsScene extends Component {
     const { viewer } = this.props
     const { subscribedTopics } = viewer
     const { isLoadingTail, dataSource } = this.state
+    const totalTopics = subscribedTopics.edges.length + subscribedTopics.availableSlotsCount
     return (
       <View style={styles.container} {...this._panResponder.panHandlers}>
         <ScrollView
@@ -171,7 +172,7 @@ class UserTopicsScene extends Component {
           )}
           {this._renderAddButtons()}
           <SubscribeButton
-            availableSlotsCount={subscribedTopics.availableSlotsCount}
+            totalTopics={totalTopics}
             onPress={() => this.handleSubscribePress()}
             />
         </ScrollView>
@@ -180,13 +181,13 @@ class UserTopicsScene extends Component {
   }
 }
 
-const SubscribeButton = ({ onPress, availableSlotsCount }) => (
+const SubscribeButton = ({ onPress, totalTopics }) => (
   <View style={{ marginTop: device.size(40) }}>
     <View style={styles.borisContainer}>
       <Boris
         mood="positive"
         size="small"
-        note={getBorisNote({ availableSlotsCount })}
+        note={getBorisNote({ totalTopics })}
         />
     </View>
     <Button

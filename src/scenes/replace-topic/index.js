@@ -14,115 +14,139 @@ import { Boris, Button, Loader, ScrollListView } from '../../components'
 import TopicEmpty from '../../components/topic/topic-empty.js'
 import styles from './style'
 import { _flex } from '../../styles/base'
-import {
-  unsubscribeFromTopic,
-  subscribeOnTopic
-} from '../../actions/topic'
+import UnsubscribeFromTopicMutation from '../../mutations/unsubscribe-from-topic'
+import SubscribeOnTopicMutation from '../../mutations/subscribe-on-topic'
 
 const PAGE_SIZE = 30
-const dataSource = new ListView.DataSource({
-  rowHasChanged: (row1, row2) => row1 !== row2
-})
 
 class ReplaceTopic extends Component {
 
-  static defaultProps = {
-    newTopic: null
-  }
-
-  state = {
-    loader: true,
-    isLoadingTail: false,
-    showConfirmation: false
-  }
-
-  constructor (props) {
-    super(props)
-
-    this._onEndReached = this._onEndReached.bind(this)
-  }
-
-  componentDidMount () {
-
-  }
-
-
-  /**
-   * choice of topic and set it as the main
-   * @param topic
-   * @private
-   */
-  _replaceTopic (topicReplace) {
-    const { viewer, navigator, topic, popToTop } = this.props;
-
-    if ( topicReplace.isSubscribedByViewer ) {
-      unsubscribeFromTopic({ topic: topicReplace, user: viewer })
-        .then(()=> {
-          if ( !topic.isSubscribedByViewer ) {
-            subscribeOnTopic({ topic, user: viewer })
-              .then(()=> {
-                setTimeout(()=> {
-                  if(popToTop == 'pop'){
-                    navigator.pop();
-                  } else {
-                    navigator.popToTop();
-                  }
-                }, 400)
-              })
-          }
-        })
+  constructor(props, context) {
+    super(props, context)
+    this.state = {
+      isLoadingTail: false,
+      dataSource: new ListView.DataSource({
+        rowHasChanged: (row1, row2) => row1 !== row2,
+      }),
     }
   }
 
-
-  _onEndReached () {
-    const { relay, viewer } = this.props;
-    let pageNext = viewer.subscribedTopics.pageInfo;
-    let count = relay.variables.count;
-
-    if ( !pageNext || !pageNext.hasNextPage ) {
-      return;
-    }
-
-    this.setState({ isLoadingTail: true })
-    relay.setVariables({ count: count + this.PAGE_SIZE }, (transaction) => {
-      if ( transaction.done ) this.setState({ isLoadingTail: false })
-    });
-  }
-
-  _renderTopic (rowData, sectionID, rowID) {
+  componentDidMount() {
     const { viewer } = this.props
+    this.setState({
+      dataSource: this._getDataSource(viewer.topics.edges),
+    })
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const { viewer } = this.props
+    if (nextProps.viewer.topics !== viewer.topics) {
+      const { topics } = nextProps.viewer
+      this.setState({
+        dataSource: this._getDataSource(topics.edges),
+      })
+    }
+  }
+
+  _getDataSource(topics) {
+    const { dataSource } = this.state
+    return dataSource.cloneWithRows(topics)
+  }
+
+  _unsubscribeFromTopic(topic) {
+    const { viewer } = this.props
+    const mutation = new UnsubscribeFromTopicMutation({
+      user: viewer,
+      topic,
+    })
+    return new Promise((resolve, reject) => {
+      Relay.Store.commitUpdate(mutation, {
+        onSuccess: transaction => resolve(),
+        onFailure: response => reject(response),
+      })
+    })
+  }
+
+  _subscribeOnTopic(topic) {
+    const { viewer } = this.props
+    const mutation = new SubscribeOnTopicMutation({
+      user: viewer,
+      topic,
+    })
+    return new Promise((resolve, reject) => {
+      Relay.Store.commitUpdate(mutation, {
+        onSuccess: transaction => resolve(),
+        onFailure: response => reject(response),
+      })
+    })
+  }
+
+  handleReplaceTopicPress(topicToReplace) {
+    const { navigator, topic, popToTop } = this.props
+    this._unsubscribeFromTopic(
+      topicToReplace
+    ).then(() => {
+      return this._subscribeOnTopic(topic)
+    }).then(() => {
+      if (popToTop == 'pop') {
+        navigator.pop()
+      } else {
+        navigator.popToTop()
+      }
+    })
+  }
+
+  handleEndReached() {
+    const { relay, viewer } = this.props
+    const { pageInfo } = viewer.topics
+    if (!pageInfo || !pageInfo.hasNextPage) {
+      return
+    }
+    const { count } = relay.variables
+    this.setState({
+      isLoadingTail: true,
+    })
+    relay.setVariables({
+      count: count + PAGE_SIZE,
+    }, readyState => {
+      if (readyState.done) {
+        this.setState({
+          isLoadingTail: false,
+          dataSource: this._getDataSource(this.props.viewer.topics.edges),
+        })
+      }
+    })
+  }
+
+  _renderTopic(rowData, sectionID, rowID) {
     return (
       <TopicEmpty
-        topic={ rowData.node }
-        user={ this.props.viewer }
-        index={ rowID }
-        onTopicSelect={topic => this._replaceTopic(rowData.node)}/>
+        topic={rowData.node}
+        user={this.props.viewer}
+        index={rowID}
+        onTopicSelect={topic => this.handleReplaceTopicPress(topic)}
+        />
     )
   }
 
-  render () {
-    const { viewer } = this.props;
-    const { isLoadingTail } = this.state;
-
+  render() {
+    const { isLoadingTail, dataSource } = this.state
     return (
       <View style={styles.container}>
         <ScrollListView
-          dataSource={dataSource.cloneWithRows(viewer.subscribedTopics.edges)}
+          dataSource={dataSource}
           renderRow={(rowData, sectionID, rowID) => this._renderTopic(rowData, sectionID, rowID)}
-          pageSize={30}
+          pageSize={PAGE_SIZE}
           isLoadingTail={isLoadingTail}
-          onEndReached={this._onEndReached}
+          onEndReached={() => this.handleEndReached()}
           onEndReachedThreshold={20}
           showsVerticalScrollIndicator={false}
-          style={ _flex}
-        />
+          style={_flex}
+          />
       </View>
     )
   }
 }
-
-
 
 export default Relay.createContainer(ReplaceTopic, {
   initialVariables: {
@@ -133,7 +157,7 @@ export default Relay.createContainer(ReplaceTopic, {
       fragment on User {
         id
         ${TopicEmpty.getFragment('user')}
-        subscribedTopics: topics(first: $count, filter: SUBSCRIBED) {
+        topics(first: $count, filter: SUBSCRIBED) {
           availableSlotsCount
           edges {
             node {
@@ -147,6 +171,6 @@ export default Relay.createContainer(ReplaceTopic, {
           }
         }
       }
-    `
+    `,
   }
-});
+})

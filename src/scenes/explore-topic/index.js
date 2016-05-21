@@ -84,12 +84,10 @@ class ExploreTopicScene extends Component {
   }
 
   _renderTopic(rowData, sectionID, rowID) {
-    const { viewer } = this.props
-    const topic = rowData.node
     return (
       <TopicEmpty
-        topic={topic}
-        user={viewer}
+        topic={rowData.node}
+        user={this.props.viewer}
         index={rowID}
         onTopicSelect={topic => this.handleSelectTopic(topic)}
         />
@@ -109,7 +107,7 @@ class ExploreTopicScene extends Component {
           onEndReachedThreshold={20}
           showsVerticalScrollIndicator={false}
           style={_flex}
-        />
+          />
       </View>
     )
   }

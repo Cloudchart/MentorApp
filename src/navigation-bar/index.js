@@ -31,6 +31,7 @@ const showBackIconInScenes = [
   'profile',
   'user-topics',
   'explore-topic',
+  'explore-insights',
   'settings',
 ]
 const showSettingsIconInScenes = [
@@ -96,6 +97,10 @@ export function routeMapper() {
         case 'user-insights_useless':
           return (
             <LaunchTitle title={route.title} textStyle={styles.title_itemForDeleted}/>
+          )
+        case 'explore-insights':
+          return (
+            <LaunchTitle title={route.title} textStyle={styles.title_exploreInsights}/>
           )
         default:
           break;

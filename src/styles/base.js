@@ -101,6 +101,17 @@ export default StyleSheet.create({
     textAlign: 'center',
     fontWeight: '500'
   },
+  title_exploreInsights: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: device.size(12),
+    fontSize: device.fontSize(18),
+    lineHeight: device.fontSize(27),
+    color: '#00c568',
+    textAlign: 'center',
+    fontWeight: '500'
+  },
 
   crumbIconPlaceholder: {
     ...crumbIconPlaceholder

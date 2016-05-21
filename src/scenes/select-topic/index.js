@@ -17,7 +17,7 @@ import React, {
 import Relay from 'react-relay'
 import { getNotificationsPermission } from '../../system'
 import { Boris, Button, Loader, Topic, ScrollListView } from '../../components'
-import SubscribeTopicAdd from '../../components/confirmation-screens/subscribe-topic-add'
+import ExploreInsightsSubscription from '../explore-insights/subscription'
 import { NOTIFICATIONS__PERMISSIONS_STATUS } from '../../storage'
 import * as device from '../../utils/device'
 import styles from './style'
@@ -223,12 +223,14 @@ class SelectTopicScene extends Component {
       excludeUserTopics &&
       showConfirmation) {
       return (
-        <SubscribeTopicAdd
-          navigator={navigator}
-          popToTop="pop"
-          onNotNowPress={() =>  this.setState({ showConfirmation: false })}
-          availableSlotsCount={availableSlotsCount}
-          {...topicConfirmationSave}
+        <ExploreInsightsSubscription
+          onConfirmPress={() => navigator.push({
+            scene: 'subscription',
+            title: 'Subscription',
+            popToPop: 'pop',
+            // ...topicConfirmationSave,
+          })}
+          onCancelPress={() =>  this.setState({ showConfirmation: false })}
           />
       )
     }

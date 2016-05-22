@@ -1,41 +1,33 @@
 import Relay from 'react-relay'
 
-class UpdateUserNotificationsSettingsMutation extends Relay.Mutation {
+export default class UpdateUserNotificationsSettingsMutation extends Relay.Mutation {
 
-  getMutation () {
+  getMutation() {
     return Relay.QL`mutation { updateUserNotificationsSettings }`
   }
 
-  getVariables () {
-    const { startAt, finishAt, utcOffset, timesToSend } = this.props;
-
+  getVariables() {
+    const { startAt, finishAt, utcOffset, timesToSend } = this.props
     const variables = {
       startAt,
       utcOffset,
-      timesToSend
-    };
-
-    if ( finishAt ) {
-      variables.finishAt = finishAt;
+      timesToSend,
     }
-    
-    return variables;
+    if (finishAt) {
+      variables.finishAt = finishAt
+    }
+    return variables
   }
 
-  getFatQuery () {
+  getFatQuery() {
     return Relay.QL`
-        fragment on UpdateUserNotificationsSettingsPayload {
-            notificationsSettings
-        }
+      fragment on UpdateUserNotificationsSettingsPayload {
+        notificationsSettings
+      }
     `
   }
 
-  getConfigs () {
+  getConfigs() {
     return []
   }
-
 }
-
-
-export default UpdateUserNotificationsSettingsMutation
-

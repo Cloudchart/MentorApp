@@ -7,11 +7,11 @@ export default class LikeInsightInPreviewMutation extends Relay.Mutation {
   }
 
   getVariables() {
-    const { insight, topic, shouldAddToUserCollectionWithTopicName } = this.props
+    const { insight, topic } = this.props
     return {
       insightID: insight.id,
       topicID: topic.id,
-      shouldAddToUserCollectionWithTopicName,
+      shouldAddToUserCollectionWithTopicName: true,
     }
   }
 
@@ -23,26 +23,9 @@ export default class LikeInsightInPreviewMutation extends Relay.Mutation {
         }
         topic {
           id
-          insights(first: 100, filter: PREVIEW) {
-            edges {
-              node {
-                id
-              }
-            }
-          }
         }
-        insightEdge
         user {
-          collections(first: 100) {
-            edges {
-              node {
-                insights {
-                  usefulCount
-                  uselessCount
-                }
-              }
-            }
-          }
+          id
         }
       }
     `
@@ -57,15 +40,15 @@ export default class LikeInsightInPreviewMutation extends Relay.Mutation {
         topic: topic.id,
         user: user.id,
       },
-    }, {
-      type: 'RANGE_ADD',
-      parentName: 'topic',
-      parentID: topic.id,
-      connectionName: 'insights',
-      edgeName: 'insightEdge',
-      rangeBehaviors: {
-        'filter(PREVIEW)': 'remove',
-      },
+    // }, {
+    //   type: 'RANGE_ADD',
+    //   parentName: 'topic',
+    //   parentID: topic.id,
+    //   connectionName: 'insights',
+    //   edgeName: 'insightEdge',
+    //   rangeBehaviors: {
+    //     'filter(PREVIEW)': 'remove',
+    //   },
     }]
   }
 }

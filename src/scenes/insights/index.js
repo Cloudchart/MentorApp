@@ -47,6 +47,10 @@ class InsightsScene extends Component {
         isAllEnded = false
       }
     })
+    if (subscribedTopics.edges.length === 0 && insights.edges.length > 0) {
+      // TODO We have to avoid this use case by subscribe-on-topic mutation
+      isAllEnded = false
+    }
     if (isAllEnded) {
       return (
         <AllEnded
@@ -110,7 +114,7 @@ export default Relay.createContainer(InsightsScene, {
             }
           }
         }
-        subscribedTopics: topics(first: 1, filter: SUBSCRIBED) {
+        subscribedTopics: topics(first: 100, filter: SUBSCRIBED) {
           edges {
             node {
               id

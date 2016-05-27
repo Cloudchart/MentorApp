@@ -1,7 +1,7 @@
 import Relay from 'react-relay'
 
 export default class DislikeInsightInPreviewMutation extends Relay.Mutation {
-  
+
   getMutation() {
     return Relay.QL`mutation { dislikeInsightInTopic }`
   }
@@ -14,7 +14,7 @@ export default class DislikeInsightInPreviewMutation extends Relay.Mutation {
     }
   }
 
-  getFatQuery () {
+  getFatQuery() {
     return Relay.QL`
       fragment on DislikeInsightInTopicMutationPayload {
         insight {
@@ -55,7 +55,7 @@ export default class DislikeInsightInPreviewMutation extends Relay.Mutation {
         topic: topic.id,
         user: user.id,
       },
-    }, {
+    // }, {
       //  type: 'RANGE_DELETE',
       //  parentName: 'topic',
       //  parentID: topic.id,
@@ -63,14 +63,14 @@ export default class DislikeInsightInPreviewMutation extends Relay.Mutation {
       //  deletedIDFieldName: 'insightID',
       //  pathToConnection: ['user', 'topics']
       //}, {
-      type: 'RANGE_ADD',
-      parentName: 'topic',
-      parentID: topic.id,
-      connectionName: 'insights',
-      edgeName: 'insightEdge',
-      rangeBehaviors: {
-        'filter(PREVIEW)': 'remove',
-      },
+      // type: 'RANGE_ADD',
+      // parentName: 'topic',
+      // parentID: topic.id,
+      // connectionName: 'insights',
+      // edgeName: 'insightEdge',
+      // rangeBehaviors: {
+      //   'filter(PREVIEW)': 'remove',
+      // },
     }]
   }
 }

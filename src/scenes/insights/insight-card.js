@@ -22,9 +22,7 @@ import Icon from 'react-native-vector-icons/FontAwesome'
 import baseStyle from '../../styles/base'
 import clamp from 'clamp'
 import LikeInsightInTopicMutation from '../../mutations/like-insight-in-topic'
-import LikeInsightInPreviewMutation from '../../mutations/like-insight-in-preview'
 import DislikeInsightInTopicMutation from '../../mutations/dislike-insight-in-topic'
-import DislikeInsightInPreviewMutation from '../../mutations/dislike-insight-in-preview'
 import {
   CommentGood,
   CommentBad,
@@ -137,7 +135,11 @@ export default class InsightCard extends Component {
   }
 
   _requestLikeRate() {
-    const { insight } = this.props
+    const { insight, onLike } = this.props
+    if (onLike) {
+      onLike(insight);
+      return;
+    }
     const basicReaction = insight.likeReaction
     if (basicReaction) {
       const reaction = {
@@ -185,7 +187,11 @@ export default class InsightCard extends Component {
   }
 
   _requestDislikeRate() {
-    const { insight } = this.props
+    const { insight, onDislike } = this.props
+    if (onDislike) {
+      onDislike(insight);
+      return;
+    }
     const basicReaction = insight.dislikeReaction
     if (basicReaction) {
       const reaction = {
@@ -199,30 +205,18 @@ export default class InsightCard extends Component {
   }
 
   _requestDislikeMutation() {
-    const { filter, user, topic, insight } = this.props
+    const { user, topic, insight } = this.props
     this.setState({
       isPendingForInsight: insight.id,
       reaction: null,
     })
-    let mutation
-    if (filter === 'PREVIEW') {
-      mutation = new DislikeInsightInPreviewMutation({
-        user,
-        topic,
-        insight,
-      })
-    } else {
-      mutation = new DislikeInsightInTopicMutation({
-        user,
-        topic,
-        insight,
-      })
-    }
+    const mutation = new DislikeInsightInTopicMutation({
+      user,
+      topic,
+      insight,
+    });
     Relay.Store.commitUpdate(mutation, {
       onSuccess: response => {
-        if (filter === 'PREVIEW') {
-          return
-        }
         if (response.topic && response.topic.isFinishedByViewer) {
           this.props.handleTopicFinish()
         }

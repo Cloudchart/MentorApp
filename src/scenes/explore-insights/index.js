@@ -10,6 +10,8 @@ import InsightCard, {
   insightFragment,
 } from '../insights/insight-card'
 import SubscribeOnTopicMutation from '../../mutations/subscribe-on-topic'
+import LikeInsightInPreviewMutation from '../../mutations/like-insight-in-preview'
+import DislikeInsightInPreviewMutation from '../../mutations/dislike-insight-in-preview'
 
 class ExploreInsightsScene extends Component {
 
@@ -19,6 +21,7 @@ class ExploreInsightsScene extends Component {
       isPending: false,
       isAddTopicSelected: false,
       isPaidPlan: false,
+      insightIndex: 0,
     }
   }
 
@@ -54,6 +57,36 @@ class ExploreInsightsScene extends Component {
     this.setState({
       isAddTopicSelected: true,
     })
+  }
+
+  handleInsightLike() {
+    const { viewer, node } = this.props
+    const { insightIndex } = this.state
+    const insightEdge = node.insights.edges[insightIndex]
+    this.setState({
+      insightIndex: insightIndex + 1,
+    })
+    const mutation = new LikeInsightInPreviewMutation({
+      user: viewer,
+      topic: node,
+      insight: insightEdge.node,
+    })
+    Relay.Store.commitUpdate(mutation);
+  }
+
+  handleInsightDislike() {
+    const { viewer, node } = this.props
+    const { insightIndex } = this.state
+    const insightEdge = node.insights.edges[insightIndex]
+    this.setState({
+      insightIndex: insightIndex + 1,
+    })
+    const mutation = new DislikeInsightInPreviewMutation({
+      user: viewer,
+      topic: node,
+      insight: insightEdge.node,
+    })
+    Relay.Store.commitUpdate(mutation);
   }
 
   handleCancelPress() {
@@ -105,24 +138,26 @@ class ExploreInsightsScene extends Component {
 
   render() {
     const { filter, viewer, node, navigator } = this.props
-    const { isPending } = this.state
+    const { isPending, insightIndex } = this.state
     console.log('explore-insights-scene: found ' + node.insights.edges.length + ' available insights.')
     if (isPending) {
       return (
         <Loader />
       )
     }
-    const isAllViewed = (node.insights.edges.length === 0) || true
+    const isAllViewed = (insightIndex >= node.insights.edges.length)
     if (isAllViewed) {
       return this._renderAddWizard()
     }
-    const firstInsight = node.insights.edges[0]
+    const firstInsight = node.insights.edges[insightIndex]
     return (
       <InsightCard
         filter={filter}
         navigator={navigator}
         topic={node}
         insight={firstInsight.node}
+        onLike={() => this.handleInsightLike()}
+        onDislike={() => this.handleInsightDislike()}
         user={viewer}
         />
     )
@@ -146,7 +181,6 @@ export default Relay.createContainer(ExploreInsightsScene, {
     node: () => Relay.QL`
       fragment on Topic {
         ${topicFragment}
-
         insights(first: 100, filter: $filter)  {
           edges {
             node {

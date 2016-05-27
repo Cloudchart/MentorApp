@@ -178,7 +178,7 @@ class SelectTopicScene extends Component {
   }
 
   _renderButton() {
-    const { excludeUserTopics, viewer } = this.props
+    const { excludeUserTopics } = this.props
     const { subscribedTopicsCount } = this.state
     if (excludeUserTopics) {
       return

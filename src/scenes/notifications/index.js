@@ -37,6 +37,9 @@ class NotificationsScene extends Component {
         this.props.navigator.resetTo({
           scene: 'insights',
           filter: 'UNRATED',
+          renderOptions: {
+            skipFirstRender: true,
+          },
         })
       }
     } catch (err) {

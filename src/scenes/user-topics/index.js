@@ -17,10 +17,9 @@ import {
   ScrollListView
 } from '../../components'
 import styles from './style'
-import { EventManager } from '../../event-manager'
 import * as device from '../../utils/device'
 import { getGradient } from '../../utils/colors'
-import { TOPICS_FORCE_FETCH } from '../../actions/application'
+import UnsubscribeFromTopicMutation from '../../mutations/unsubscribe-from-topic';
 
 const getBorisNote = ({ totalTopics }) => (
   `Don\’t restrain yourself with ${totalTopics} topics, meatb… Master. ` +
@@ -32,7 +31,7 @@ class UserTopicsScene extends Component {
   constructor (props, context) {
     super(props, context)
     this._panResponder = PanResponder.create({
-      onStartShouldSetPanResponderCapture: (event, gestureState) => {
+      onStartShouldSetPanResponderCapture: () => {
         this.setState({ closeAllItems: true })
         return false
       },
@@ -66,8 +65,8 @@ class UserTopicsScene extends Component {
   _getDataSource(topics) {
     const { dataSource } = this.state
     const filteredTopics = topics.edges.filter(topic => (
-        !topic.node.isSubscribedByViewer)
-    )
+        !topic.node.isSubscribedByViewer
+    ))
     return dataSource.cloneWithRows(filteredTopics)
   }
 
@@ -75,6 +74,21 @@ class UserTopicsScene extends Component {
     this.props.navigator.push({
       scene: 'subscription',
       title: 'Subscription',
+    })
+  }
+
+  handleTopicUnsubscribe(topic) {
+    const { relay, viewer } = this.props
+    console.log({ topic })
+    const mutation = new UnsubscribeFromTopicMutation({
+      user: viewer,
+      topic,
+    })
+    Relay.Store.commitUpdate(mutation, {
+      onSuccess: () => {
+        // TODO implement through mutation ranges
+        relay.forceFetch()
+      }
     })
   }
 
@@ -116,14 +130,15 @@ class UserTopicsScene extends Component {
     const { viewer } = this.props
     const { closeAllItems } = this.state
     const { subscribedTopics } = viewer
+    const topic = rowData.node
     return (
       <View>
         <TopicSubscribed
-          topic={rowData.node}
+          topic={topic}
           closeAllItems={closeAllItems}
           user={viewer}
           subscribedTopics={subscribedTopics}
-          unsubscribeFromTopicCallback={() => console.log('UnsubscribeFromTopic')}
+          unsubscribeFromTopicCallback={() => this.handleTopicUnsubscribe(topic)}
           index={rowID}
           />
       </View>
@@ -157,7 +172,8 @@ class UserTopicsScene extends Component {
     return (
       <View style={styles.container} {...this._panResponder.panHandlers}>
         <ScrollView
-          showsVerticalScrollIndicator={true}>
+          showsVerticalScrollIndicator={true}
+          >
           {(subscribedTopics.edges.length > 0) && (
             <ListView
               dataSource={dataSource}
@@ -223,11 +239,12 @@ export default Relay.createContainer(UserTopicsScene, {
           availableSlotsCount
           edges {
             node {
+              id
               ${TopicSubscribed.getFragment('topic')}
             }
           }
         }
       }
-    `
+    `,
   }
 })

@@ -26,6 +26,16 @@ export default class LikeInsightInPreviewMutation extends Relay.Mutation {
         }
         user {
           id
+          collections(first: 100) {
+            edges {
+              node {
+                insights {
+                  usefulCount
+                  uselessCount
+                }
+              }
+            }
+          }
         }
       }
     `

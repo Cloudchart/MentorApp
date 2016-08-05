@@ -31,7 +31,7 @@ function size (value) {
   }
 
   if ( isIphone5() ) {
-    return value * 0.9
+    return value * 0.8
   }
 
   return value;
@@ -43,8 +43,9 @@ function fontSize (value, opt_param) {
     return value * 1.15
   }
 
-  if ( !opt_param && isIphone5() ) {
-    return value * 0.8
+  // if ( !opt_param && isIphone5() ) {
+  if ( isIphone5() ) {
+    return value * 0.75
   }
 
   return value;

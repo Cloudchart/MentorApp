@@ -51,7 +51,7 @@ function panResponderMoveHandler(insightCardElement) {
     //if ( this.state.showCardTopicName ) return;
     insightCardElement.showPopupControls()
     insightCardElement._pan.setValue({ x: gestureState.dx, y: 0 })
-    if (Math.abs(gestureState.dx) > 50 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy)) {
+    if (Math.abs(gestureState.dx) > 15 && Math.abs(gestureState.dx) > Math.abs(gestureState.dy)) {
       insightCardElement.handleCardSwipeStart &&
         insightCardElement.handleCardSwipeStart()
     }

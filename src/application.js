@@ -42,6 +42,10 @@ export default class Application extends Component {
     super(props, context)
     // Build initial route according to fetched data
     console.log('Application constructor')
+    if (!__DEV__){
+      console.log('disable console.log');
+      console.log = () => {}
+    }
     this.state = {
       appState: null,
       notificationMessage: null,

@@ -10,6 +10,7 @@ import React, {
   AlertIOS,
 } from 'react-native'
 import { Loader } from '../../components'
+import * as device from '../../utils/device'
 import styles from './styles'
 import Relay from 'react-relay'
 import PurchaseProductMutation from '../../mutations/purchase-product'
@@ -228,14 +229,20 @@ export default class SubscriptionScene extends Component {
                 (billed annually*)
               </Text>
             </View>
-            <View style={styles.subscriptionPrice}>
+            { !device.isIphone5() && <View style={styles.subscriptionPrice}>
               <Text style={[styles.subscriptionPriceText, styles.subscriptionDisabledText]}>
                 $7.99
               </Text>
               <Text style={styles.subscriptionTitleNote}/>
               <View style={styles.deleted}/>
-            </View>
+            </View> }
             <View style={styles.subscriptionPrice}>
+              { device.isIphone5() && <View style={styles.subscriptionPrice}>
+                <Text style={[styles.subscriptionPriceText, styles.subscriptionDisabledText]}>
+                  $7.99
+                </Text>
+                <View style={styles.deleted}/>
+              </View> }
               <Text style={styles.subscriptionPriceText}>
                 $5.60
                 <Text style={styles.subscriptionPriceTextNote}>/mo</Text>
@@ -301,4 +308,3 @@ export default class SubscriptionScene extends Component {
     )
   }
 }
-

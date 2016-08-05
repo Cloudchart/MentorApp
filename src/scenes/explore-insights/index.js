@@ -63,6 +63,7 @@ class ExploreInsightsScene extends Component {
     const { viewer, node } = this.props
     const { insightIndex } = this.state
     const insightEdge = node.insights.edges[insightIndex]
+    if (!insightEdge) return;
     this.setState({
       insightIndex: insightIndex + 1,
     })

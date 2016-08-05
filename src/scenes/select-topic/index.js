@@ -252,6 +252,17 @@ class SelectTopicScene extends Component {
           />
       )
     }
+
+    // auto continue when free slots absent
+    if (availableSlotsCount === 0 &&
+      subscribedTopicsCount > 0) {
+      // Fix 3. Warning while starting
+      if (!this.autoHandleContinuePress) {
+        this.autoHandleContinuePress = true
+        this.handleContinuePress();
+      }
+    }
+
     const scrollListStyle = {
       marginBottom: (subscribedTopicsCount === 0) ? device.size(120) : device.size(80),
     }

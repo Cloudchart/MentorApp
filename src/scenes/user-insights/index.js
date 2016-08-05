@@ -32,13 +32,27 @@ class UserInsightsScene extends Component {
     }
   }
 
+  componentWillMount() {
+    // 5. User Insights: displays only first 3 from preview
+    this.mountedAt = new Date()
+  }
+
+  shouldComponentUpdate(props) {
+    if (Date.now() - this.mountedAt < 300) {
+      return false
+    }
+    return true
+  }
+
   handleSwipeStart() {
+    if (!this.state.isScrollEnabled) return;
     this.setState({
       isScrollEnabled: false,
     })
   }
 
   handleSwipeEnd() {
+    if (this.state.isScrollEnabled) return;
     this.setState({
       isScrollEnabled: true,
     })

@@ -68,12 +68,12 @@ export default class InsightCard extends Component {
     if (nextInsight.id !== currentInsight.id) {
       this._resetState()
     }
+    this.setState({isDetailsVisible: false})
   }
 
-  handleCardPress() {
-    const { isDetailsVisible } = this.state
+  handleCardPress(cardState) {
     this.setState({
-      isDetailsVisible: !isDetailsVisible,
+      isDetailsVisible: cardState.isDetailsVisible,
     })
   }
 
@@ -375,7 +375,7 @@ export default class InsightCard extends Component {
             style={{alignSelf: 'center'}}
             navigator={navigator}
             insight={insight}
-            onCardPress={() => this.handleCardPress()}
+            onCardPress={(state) => this.handleCardPress(state)}
             onScalingStateChange={isScaling => this.setState({ isScaling })}
             />
         </Animated.View>

@@ -23,6 +23,7 @@ import AutoText from '../../components/auto-text'
 
 const BASIC_CONTENT_LENGTH = 120
 const BASIC_FONT_SIZE = 34
+const INSIGHTS_FONT_SIZE = 24
 
 function getAdjustedFontSize(content, baseContentLength, fontSize) {
   const minFontSize = 14;
@@ -186,6 +187,7 @@ class Insight extends Component {
   }
 
   componentDidMount() {
+    if (this.props.fixedFontSize) return;
     this.setState({
       isScaling: true,
     })
@@ -193,6 +195,7 @@ class Insight extends Component {
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.insight !== this.props.insight) {
+      if (this.props.fixedFontSize) return;
       this.setState({
         isScaling: true,
         scaledFontSize: null,
@@ -218,7 +221,8 @@ class Insight extends Component {
       this._toggle()
     }
     if (this.props.onCardPress) {
-      this.props.onCardPress(this.props)
+      const isDetailsVisible = this.state.rowHeight !== 0
+      this.props.onCardPress({isDetailsVisible})
     }
   }
 
@@ -300,9 +304,11 @@ class Insight extends Component {
     const maxContentHeight = Dimensions.get('window').height - 350
     // const baseContentHeight = Dimensions.get('window').height - 500
     const basicFontSize = getAdjustedFontSize(finalContent, BASIC_CONTENT_LENGTH, BASIC_FONT_SIZE)
+    // User Insights: keep one font size
+    const fontSize = this.props.fixedFontSize ? INSIGHTS_FONT_SIZE : scaledFontSize || basicFontSize
     const insightTextStyle = [
       styles.itemText,
-      { fontSize: scaledFontSize || basicFontSize },
+      { fontSize },
       isScaling && styles.itemTextScaling,
     ]
     const containerStyles = [

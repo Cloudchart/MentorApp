@@ -9,7 +9,7 @@ export default ({ navigator }) => {
     navigator.push({
       scene: 'settings',
       title: 'Settings',
-      FloatFromBottom: true,
+      FloatFromLeft: true,
     })
   }
   return (

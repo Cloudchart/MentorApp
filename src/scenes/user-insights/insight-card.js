@@ -260,6 +260,7 @@ export default class UserInsightCard extends Component {
           >
           <Animated.View style={animatedCardStyles}>
             <Insight
+              fixedFontSize={true}
               insight={insight}
               fontSize={20}
               onCardPress={() => this.handleCardPress()}/>
